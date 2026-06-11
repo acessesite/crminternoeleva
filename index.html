@@ -6,6 +6,10 @@
 <title>Eleva OS — Sistema Operacional de Crescimento</title>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.19.0/dist/tabler-icons.min.css">
 <style>
+/* Fallback SVG icons via Unicode quando a webfont não carrega */
+.nav-item i, .dp-tab i, .card-title i, .mlabel i, .btn-primary i, .btn-secondary i, .topbar i, .modal-box i, .pill i, .ia-label i, .perda-title i, .section-label i { font-style:normal; }
+</style>
+<style>
 *{box-sizing:border-box;margin:0;padding:0;}
 body{background:#0a0f1e;color:#e2e8f0;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;font-size:13px;overflow:hidden;height:100vh;}
 ::-webkit-scrollbar{width:5px;height:5px;}
@@ -26,6 +30,8 @@ body{background:#0a0f1e;color:#e2e8f0;font-family:-apple-system,BlinkMacSystemFo
 .nav-item{display:flex;align-items:center;gap:8px;padding:7px 10px;border-radius:6px;cursor:pointer;color:#7a9cc0;font-size:12px;margin-bottom:1px;transition:all 0.15s;user-select:none;}
 .nav-item:hover{background:#0d1f38;color:#93c5fd;}
 .nav-item.active{background:#0d2447;color:#60a5fa;}
+.nav-item svg{flex-shrink:0;opacity:0.85;}
+.nav-item.active svg{opacity:1;}
 .nav-item i{font-size:16px;flex-shrink:0;}
 .nav-badge{margin-left:auto;background:#1e3a5f;color:#60a5fa;border-radius:10px;padding:1px 7px;font-size:10px;font-weight:600;}
 .nav-badge.red{background:#2a0f0f;color:#f87171;}
@@ -34,6 +40,20 @@ body{background:#0a0f1e;color:#e2e8f0;font-family:-apple-system,BlinkMacSystemFo
 .user-av{width:30px;height:30px;border-radius:50%;background:#1d4ed8;display:flex;align-items:center;justify-content:center;font-size:11px;color:#bfdbfe;font-weight:600;}
 .user-name{font-size:11px;color:#e2e8f0;font-weight:500;}
 .user-role{font-size:10px;color:#4a7fc1;}
+
+/* === MODAL FADE === */
+.modal-wrap{position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0);z-index:500;display:flex;align-items:center;justify-content:center;pointer-events:none;transition:background 0.2s;}
+.modal-wrap.open{background:rgba(0,0,0,0.75);pointer-events:all;}
+.modal-box{background:#060b18;border:0.5px solid #1e3a5f;border-radius:12px;padding:24px;width:440px;max-height:85vh;overflow-y:auto;transform:translateY(16px) scale(0.97);opacity:0;transition:transform 0.2s,opacity 0.2s;}
+.modal-wrap.open .modal-box{transform:translateY(0) scale(1);opacity:1;}
+.modal-box.wide{width:500px;}
+.perm-btn{display:flex;align-items:center;gap:8px;background:#060e1c;border:0.5px solid #1e3a5f;border-radius:7px;padding:9px 12px;cursor:pointer;user-select:none;transition:all 0.15s;}
+.perm-btn:hover{border-color:#2563eb;}
+.perm-btn.perm-on{background:#0d2447;border-color:#2563eb;}
+.perm-btn i{font-size:15px;color:#4a7fc1;}
+.perm-btn.perm-on i{color:#60a5fa;}
+.perm-btn span{font-size:12px;color:#7a9cc0;}
+.perm-btn.perm-on span{color:#e2e8f0;}
 
 /* === MAIN === */
 .main{flex:1;display:flex;flex-direction:column;overflow:hidden;}
@@ -47,6 +67,7 @@ body{background:#0a0f1e;color:#e2e8f0;font-family:-apple-system,BlinkMacSystemFo
 .btn-secondary:hover{background:#0d2447;}
 .page{flex:1;overflow-y:auto;padding:20px;display:none;}
 .page.active{display:block;}
+.page.active.flex-page{display:flex;}
 
 /* === CARDS === */
 .card{background:#0d1f38;border:0.5px solid #1e3a5f;border-radius:10px;padding:14px 16px;}
@@ -81,12 +102,20 @@ body{background:#0a0f1e;color:#e2e8f0;font-family:-apple-system,BlinkMacSystemFo
 .pill-purple{background:#180f3a;color:#a78bfa;border:0.5px solid #3c2a8a;}
 
 /* === PIPELINE === */
-.pipeline-wrap{display:flex;gap:10px;overflow-x:auto;padding-bottom:8px;}
-.pipeline-col{min-width:180px;flex-shrink:0;}
-.pipeline-col-header{font-size:10px;font-weight:600;color:#4a7fc1;text-transform:uppercase;letter-spacing:0.5px;padding:6px 8px;display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;}
+.pipeline-wrap{display:flex;gap:10px;overflow-x:auto;padding-bottom:8px;height:100%;}
+.pipeline-col{min-width:185px;flex-shrink:0;display:flex;flex-direction:column;}
+.pipeline-col-header{font-size:10px;font-weight:600;color:#4a7fc1;text-transform:uppercase;letter-spacing:0.5px;padding:7px 10px;display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;border-radius:6px;background:#060e1c;border:0.5px solid #1e3a5f;}
+.pipeline-col-header.col-blocked{background:#1a0505;border-color:#7f1d1d;color:#f87171;}
 .pipeline-count{background:#1e3a5f;color:#60a5fa;border-radius:10px;padding:1px 7px;font-size:10px;}
-.pipeline-card{background:#0d1f38;border:0.5px solid #1e3a5f;border-radius:8px;padding:10px;margin-bottom:8px;cursor:pointer;transition:border-color 0.15s;}
+.pipeline-count.cnt-blocked{background:#2a0f0f;color:#f87171;}
+.pipeline-drop{flex:1;min-height:60px;border-radius:6px;padding:3px;transition:background 0.2s;}
+.pipeline-drop.drag-over{background:#0d2447;}
+.pipeline-drop.drop-blocked{background:#0d0505;}
+.pipeline-card{background:#0d1f38;border:0.5px solid #1e3a5f;border-radius:8px;padding:10px;margin-bottom:7px;cursor:grab;transition:border-color 0.15s,opacity 0.15s;user-select:none;}
 .pipeline-card:hover{border-color:#2563eb;}
+.pipeline-card.dragging{opacity:0.35;cursor:grabbing;}
+.pipeline-card.card-blocked{border-color:#7f1d1d;background:#1a0505;}
+.pipeline-card.card-blocked:hover{border-color:#ef4444;}
 .pipeline-card .pc-name{font-size:12px;font-weight:600;color:#e2e8f0;margin-bottom:3px;}
 .pipeline-card .pc-city{font-size:10px;color:#4a7fc1;}
 .pipeline-card .pc-score{font-size:11px;font-weight:600;}
@@ -123,9 +152,11 @@ select.inp option{background:#0d1f38;color:#e2e8f0;}
 .dp-name{font-size:15px;font-weight:700;color:#e2e8f0;}
 .dp-city{font-size:11px;color:#4a7fc1;}
 .dp-tabs{display:flex;padding:0 20px;background:#060b18;border-bottom:0.5px solid #1e3a5f;overflow-x:auto;flex-shrink:0;scrollbar-width:none;}
-.dp-tab{font-size:11px;padding:9px 12px;cursor:pointer;color:#4a7fc1;border-bottom:2px solid transparent;white-space:nowrap;transition:color 0.15s;}
+.dp-tab{font-size:11px;padding:9px 12px;cursor:pointer;color:#4a7fc1;border-bottom:2px solid transparent;white-space:nowrap;transition:color 0.15s;display:flex;align-items:center;gap:5px;}
 .dp-tab:hover{color:#93c5fd;}
 .dp-tab.active{color:#60a5fa;border-bottom-color:#2563eb;}
+.dp-tab svg{flex-shrink:0;opacity:0.8;}
+.dp-tab.active svg{opacity:1;}
 .dp-body{flex:1;overflow-y:auto;padding:18px 20px;}
 .dp-content{display:none;}
 .dp-content.active{display:block;}
@@ -212,23 +243,54 @@ select.inp option{background:#0d1f38;color:#e2e8f0;}
 
   <div class="nav-section">
     <div class="nav-label">Principal</div>
-    <div class="nav-item active" onclick="goPage('dashboard')"><i class="ti ti-layout-dashboard"></i> Dashboard</div>
-    <div class="nav-item" onclick="goPage('clinicas')"><i class="ti ti-building-hospital"></i> Clínicas <span class="nav-badge" id="badge-clinicas">24</span></div>
-    <div class="nav-item" onclick="goPage('pipeline')"><i class="ti ti-layout-kanban"></i> Pipeline</div>
+    <div class="nav-item active" onclick="goPage('dashboard')">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;"><rect x="3" y="3" width="7" height="9"/><rect x="14" y="3" width="7" height="5"/><rect x="14" y="12" width="7" height="9"/><rect x="3" y="16" width="7" height="5"/></svg>
+      Dashboard
+    </div>
+    <div class="nav-item" onclick="goPage('clinicas')">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/><line x1="12" y1="7" x2="12" y2="7.01"/><line x1="9" y1="10" x2="9" y2="10.01"/><line x1="15" y1="10" x2="15" y2="10.01"/></svg>
+      Clínicas <span class="nav-badge" id="badge-clinicas">0</span>
+    </div>
+    <div class="nav-item" onclick="goPage('pipeline')">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;"><rect x="3" y="3" width="5" height="18"/><rect x="10" y="3" width="5" height="11"/><rect x="17" y="3" width="5" height="15"/></svg>
+      Pipeline
+    </div>
   </div>
 
   <div class="nav-section">
     <div class="nav-label">Comercial</div>
-    <div class="nav-item" onclick="goPage('followups')"><i class="ti ti-bell"></i> Follow-ups <span class="nav-badge red" id="badge-fu">12</span></div>
-    <div class="nav-item" onclick="goPage('propostas')"><i class="ti ti-file-invoice"></i> Propostas <span class="nav-badge">7</span></div>
-    <div class="nav-item" onclick="goPage('diagnosticos')"><i class="ti ti-stethoscope"></i> Diagnósticos</div>
+    <div class="nav-item" onclick="goPage('followups')">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+      Follow-ups
+    </div>
+    <div class="nav-item" onclick="goPage('propostas')">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><line x1="10" y1="9" x2="8" y2="9"/></svg>
+      Propostas
+    </div>
+    <div class="nav-item" onclick="goPage('diagnosticos')">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+      Diagnósticos
+    </div>
   </div>
 
   <div class="nav-section">
     <div class="nav-label">Gestão</div>
-    <div class="nav-item" onclick="goPage('financeiro')"><i class="ti ti-coin"></i> Financeiro <span class="nav-badge red">2</span></div>
-    <div class="nav-item" onclick="goPage('relatorios')"><i class="ti ti-chart-bar"></i> Relatórios</div>
-    <div class="nav-item" onclick="goPage('config')"><i class="ti ti-settings"></i> Configurações</div>
+    <div class="nav-item" onclick="goPage('financeiro')">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><path d="M12 16h.01"/><path d="M9 12h6"/></svg>
+      Financeiro
+    </div>
+    <div class="nav-item" onclick="goPage('relatorios')">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+      Relatórios
+    </div>
+    <div class="nav-item" onclick="goPage('usuarios')">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+      Usuários
+    </div>
+    <div class="nav-item" onclick="goPage('config')">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+      Configurações
+    </div>
   </div>
 
   <div class="sidebar-footer">
@@ -248,111 +310,63 @@ select.inp option{background:#0d1f38;color:#e2e8f0;}
   <!-- TOPBAR -->
   <div class="topbar">
     <div class="topbar-title" id="topbar-title">Dashboard <span>— visão geral</span></div>
-    <div class="search-box" onclick="focusSearch()"><i class="ti ti-search" style="font-size:14px;"></i> <span id="search-label">Buscar clínica...</span></div>
-    <button class="btn-primary" onclick="openNewClient()"><i class="ti ti-plus"></i> Nova clínica</button>
+    <div class="search-box" onclick="focusSearch()">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color:#4a7fc1;flex-shrink:0;"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+      <span id="search-label">Buscar clínica...</span>
+    </div>
+    <button class="btn-primary" onclick="openNewClient()">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+      Nova clínica
+    </button>
   </div>
 
   <!-- ===== DASHBOARD ===== -->
   <div id="page-dashboard" class="page active">
     <div class="grid4">
-      <div class="metric"><div class="mlabel"><i class="ti ti-building-hospital"></i> Clientes ativos</div><div class="mval">24</div><div class="msub up">↑ +3 este mês</div></div>
-      <div class="metric"><div class="mlabel"><i class="ti ti-coin"></i> Receita mensal</div><div class="mval" style="font-size:18px;">R$ 87.400</div><div class="msub up">↑ +12% vs mês ant.</div></div>
-      <div class="metric"><div class="mlabel"><i class="ti ti-target"></i> Em negociação</div><div class="mval">11</div><div class="msub warn">R$ 34k potencial</div></div>
-      <div class="metric"><div class="mlabel"><i class="ti ti-alert-triangle"></i> Inadimplentes</div><div class="mval" style="color:#f87171;">2</div><div class="msub down">R$ 7.600 em aberto</div></div>
+      <div class="metric">
+        <div class="mlabel">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+          Clientes ativos
+        </div>
+        <div class="mval" id="dash-ativos">0</div><div class="msub" id="dash-ativos-sub" style="color:#4a7fc1;">Nenhum ainda</div>
+      </div>
+      <div class="metric">
+        <div class="mlabel">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><path d="M12 16h.01"/><path d="M9 12h6"/></svg>
+          Receita mensal
+        </div>
+        <div class="mval" id="dash-mrr">R$ 0</div><div class="msub" style="color:#4a7fc1;">Contratos ativos</div>
+      </div>
+      <div class="metric">
+        <div class="mlabel">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+          Em negociação
+        </div>
+        <div class="mval" id="dash-neg">0</div><div class="msub" style="color:#4a7fc1;">No pipeline</div>
+      </div>
+      <div class="metric">
+        <div class="mlabel">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="4.93" y1="4.93" x2="19.07" y2="19.07"/></svg>
+          Bloqueados
+        </div>
+        <div class="mval" id="dash-block" style="color:#f87171;">0</div><div class="msub down">Não contatar</div>
+      </div>
     </div>
 
     <div class="grid2" style="margin-bottom:16px;">
       <div class="card">
         <div class="card-title"><i class="ti ti-layout-kanban"></i> Pipeline comercial</div>
-        <div style="display:flex;flex-direction:column;gap:5px;">
-          <div style="display:flex;align-items:center;gap:8px;padding:5px 0;">
-            <div style="width:10px;height:10px;border-radius:50%;background:#34d399;flex-shrink:0;"></div>
-            <span style="font-size:11px;color:#7a9cc0;flex:1;">Lead novo</span>
-            <div style="width:100px;height:4px;background:#0a0f1e;border-radius:2px;"><div style="width:90%;height:4px;background:#34d399;border-radius:2px;"></div></div>
-            <span style="font-size:11px;font-weight:600;color:#e2e8f0;width:20px;text-align:right;">9</span>
-          </div>
-          <div style="display:flex;align-items:center;gap:8px;padding:5px 0;">
-            <div style="width:10px;height:10px;border-radius:50%;background:#4a7fc1;flex-shrink:0;"></div>
-            <span style="font-size:11px;color:#7a9cc0;flex:1;">Qualificação</span>
-            <div style="width:100px;height:4px;background:#0a0f1e;border-radius:2px;"><div style="width:60%;height:4px;background:#4a7fc1;border-radius:2px;"></div></div>
-            <span style="font-size:11px;font-weight:600;color:#e2e8f0;width:20px;text-align:right;">6</span>
-          </div>
-          <div style="display:flex;align-items:center;gap:8px;padding:5px 0;">
-            <div style="width:10px;height:10px;border-radius:50%;background:#7c5fc4;flex-shrink:0;"></div>
-            <span style="font-size:11px;color:#7a9cc0;flex:1;">Diagnóstico</span>
-            <div style="width:100px;height:4px;background:#0a0f1e;border-radius:2px;"><div style="width:40%;height:4px;background:#7c5fc4;border-radius:2px;"></div></div>
-            <span style="font-size:11px;font-weight:600;color:#e2e8f0;width:20px;text-align:right;">4</span>
-          </div>
-          <div style="display:flex;align-items:center;gap:8px;padding:5px 0;">
-            <div style="width:10px;height:10px;border-radius:50%;background:#d97706;flex-shrink:0;"></div>
-            <span style="font-size:11px;color:#7a9cc0;flex:1;">Proposta</span>
-            <div style="width:100px;height:4px;background:#0a0f1e;border-radius:2px;"><div style="width:30%;height:4px;background:#d97706;border-radius:2px;"></div></div>
-            <span style="font-size:11px;font-weight:600;color:#e2e8f0;width:20px;text-align:right;">3</span>
-          </div>
-          <div style="display:flex;align-items:center;gap:8px;padding:5px 0;">
-            <div style="width:10px;height:10px;border-radius:50%;background:#e05555;flex-shrink:0;"></div>
-            <span style="font-size:11px;color:#7a9cc0;flex:1;">Negociação</span>
-            <div style="width:100px;height:4px;background:#0a0f1e;border-radius:2px;"><div style="width:20%;height:4px;background:#e05555;border-radius:2px;"></div></div>
-            <span style="font-size:11px;font-weight:600;color:#e2e8f0;width:20px;text-align:right;">2</span>
-          </div>
-          <div style="display:flex;align-items:center;gap:8px;padding:5px 0;">
-            <div style="width:10px;height:10px;border-radius:50%;background:#2563eb;flex-shrink:0;"></div>
-            <span style="font-size:11px;color:#7a9cc0;flex:1;">Cliente ativo</span>
-            <div style="width:100px;height:4px;background:#0a0f1e;border-radius:2px;"><div style="width:100%;height:4px;background:#2563eb;border-radius:2px;"></div></div>
-            <span style="font-size:11px;font-weight:600;color:#60a5fa;width:20px;text-align:right;">24</span>
-          </div>
-        </div>
+        <div id="dash-pipeline-bars" style="display:flex;flex-direction:column;gap:5px;"></div>
       </div>
-
       <div class="card">
-        <div class="card-title"><i class="ti ti-building-hospital"></i> Clínicas — atenção necessária</div>
-        <div style="display:flex;flex-direction:column;gap:5px;">
-          <div class="data-table" style="margin:0;">
-            <table class="data-table" style="width:100%;">
-              <tbody>
-                <tr onclick="openClient(1)">
-                  <td><div style="display:flex;align-items:center;gap:8px;"><div class="avatar" style="background:#e05555;color:#fca5a5;">DS</div><div><div style="font-size:12px;font-weight:600;">Dra. Camila Santos</div><div style="font-size:10px;color:#4a7fc1;">Fortaleza – CE</div></div></div></td>
-                  <td><span class="pill pill-red">Score 31</span></td>
-                  <td><span class="pill pill-red">Risco</span></td>
-                </tr>
-                <tr onclick="openClient(2)">
-                  <td><div style="display:flex;align-items:center;gap:8px;"><div class="avatar" style="background:#7c5fc4;color:#ddd6fe;">MS</div><div><div style="font-size:12px;font-weight:600;">Dr. Marcos Silva</div><div style="font-size:10px;color:#4a7fc1;">Belo Horizonte – MG</div></div></div></td>
-                  <td><span class="pill pill-yellow">Score 52</span></td>
-                  <td><span class="pill pill-yellow">Atenção</span></td>
-                </tr>
-                <tr onclick="openClient(3)">
-                  <td><div style="display:flex;align-items:center;gap:8px;"><div class="avatar" style="background:#1d4ed8;color:#bfdbfe;">OP</div><div><div style="font-size:12px;font-weight:600;">Clínica Odonto Plus</div><div style="font-size:10px;color:#4a7fc1;">São Paulo – SP</div></div></div></td>
-                  <td><span class="pill pill-blue">Score 78</span></td>
-                  <td><span class="pill pill-green">Ativo</span></td>
-                </tr>
-                <tr onclick="openClient(4)">
-                  <td><div style="display:flex;align-items:center;gap:8px;"><div class="avatar" style="background:#34d399;color:#064e3b;">IM</div><div><div style="font-size:12px;font-weight:600;">Implant Med</div><div style="font-size:10px;color:#4a7fc1;">Curitiba – PR</div></div></div></td>
-                  <td><span class="pill pill-green">Score 84</span></td>
-                  <td><span class="pill pill-green">Ativo</span></td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
-        </div>
+        <div class="card-title"><i class="ti ti-building-hospital"></i> Clínicas recentes</div>
+        <div id="dash-recent"></div>
       </div>
     </div>
 
     <div class="card">
       <div class="card-title"><i class="ti ti-robot"></i> IA Consultora — alertas do dia</div>
-      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;">
-        <div class="ia-box">
-          <div class="ia-label"><i class="ti ti-alert-circle" style="font-size:12px;"></i> Gargalo crítico</div>
-          <div class="ia-text">Dra. Camila Santos: conversão abaixo de 20%. Ausência de follow-up e script de objeções. Ação imediata recomendada.</div>
-        </div>
-        <div class="ia-box" style="border-color:#4a9c6b;">
-          <div class="ia-label" style="color:#34d399;"><i class="ti ti-trending-up" style="font-size:12px;"></i> Oportunidade</div>
-          <div class="ia-text">Implant Med: Score 84. Potencial de upsell para plano avançado. Alta participação e implementação concluída.</div>
-        </div>
-        <div class="ia-box" style="border-color:#d97706;">
-          <div class="ia-label" style="color:#fbbf24;"><i class="ti ti-clock" style="font-size:12px;"></i> Follow-up urgente</div>
-          <div class="ia-text">Dr. Marcos Silva: proposta enviada há 5 dias sem retorno. Probabilidade de fechamento: 68%. Ligar hoje.</div>
-        </div>
-      </div>
+      <div id="dash-ia"></div>
     </div>
   </div>
 
@@ -360,17 +374,12 @@ select.inp option{background:#0d1f38;color:#e2e8f0;}
   <div id="page-clinicas" class="page">
     <div style="display:flex;align-items:center;gap:10px;margin-bottom:16px;">
       <input class="inp" style="width:260px;" placeholder="Buscar clínica..." oninput="filterClinicas(this.value)">
-      <select class="inp" style="width:160px;" onchange="filterByStatus(this.value)">
+      <select class="inp" style="width:180px;" onchange="filterByStatus(this.value)">
         <option value="">Todos os status</option>
-        <option value="Ativo">Ativo</option>
-        <option value="Negociação">Negociação</option>
-        <option value="Risco">Risco</option>
+        <option value="Lead Novo">Lead Novo</option>
+        <option value="Cliente Ativo">Cliente Ativo</option>
         <option value="Perdido">Perdido</option>
-      </select>
-      <select class="inp" style="width:160px;">
-        <option>Todos os consultores</option>
-        <option>João Vitor</option>
-        <option>Ana Beatriz</option>
+        <option value="Não entrar em contato">Bloqueado</option>
       </select>
     </div>
     <div class="card" style="padding:0;overflow:hidden;">
@@ -379,7 +388,7 @@ select.inp option{background:#0d1f38;color:#e2e8f0;}
           <tr>
             <th>Clínica / Doutor</th>
             <th>Cidade</th>
-            <th>Status</th>
+            <th>Etapa</th>
             <th>Score</th>
             <th>Plano</th>
             <th>Valor/mês</th>
@@ -394,163 +403,53 @@ select.inp option{background:#0d1f38;color:#e2e8f0;}
   </div>
 
   <!-- ===== PIPELINE ===== -->
-  <div id="page-pipeline" class="page">
-    <div style="margin-bottom:14px;font-size:12px;color:#4a7fc1;">Arraste ou clique nos cards para mover entre etapas.</div>
-    <div class="pipeline-wrap" id="pipeline-board"></div>
+  <div id="page-pipeline" class="page flex-page" style="flex-direction:column;overflow:hidden;padding:16px 20px;">
+    <div style="margin-bottom:12px;font-size:12px;color:#4a7fc1;flex-shrink:0;">Arraste os cards entre etapas. &nbsp;<span style="color:#f87171;font-weight:600;"><i class="ti ti-ban" style="font-size:11px;"></i> Não entrar em contato</span> — leads bloqueados para contato.</div>
+    <div id="pipeline-board" class="pipeline-wrap" style="flex:1;overflow-x:auto;overflow-y:hidden;align-items:flex-start;"></div>
   </div>
 
   <!-- ===== FOLLOW-UPS ===== -->
   <div id="page-followups" class="page">
-    <div class="grid3" style="margin-bottom:16px;">
-      <div class="metric"><div class="mlabel"><i class="ti ti-alert-triangle"></i> Urgentes (atrasados)</div><div class="mval" style="color:#f87171;">4</div></div>
-      <div class="metric"><div class="mlabel"><i class="ti ti-calendar"></i> Para hoje</div><div class="mval" style="color:#fbbf24;">5</div></div>
-      <div class="metric"><div class="mlabel"><i class="ti ti-check"></i> Concluídos esta semana</div><div class="mval" style="color:#34d399;">18</div></div>
-    </div>
-    <div class="card" style="margin-bottom:14px;">
-      <div class="card-title" style="color:#f87171;"><i class="ti ti-alert-triangle"></i> Atrasados — ação imediata</div>
-      <div class="fu-card urgente" onclick="openClient(1)">
-        <div class="fu-check"><i class="ti ti-check" style="font-size:10px;color:transparent;"></i></div>
-        <div style="flex:1;">
-          <div style="font-size:12px;font-weight:600;color:#e2e8f0;">Dra. Camila Santos</div>
-          <div style="font-size:11px;color:#4a7fc1;margin-top:2px;">Ligar e apresentar estimativa de perdas — proposta bloqueada há 8 dias</div>
-        </div>
-        <div style="text-align:right;"><div class="pill pill-red">8 dias atrasado</div><div style="font-size:10px;color:#4a7fc1;margin-top:4px;">Fortaleza – CE</div></div>
-      </div>
-      <div class="fu-card urgente" onclick="openClient(2)">
-        <div class="fu-check"></div>
-        <div style="flex:1;">
-          <div style="font-size:12px;font-weight:600;color:#e2e8f0;">Dr. Marcos Silva</div>
-          <div style="font-size:11px;color:#4a7fc1;margin-top:2px;">Follow-up D+5 pós-proposta — não houve retorno</div>
-        </div>
-        <div style="text-align:right;"><div class="pill pill-red">5 dias atrasado</div><div style="font-size:10px;color:#4a7fc1;margin-top:4px;">Belo Horizonte – MG</div></div>
-      </div>
-    </div>
-    <div class="card" style="margin-bottom:14px;">
-      <div class="card-title" style="color:#fbbf24;"><i class="ti ti-calendar"></i> Para hoje</div>
-      <div class="fu-card hoje" onclick="openClient(3)">
-        <div class="fu-check"></div>
-        <div style="flex:1;">
-          <div style="font-size:12px;font-weight:600;color:#e2e8f0;">Clínica Odonto Plus</div>
-          <div style="font-size:11px;color:#4a7fc1;margin-top:2px;">Reunião mensal — revisar indicadores de junho e apresentar score atualizado</div>
-        </div>
-        <div style="text-align:right;"><div class="pill pill-yellow">Hoje 14h</div></div>
-      </div>
-      <div class="fu-card hoje">
-        <div class="fu-check"></div>
-        <div style="flex:1;">
-          <div style="font-size:12px;font-weight:600;color:#e2e8f0;">Clínica ImplantiX</div>
-          <div style="font-size:11px;color:#4a7fc1;margin-top:2px;">Enviar proposta revisada com novo valor de plano</div>
-        </div>
-        <div style="text-align:right;"><div class="pill pill-yellow">Hoje 17h</div></div>
-      </div>
-    </div>
-    <div class="card">
-      <div class="card-title" style="color:#34d399;"><i class="ti ti-check"></i> Próximos 7 dias</div>
-      <div class="fu-card ok">
-        <div class="fu-check"></div>
-        <div style="flex:1;"><div style="font-size:12px;font-weight:600;color:#e2e8f0;">Implant Med</div><div style="font-size:11px;color:#4a7fc1;margin-top:2px;">Check-in de implementação — script de confirmação de consultas</div></div>
-        <div class="pill pill-blue">13 jun</div>
-      </div>
-      <div class="fu-card ok">
-        <div class="fu-check"></div>
-        <div style="flex:1;"><div style="font-size:12px;font-weight:600;color:#e2e8f0;">OdontoStar Campinas</div><div style="font-size:11px;color:#4a7fc1;margin-top:2px;">Diagnóstico inicial agendado — primeira reunião</div></div>
-        <div class="pill pill-blue">14 jun</div>
-      </div>
-      <div class="fu-card ok">
-        <div class="fu-check"></div>
-        <div style="flex:1;"><div style="font-size:12px;font-weight:600;color:#e2e8f0;">Dr. Felipe Nascimento</div><div style="font-size:11px;color:#4a7fc1;margin-top:2px;">Follow-up D+3 pós diagnóstico enviado</div></div>
-        <div class="pill pill-blue">16 jun</div>
-      </div>
+    <div style="text-align:center;padding:60px 20px;color:#4a7fc1;">
+      <i class="ti ti-bell" style="font-size:48px;display:block;margin-bottom:12px;color:#1e3a5f;"></i>
+      <h3 style="font-size:14px;color:#7a9cc0;margin-bottom:6px;font-weight:500;">Nenhum follow-up cadastrado</h3>
+      <p style="font-size:12px;">Os follow-ups aparecerão aqui conforme você registrar próximas ações nos cards das clínicas.</p>
     </div>
   </div>
 
   <!-- ===== PROPOSTAS ===== -->
   <div id="page-propostas" class="page">
-    <div class="card" style="padding:0;overflow:hidden;">
-      <table class="data-table">
-        <thead><tr><th>Clínica</th><th>Plano</th><th>Valor/mês</th><th>Enviada em</th><th>Dias sem retorno</th><th>Status</th><th>Prob. fechamento</th></tr></thead>
-        <tbody>
-          <tr onclick="openClient(2)"><td>Dr. Marcos Silva</td><td>Eleva Pro</td><td>R$ 3.800</td><td>06 jun 2026</td><td style="color:#fbbf24;">5 dias</td><td><span class="pill pill-yellow">Aguardando</span></td><td><span class="pill pill-green">68%</span></td></tr>
-          <tr><td>Clínica ImplantiX</td><td>Eleva Start</td><td>R$ 2.200</td><td>08 jun 2026</td><td>3 dias</td><td><span class="pill pill-yellow">Em revisão</span></td><td><span class="pill pill-yellow">45%</span></td></tr>
-          <tr><td>Dr. Felipe Nascimento</td><td>Eleva Pro</td><td>R$ 3.800</td><td>10 jun 2026</td><td>1 dia</td><td><span class="pill pill-blue">Nova</span></td><td><span class="pill pill-yellow">55%</span></td></tr>
-          <tr><td>Sorriso Perfeito SP</td><td>Eleva Scale</td><td>R$ 6.500</td><td>01 jun 2026</td><td style="color:#f87171;">10 dias</td><td><span class="pill pill-red">Fria</span></td><td><span class="pill pill-red">22%</span></td></tr>
-          <tr onclick="openClient(1)"><td>Dra. Camila Santos</td><td>Eleva Pro</td><td>R$ 3.800</td><td>03 jun 2026</td><td style="color:#f87171;">8 dias</td><td><span class="pill pill-red">Bloqueada</span></td><td><span class="pill pill-red">30%</span></td></tr>
-        </tbody>
-      </table>
+    <div style="text-align:center;padding:60px 20px;color:#4a7fc1;">
+      <i class="ti ti-file-invoice" style="font-size:48px;display:block;margin-bottom:12px;color:#1e3a5f;"></i>
+      <h3 style="font-size:14px;color:#7a9cc0;margin-bottom:6px;font-weight:500;">Nenhuma proposta em aberto</h3>
+      <p style="font-size:12px;">As propostas aparecerão aqui conforme você avançar leads no pipeline.</p>
     </div>
   </div>
 
   <!-- ===== DIAGNÓSTICOS ===== -->
   <div id="page-diagnosticos" class="page">
-    <div class="card" style="padding:0;overflow:hidden;">
-      <table class="data-table">
-        <thead><tr><th>Clínica</th><th>Diagnóstico realizado</th><th>Score</th><th>Captação</th><th>Comercial</th><th>Conversão</th><th>Faltas</th><th>Gestão</th><th>Perda/mês</th></tr></thead>
-        <tbody>
-          <tr onclick="openClient(3)"><td>Clínica Odonto Plus</td><td>10 mai 2026</td><td><span class="pill pill-blue">78</span></td><td style="color:#60a5fa;">80</td><td style="color:#fbbf24;">65</td><td style="color:#fbbf24;">72</td><td style="color:#34d399;">90</td><td style="color:#fbbf24;">60</td><td style="color:#f87171;">R$ 48k</td></tr>
-          <tr onclick="openClient(1)"><td>Dra. Camila Santos</td><td>05 mai 2026</td><td><span class="pill pill-red">31</span></td><td style="color:#f87171;">30</td><td style="color:#f87171;">20</td><td style="color:#f87171;">18</td><td style="color:#f87171;">25</td><td style="color:#f87171;">22</td><td style="color:#f87171;">R$ 89k</td></tr>
-          <tr onclick="openClient(2)"><td>Dr. Marcos Silva</td><td>28 abr 2026</td><td><span class="pill pill-yellow">52</span></td><td style="color:#fbbf24;">55</td><td style="color:#f87171;">40</td><td style="color:#fbbf24;">50</td><td style="color:#fbbf24;">55</td><td style="color:#f87171;">35</td><td style="color:#f87171;">R$ 62k</td></tr>
-          <tr onclick="openClient(4)"><td>Implant Med</td><td>15 mar 2026</td><td><span class="pill pill-green">84</span></td><td style="color:#34d399;">88</td><td style="color:#60a5fa;">80</td><td style="color:#34d399;">85</td><td style="color:#34d399;">92</td><td style="color:#60a5fa;">75</td><td style="color:#fbbf24;">R$ 18k</td></tr>
-        </tbody>
-      </table>
+    <div style="text-align:center;padding:60px 20px;color:#4a7fc1;">
+      <i class="ti ti-stethoscope" style="font-size:48px;display:block;margin-bottom:12px;color:#1e3a5f;"></i>
+      <h3 style="font-size:14px;color:#7a9cc0;margin-bottom:6px;font-weight:500;">Nenhum diagnóstico realizado</h3>
+      <p style="font-size:12px;">Os diagnósticos aparecerão aqui após o preenchimento nos cards das clínicas.</p>
     </div>
   </div>
 
   <!-- ===== FINANCEIRO ===== -->
   <div id="page-financeiro" class="page">
-    <div class="grid4" style="margin-bottom:16px;">
-      <div class="metric"><div class="mlabel"><i class="ti ti-coin"></i> MRR total</div><div class="mval">R$ 87.400</div><div class="msub up">24 contratos ativos</div></div>
-      <div class="metric"><div class="mlabel"><i class="ti ti-check"></i> Pagos este mês</div><div class="mval" style="color:#34d399;">22</div><div class="msub up">R$ 79.600</div></div>
-      <div class="metric"><div class="mlabel"><i class="ti ti-alert-triangle"></i> Inadimplentes</div><div class="mval" style="color:#f87171;">2</div><div class="msub down">R$ 7.800 em aberto</div></div>
-      <div class="metric"><div class="mlabel"><i class="ti ti-calendar"></i> Vence esta semana</div><div class="mval" style="color:#fbbf24;">3</div><div class="msub warn">R$ 11.100</div></div>
-    </div>
-    <div class="card" style="padding:0;overflow:hidden;">
-      <table class="data-table">
-        <thead><tr><th>Clínica</th><th>Plano</th><th>Valor/mês</th><th>Vencimento</th><th>Status</th><th>Último pagamento</th><th>Observação</th></tr></thead>
-        <tbody>
-          <tr onclick="openClient(3)"><td>Clínica Odonto Plus</td><td>Eleva Pro</td><td>R$ 3.800</td><td>Dia 10</td><td><span class="pill pill-green">Pago</span></td><td>10 jun 2026</td><td>—</td></tr>
-          <tr onclick="openClient(4)"><td>Implant Med</td><td>Eleva Scale</td><td>R$ 6.500</td><td>Dia 5</td><td><span class="pill pill-green">Pago</span></td><td>05 jun 2026</td><td>—</td></tr>
-          <tr onclick="openClient(2)"><td>Dr. Marcos Silva</td><td>Eleva Pro</td><td>R$ 3.800</td><td>Dia 15</td><td><span class="pill pill-yellow">Vence em 4 dias</span></td><td>15 mai 2026</td><td>Acompanhar</td></tr>
-          <tr onclick="openClient(1)"><td>Dra. Camila Santos</td><td>Eleva Pro</td><td>R$ 3.800</td><td>Dia 1</td><td><span class="pill pill-red">Atrasado 10 dias</span></td><td>01 mai 2026</td><td>Cobrar hoje</td></tr>
-          <tr><td>OdontoStar Campinas</td><td>Eleva Start</td><td>R$ 2.200</td><td>Dia 20</td><td><span class="pill pill-red">Atrasado 5 dias</span></td><td>20 mai 2026</td><td>2ª cobrança enviada</td></tr>
-        </tbody>
-      </table>
+    <div style="text-align:center;padding:60px 20px;color:#4a7fc1;">
+      <i class="ti ti-coin" style="font-size:48px;display:block;margin-bottom:12px;color:#1e3a5f;"></i>
+      <h3 style="font-size:14px;color:#7a9cc0;margin-bottom:6px;font-weight:500;">Nenhum contrato financeiro</h3>
+      <p style="font-size:12px;">Os dados financeiros aparecerão aqui após o cadastro de contratos nas clínicas.</p>
     </div>
   </div>
 
   <!-- ===== RELATÓRIOS ===== -->
   <div id="page-relatorios" class="page">
-    <div class="grid2">
-      <div class="card">
-        <div class="card-title"><i class="ti ti-chart-bar"></i> Performance comercial — junho 2026</div>
-        <div class="field"><span class="fl">Leads recebidos</span><span class="fv">47</span></div>
-        <div class="field"><span class="fl">Diagnósticos realizados</span><span class="fv">12</span></div>
-        <div class="field"><span class="fl">Propostas enviadas</span><span class="fv">7</span></div>
-        <div class="field"><span class="fl">Contratos fechados</span><span class="fv g">3</span></div>
-        <div class="field"><span class="fl">Taxa de conversão lead → cliente</span><span class="fv y">6,4%</span></div>
-        <div class="field"><span class="fl">Ticket médio novo contrato</span><span class="fv">R$ 3.933</span></div>
-        <div class="field"><span class="fl">MRR adicionado no mês</span><span class="fv g">R$ 11.800</span></div>
-      </div>
-      <div class="card">
-        <div class="card-title"><i class="ti ti-heart"></i> Saúde da base de clientes</div>
-        <div class="field"><span class="fl">Score médio da base</span><span class="fv" style="color:#60a5fa;">62 / 100</span></div>
-        <div class="field"><span class="fl">Clientes com score acima de 70</span><span class="fv g">11 (46%)</span></div>
-        <div class="field"><span class="fl">Clientes com score abaixo de 40</span><span class="fv r">3 (12%)</span></div>
-        <div class="field"><span class="fl">Saúde média de implementação</span><span class="fv y">61%</span></div>
-        <div class="field"><span class="fl">Churn rate mensal</span><span class="fv g">4,2%</span></div>
-        <div class="field"><span class="fl">NPS médio dos clientes</span><span class="fv g">72</span></div>
-        <div class="field"><span class="fl">Renovações previstas próx. 30 dias</span><span class="fv">6</span></div>
-      </div>
-    </div>
-    <div class="card">
-      <div class="card-title"><i class="ti ti-trending-up"></i> Evolução MRR — últimos 6 meses</div>
-      <div style="display:flex;align-items:flex-end;gap:8px;height:80px;padding-top:10px;">
-        <div style="display:flex;flex-direction:column;align-items:center;gap:4px;flex:1;"><div style="width:100%;background:#1d4ed8;border-radius:4px 4px 0 0;" style2="height:52px;"></div><div style="font-size:10px;color:#4a7fc1;">jan</div><div style="font-size:10px;color:#e2e8f0;font-weight:600;">52k</div></div>
-        <div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:4px;"><div style="width:100%;height:56px;background:#1d4ed8;border-radius:4px 4px 0 0;"></div><div style="font-size:10px;color:#4a7fc1;">fev</div><div style="font-size:10px;color:#e2e8f0;font-weight:600;">56k</div></div>
-        <div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:4px;"><div style="width:100%;height:62px;background:#1d4ed8;border-radius:4px 4px 0 0;"></div><div style="font-size:10px;color:#4a7fc1;">mar</div><div style="font-size:10px;color:#e2e8f0;font-weight:600;">62k</div></div>
-        <div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:4px;"><div style="width:100%;height:68px;background:#1d4ed8;border-radius:4px 4px 0 0;"></div><div style="font-size:10px;color:#4a7fc1;">abr</div><div style="font-size:10px;color:#e2e8f0;font-weight:600;">68k</div></div>
-        <div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:4px;"><div style="width:100%;height:74px;background:#1d4ed8;border-radius:4px 4px 0 0;"></div><div style="font-size:10px;color:#4a7fc1;">mai</div><div style="font-size:10px;color:#e2e8f0;font-weight:600;">74k</div></div>
-        <div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:4px;"><div style="width:100%;height:80px;background:#2563eb;border-radius:4px 4px 0 0;border:1px solid #3b82f6;"></div><div style="font-size:10px;color:#4a7fc1;">jun</div><div style="font-size:10px;color:#60a5fa;font-weight:700;">87k</div></div>
-      </div>
+    <div style="text-align:center;padding:60px 20px;color:#4a7fc1;">
+      <i class="ti ti-chart-bar" style="font-size:48px;display:block;margin-bottom:12px;color:#1e3a5f;"></i>
+      <h3 style="font-size:14px;color:#7a9cc0;margin-bottom:6px;font-weight:500;">Sem dados para relatório</h3>
+      <p style="font-size:12px;">Os relatórios serão gerados automaticamente conforme você cadastra e acompanha as clínicas.</p>
     </div>
   </div>
 
@@ -558,15 +457,24 @@ select.inp option{background:#0d1f38;color:#e2e8f0;}
   <div id="page-config" class="page">
     <div class="grid2">
       <div class="card">
-        <div class="card-title"><i class="ti ti-user"></i> Meu perfil</div>
-        <div class="input-row"><label>Nome</label><input class="inp" value="João Vitor Souza"></div>
-        <div class="input-row"><label>E-mail</label><input class="inp" value="joao@eleva.com.br"></div>
-        <div class="input-row"><label>Cargo</label><input class="inp" value="Consultor de Crescimento"></div>
-        <div class="input-row"><label>WhatsApp</label><input class="inp" value="(11) 99000-0000"></div>
-        <button class="btn-primary" style="margin-top:12px;"><i class="ti ti-device-floppy"></i> Salvar alterações</button>
+        <div class="card-title">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+          Meu perfil
+        </div>
+        <div class="input-row"><label>Nome</label><input class="inp" id="cfg-nome" placeholder="Seu nome completo"></div>
+        <div class="input-row"><label>E-mail</label><input class="inp" id="cfg-email" placeholder="seu@email.com"></div>
+        <div class="input-row"><label>Cargo</label><input class="inp" id="cfg-cargo" placeholder="Ex: Consultor de Crescimento"></div>
+        <div class="input-row"><label>WhatsApp</label><input class="inp" id="cfg-tel" placeholder="(00) 00000-0000"></div>
+        <button class="btn-primary" style="margin-top:12px;" onclick="saveProfile()">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+          Salvar alterações
+        </button>
       </div>
       <div class="card">
-        <div class="card-title"><i class="ti ti-bell"></i> Notificações</div>
+        <div class="card-title">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+          Notificações
+        </div>
         <div class="cb-row" onclick="toggleCbG(this)"><div class="cb on"></div><span class="cb-label">Alertar follow-ups atrasados</span></div>
         <div class="cb-row" onclick="toggleCbG(this)"><div class="cb on"></div><span class="cb-label">Alertar inadimplência</span></div>
         <div class="cb-row" onclick="toggleCbG(this)"><div class="cb on"></div><span class="cb-label">Resumo diário da IA Consultora</span></div>
@@ -575,7 +483,10 @@ select.inp option{background:#0d1f38;color:#e2e8f0;}
       </div>
     </div>
     <div class="card">
-      <div class="card-title"><i class="ti ti-adjustments"></i> Parâmetros do sistema</div>
+      <div class="card-title">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+        Parâmetros do sistema
+      </div>
       <div class="grid2" style="margin-bottom:0;">
         <div>
           <div class="input-row"><label>Meta de conversão de mercado (%)</label><input class="inp" type="number" value="55"></div>
@@ -591,6 +502,18 @@ select.inp option{background:#0d1f38;color:#e2e8f0;}
     </div>
   </div>
 
+  <!-- ===== USUÁRIOS ===== -->
+  <div id="page-usuarios" class="page">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:18px;">
+      <div style="font-size:12px;color:#4a7fc1;">Gerencie os consultores e suas permissões de acesso ao Eleva OS.</div>
+      <button class="btn-primary" onclick="openNewUserModal()">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/><line x1="19" y1="8" x2="19" y2="14"/><line x1="22" y1="11" x2="16" y2="11"/></svg>
+        Novo usuário
+      </button>
+    </div>
+    <div id="usuarios-content"></div>
+  </div>
+
 </div><!-- /main -->
 </div><!-- /shell -->
 
@@ -598,33 +521,66 @@ select.inp option{background:#0d1f38;color:#e2e8f0;}
 <div class="overlay" id="overlay" onclick="closeOverlayIfBg(event)">
   <div class="detail-panel" id="detail-panel">
     <div class="dp-header">
-      <div class="dp-avatar" id="dp-avatar" style="background:#1d4ed8;color:#bfdbfe;">OP</div>
+      <div class="dp-avatar" id="dp-avatar" style="background:#1d4ed8;color:#bfdbfe;">—</div>
       <div style="flex:1;">
-        <div class="dp-name" id="dp-name">Clínica Odonto Plus</div>
-        <div class="dp-city" id="dp-city"><i class="ti ti-map-pin" style="font-size:11px;"></i> São Paulo – SP &nbsp;|&nbsp; <span id="dp-status-text" style="color:#34d399;">Cliente ativo</span></div>
+        <div class="dp-name" id="dp-name">—</div>
+        <div class="dp-city" id="dp-city"><i class="ti ti-map-pin" style="font-size:11px;"></i> —</div>
       </div>
       <div style="display:flex;gap:8px;align-items:center;">
-        <span class="pill pill-blue" id="dp-score-pill">Score 78</span>
-        <button class="btn-secondary" onclick="closeClient()"><i class="ti ti-x"></i></button>
+        <span class="pill pill-blue" id="dp-score-pill">Sem score</span>
+        <button class="btn-secondary" onclick="closeClient()">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+        </button>
       </div>
     </div>
 
     <div class="dp-tabs">
-      <div class="dp-tab active" onclick="switchDpTab('resumo')"><i class="ti ti-layout-dashboard"></i> Resumo</div>
-      <div class="dp-tab" onclick="switchDpTab('diagnostico')"><i class="ti ti-stethoscope"></i> Diagnóstico</div>
-      <div class="dp-tab" onclick="switchDpTab('score')"><i class="ti ti-star"></i> Score</div>
-      <div class="dp-tab" onclick="switchDpTab('perdas')"><i class="ti ti-trending-down"></i> Perdas</div>
-      <div class="dp-tab" onclick="switchDpTab('ia')"><i class="ti ti-robot"></i> IA</div>
-      <div class="dp-tab" onclick="switchDpTab('plano')"><i class="ti ti-list-check"></i> Plano</div>
-      <div class="dp-tab" onclick="switchDpTab('timeline')"><i class="ti ti-clock"></i> Histórico</div>
-      <div class="dp-tab" onclick="switchDpTab('saude')"><i class="ti ti-heart"></i> Saúde</div>
-      <div class="dp-tab" onclick="switchDpTab('financeiro')"><i class="ti ti-coin"></i> Financeiro</div>
+      <div class="dp-tab active" onclick="switchDpTab('resumo')">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="9"/><rect x="14" y="3" width="7" height="5"/><rect x="14" y="12" width="7" height="9"/><rect x="3" y="16" width="7" height="5"/></svg>
+        Resumo
+      </div>
+      <div class="dp-tab" onclick="switchDpTab('diagnostico')">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>
+        Diagnóstico
+      </div>
+      <div class="dp-tab" onclick="switchDpTab('score')">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+        Score
+      </div>
+      <div class="dp-tab" onclick="switchDpTab('perdas')">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 18 13.5 8.5 8.5 13.5 1 6"/><polyline points="17 18 23 18 23 12"/></svg>
+        Perdas
+      </div>
+      <div class="dp-tab" onclick="switchDpTab('ia')">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="10" rx="2"/><circle cx="12" cy="5" r="2"/><path d="M12 7v4"/><line x1="8" y1="16" x2="8" y2="16"/><line x1="16" y1="16" x2="16" y2="16"/></svg>
+        IA
+      </div>
+      <div class="dp-tab" onclick="switchDpTab('plano')">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>
+        Plano
+      </div>
+      <div class="dp-tab" onclick="switchDpTab('timeline')">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+        Histórico
+      </div>
+      <div class="dp-tab" onclick="switchDpTab('saude')">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+        Saúde
+      </div>
+      <div class="dp-tab" onclick="switchDpTab('financeiro')">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg>
+        Financeiro
+      </div>
     </div>
 
     <div class="dp-body">
 
       <!-- RESUMO -->
       <div class="dp-content active" id="dpc-resumo">
+        <div id="dp-blocked-banner" style="display:none;background:#1a0505;border:1px solid #ef4444;border-radius:8px;padding:14px 16px;margin-bottom:14px;align-items:center;gap:10px;">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#ef4444" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;"><circle cx="12" cy="12" r="10"/><line x1="4.93" y1="4.93" x2="19.07" y2="19.07"/></svg>
+          <div><div style="font-size:13px;font-weight:700;color:#fca5a5;">Não entrar em contato</div><div style="font-size:11px;color:#f87171;margin-top:3px;">Este lead está bloqueado. Nenhuma ação comercial deve ser tomada.</div></div>
+        </div>
         <div class="score-ring">
           <div>
             <div class="score-big" id="dp-score-big" style="color:#60a5fa;">78</div>
@@ -779,11 +735,7 @@ select.inp option{background:#0d1f38;color:#e2e8f0;}
 
       <!-- HISTÓRICO -->
       <div class="dp-content" id="dpc-timeline">
-        <div class="tl-item"><div class="tl-dot" style="background:#34d399;"></div><div class="tl-date">10 jun 2026</div><div><div class="tl-text">Reunião mensal realizada. Doutor engajado. Script de confirmação em andamento.</div><div class="tl-user">João Vitor</div></div></div>
-        <div class="tl-item"><div class="tl-dot" style="background:#2563eb;"></div><div class="tl-date">28 mai 2026</div><div><div class="tl-text">Script de atendimento entregue e aprovado após ajuste na ancoragem de valor.</div><div class="tl-user">João Vitor</div></div></div>
-        <div class="tl-item"><div class="tl-dot" style="background:#fbbf24;"></div><div class="tl-date">15 mai 2026</div><div><div class="tl-text">Faltas ainda em 28%. Doutor resistente a cobrar taxa. Acordado implementar confirmação automática primeiro.</div><div class="tl-user">João Vitor</div></div></div>
-        <div class="tl-item"><div class="tl-dot" style="background:#2563eb;"></div><div class="tl-date">10 mai 2026</div><div><div class="tl-text">Diagnóstico concluído. Score 47/100. Plano de ação de 6 itens apresentado e aprovado.</div><div class="tl-user">João Vitor</div></div></div>
-        <div class="tl-item"><div class="tl-dot" style="background:#4a9c6b;"></div><div class="tl-date">10 jan 2026</div><div><div class="tl-text">Contrato assinado. Plano Eleva Pro — R$ 3.800/mês. Início imediato.</div><div class="tl-user">João Vitor</div></div></div>
+        <div id="dp-timeline-entries"></div>
         <div class="divider"></div>
         <div class="input-row"><label>Registrar nova observação</label><input class="inp" id="nova-obs-dp" placeholder="Digite aqui..."></div>
         <button class="btn-primary" onclick="addObsDp()" style="margin-top:4px;"><i class="ti ti-plus"></i> Registrar</button>
@@ -793,37 +745,35 @@ select.inp option{background:#0d1f38;color:#e2e8f0;}
       <div class="dp-content" id="dpc-saude">
         <div class="card" style="padding:14px;margin-bottom:12px;">
           <div class="card-title"><i class="ti ti-heart"></i> Saúde do cliente</div>
-          <div class="hb-row"><span class="hb-label">Financeiro</span><div class="hb-track"><div class="hb-fill" style="width:100%;background:#2563eb;"></div></div><span class="hb-val" style="color:#34d399;">100</span></div>
-          <div class="hb-row"><span class="hb-label">Participação</span><div class="hb-track"><div class="hb-fill" style="width:80%;background:#2563eb;"></div></div><span class="hb-val" style="color:#60a5fa;">80</span></div>
-          <div class="hb-row"><span class="hb-label">Implementação</span><div class="hb-track"><div class="hb-fill" style="width:55%;background:#d97706;"></div></div><span class="hb-val" style="color:#fbbf24;">55</span></div>
-          <div class="hb-row"><span class="hb-label">Resultado</span><div class="hb-track"><div class="hb-fill" style="width:60%;background:#2563eb;"></div></div><span class="hb-val" style="color:#60a5fa;">60</span></div>
+          <div class="hb-row"><span class="hb-label">Financeiro</span><div class="hb-track"><div class="hb-fill" id="hb-fin" style="width:0%;background:#2563eb;"></div></div><span class="hb-val" id="hbv-fin" style="color:#4a7fc1;">0</span></div>
+          <div class="hb-row"><span class="hb-label">Participação</span><div class="hb-track"><div class="hb-fill" id="hb-part" style="width:0%;background:#2563eb;"></div></div><span class="hb-val" id="hbv-part" style="color:#4a7fc1;">0</span></div>
+          <div class="hb-row"><span class="hb-label">Implementação</span><div class="hb-track"><div class="hb-fill" id="hb-impl" style="width:0%;background:#2563eb;"></div></div><span class="hb-val" id="hbv-impl" style="color:#4a7fc1;">0</span></div>
+          <div class="hb-row"><span class="hb-label">Resultado</span><div class="hb-track"><div class="hb-fill" id="hb-res" style="width:0%;background:#2563eb;"></div></div><span class="hb-val" id="hbv-res" style="color:#4a7fc1;">0</span></div>
           <div class="divider"></div>
           <div style="display:flex;justify-content:space-between;align-items:center;">
             <span style="font-size:12px;color:#4a7fc1;font-weight:600;">Saúde geral</span>
-            <span style="font-size:26px;font-weight:700;color:#60a5fa;">74%</span>
+            <span style="font-size:26px;font-weight:700;color:#60a5fa;" id="saude-geral">0%</span>
           </div>
-          <div style="font-size:11px;color:#fbbf24;margin-top:4px;display:flex;align-items:center;gap:4px;"><i class="ti ti-alert-triangle" style="font-size:12px;"></i> Implementação abaixo de 60% — acompanhar de perto</div>
         </div>
+        <div class="grid2" style="margin-bottom:0;">
+          <div class="input-row"><label>Financeiro (%)</label><input class="inp" type="number" id="saude-fin-inp" min="0" max="100" value="0" oninput="updateSaude()"></div>
+          <div class="input-row"><label>Participação (%)</label><input class="inp" type="number" id="saude-part-inp" min="0" max="100" value="0" oninput="updateSaude()"></div>
+          <div class="input-row"><label>Implementação (%)</label><input class="inp" type="number" id="saude-impl-inp" min="0" max="100" value="0" oninput="updateSaude()"></div>
+          <div class="input-row"><label>Resultado (%)</label><input class="inp" type="number" id="saude-res-inp" min="0" max="100" value="0" oninput="updateSaude()"></div>
+        </div>
+        <button class="btn-primary" onclick="saveSaude()" style="margin-top:8px;"><i class="ti ti-device-floppy"></i> Salvar saúde</button>
       </div>
 
       <!-- FINANCEIRO -->
       <div class="dp-content" id="dpc-financeiro">
         <div class="card" style="padding:12px;margin-bottom:12px;">
           <div class="card-title"><i class="ti ti-coin"></i> Contrato</div>
-          <div class="field"><span class="fl">Plano</span><span class="fv">Eleva Pro</span></div>
-          <div class="field"><span class="fl">Valor mensal</span><span class="fv">R$ 3.800</span></div>
-          <div class="field"><span class="fl">Vencimento</span><span class="fv">Dia 10</span></div>
-          <div class="field"><span class="fl">Status</span><span class="fv g">Em dia</span></div>
-          <div class="field"><span class="fl">Meses ativos</span><span class="fv">5 meses</span></div>
-          <div class="field"><span class="fl">Total pago até hoje</span><span class="fv">R$ 19.000</span></div>
-        </div>
-        <div class="card" style="padding:12px;">
-          <div class="card-title"><i class="ti ti-receipt"></i> Histórico de pagamentos</div>
-          <div class="field"><span class="fl">Jun 2026</span><span class="fv g">Pago em 10/06</span></div>
-          <div class="field"><span class="fl">Mai 2026</span><span class="fv g">Pago em 10/05</span></div>
-          <div class="field"><span class="fl">Abr 2026</span><span class="fv g">Pago em 10/04</span></div>
-          <div class="field"><span class="fl">Mar 2026</span><span class="fv g">Pago em 10/03</span></div>
-          <div class="field"><span class="fl">Fev 2026</span><span class="fv g">Pago em 10/02</span></div>
+          <div class="input-row"><label>Plano contratado</label><select class="inp" id="fin-plano"><option value="">Selecione</option><option>Eleva Start</option><option>Eleva Pro</option><option>Eleva Scale</option></select></div>
+          <div class="input-row"><label>Valor mensal (R$)</label><input class="inp" type="number" id="fin-valor" placeholder="0"></div>
+          <div class="input-row"><label>Dia de vencimento</label><input class="inp" type="number" id="fin-dia" placeholder="Ex: 10" min="1" max="31"></div>
+          <div class="input-row"><label>Status do pagamento</label><select class="inp" id="fin-status"><option value="">Selecione</option><option>Em dia</option><option>Em aberto</option><option>Atrasado</option></select></div>
+          <div class="input-row"><label>Observação</label><input class="inp" id="fin-obs" placeholder="Ex: Cobrar hoje"></div>
+          <button class="btn-primary" onclick="saveFinanceiro()" style="margin-top:10px;"><i class="ti ti-device-floppy"></i> Salvar contrato</button>
         </div>
       </div>
 
@@ -831,55 +781,658 @@ select.inp option{background:#0d1f38;color:#e2e8f0;}
   </div><!-- /detail-panel -->
 </div><!-- /overlay -->
 
+<!-- ===== MODAL NOVA CLÍNICA ===== -->
+<div id="modal-nova-clinica" class="modal-wrap" onclick="closeModalIfBg(event,'modal-nova-clinica')">
+  <div class="modal-box">
+    <div style="font-size:15px;font-weight:700;color:#e2e8f0;margin-bottom:18px;display:flex;align-items:center;gap:8px;"><i class="ti ti-building-hospital" style="color:#60a5fa;"></i> Cadastrar nova clínica</div>
+    <div class="input-row"><label>Nome da clínica / Doutor(a) *</label><input class="inp" id="nc-nome" placeholder="Ex: Dr. João Silva"></div>
+    <div class="input-row"><label>Cidade / Estado</label><input class="inp" id="nc-cidade" placeholder="Ex: São Paulo – SP"></div>
+    <div class="input-row"><label>Telefone / WhatsApp</label><input class="inp" id="nc-tel" placeholder="(00) 00000-0000"></div>
+    <div class="input-row"><label>Etapa inicial no pipeline</label>
+      <select class="inp" id="nc-stage">
+        <option value="Lead Novo">Lead Novo</option><option value="Qualificação">Qualificação</option>
+        <option value="Diagnóstico">Diagnóstico</option><option value="Apresentação">Apresentação</option>
+        <option value="Proposta">Proposta</option><option value="Negociação">Negociação</option>
+      </select>
+    </div>
+    <div class="input-row"><label>Consultor responsável</label><input class="inp" id="nc-consultor" placeholder="Nome do consultor"></div>
+    <div style="display:flex;gap:8px;margin-top:18px;">
+      <button class="btn-primary" style="flex:1;" onclick="createClinica()">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        Cadastrar
+      </button>
+      <button class="btn-secondary" onclick="closeModal('modal-nova-clinica')">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+        Cancelar
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- ===== MODAL NOVO USUÁRIO ===== -->
+<div id="modal-novo-usuario" class="modal-wrap" onclick="closeModalIfBg(event,'modal-novo-usuario')">
+  <div class="modal-box wide">
+    <div style="font-size:15px;font-weight:700;color:#e2e8f0;margin-bottom:18px;display:flex;align-items:center;gap:8px;"><i class="ti ti-user-plus" style="color:#60a5fa;"></i> Criar novo usuário</div>
+    <div class="input-row"><label>Nome completo *</label><input class="inp" id="nu-nome" placeholder="Ex: Ana Beatriz"></div>
+    <div class="input-row"><label>E-mail *</label><input class="inp" id="nu-email" placeholder="ana@eleva.com.br"></div>
+    <div class="input-row"><label>Cargo / função</label><input class="inp" id="nu-cargo" placeholder="Ex: Consultora de Crescimento"></div>
+    <div class="input-row"><label>Cor do avatar</label>
+      <select class="inp" id="nu-cor">
+        <option value="0">Azul</option><option value="1">Roxo</option><option value="2">Verde</option>
+        <option value="3">Laranja</option><option value="4">Rosa</option><option value="5">Teal</option>
+      </select>
+    </div>
+    <div style="margin-top:14px;">
+      <div style="font-size:10px;color:#4a7fc1;text-transform:uppercase;letter-spacing:1px;margin-bottom:10px;">Permissões — clique para ativar/desativar</div>
+      <div id="perm-grid" style="display:grid;grid-template-columns:1fr 1fr;gap:7px;"></div>
+    </div>
+    <div style="display:flex;gap:8px;margin-top:18px;">
+      <button class="btn-primary" style="flex:1;" onclick="createUser()">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/><line x1="19" y1="8" x2="19" y2="14"/><line x1="22" y1="11" x2="16" y2="11"/></svg>
+        Criar usuário
+      </button>
+      <button class="btn-secondary" onclick="closeModal('modal-novo-usuario')">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+        Cancelar
+      </button>
+    </div>
+  </div>
+</div>
+
+<script type="module">
+// ========== FIREBASE CONFIG ==========
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import { getFirestore, collection, doc, setDoc, getDoc, getDocs, deleteDoc, onSnapshot, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyC4aR6f104Dyn3HfE-8FEWc-lBukr8vJxs",
+  authDomain: "crmelevaiplante.firebaseapp.com",
+  projectId: "crmelevaiplante",
+  storageBucket: "crmelevaiplante.firebasestorage.app",
+  messagingSenderId: "308958905346",
+  appId: "1:308958905346:web:52a3b24a70cdb3ffa3531b"
+};
+
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+
+// ========== HELPERS FIRESTORE ==========
+window._db = db;
+window._fbCol = collection;
+window._fbDoc = doc;
+window._fbSet = setDoc;
+window._fbGet = getDoc;
+window._fbGetAll = getDocs;
+window._fbDel = deleteDoc;
+window._fbSnap = onSnapshot;
+window._fbTs = serverTimestamp;
+
+// Salva clínica
+window.fbSaveClient = async function(c) {
+  try {
+    await setDoc(doc(db, 'clinicas', String(c.id)), c);
+  } catch(e) { console.error('fbSaveClient:', e); }
+};
+
+// Deleta clínica
+window.fbDeleteClient = async function(id) {
+  try {
+    await deleteDoc(doc(db, 'clinicas', String(id)));
+  } catch(e) { console.error('fbDeleteClient:', e); }
+};
+
+// Salva usuário
+window.fbSaveUser = async function(u) {
+  try {
+    await setDoc(doc(db, 'usuarios', String(u.id)), u);
+  } catch(e) { console.error('fbSaveUser:', e); }
+};
+
+// Deleta usuário
+window.fbDeleteUser = async function(id) {
+  try {
+    await deleteDoc(doc(db, 'usuarios', String(id)));
+  } catch(e) { console.error('fbDeleteUser:', e); }
+};
+
+// Carrega tudo ao iniciar e ativa listener em tempo real
+window.fbInit = async function() {
+  _showStatus('Conectando ao Firebase…', '#4a7fc1');
+
+  // Carrega clínicas
+  try {
+    const snap = await getDocs(collection(db, 'clinicas'));
+    snap.forEach(d => {
+      const c = d.data();
+      if (!window.CLIENTS.find(x => x.id === c.id)) {
+        window.CLIENTS.push(c);
+        if (c.id >= window._nextId) window._nextId = c.id + 1;
+      }
+    });
+  } catch(e) { console.error('Erro ao carregar clínicas:', e); }
+
+  // Carrega usuários
+  try {
+    const snap = await getDocs(collection(db, 'usuarios'));
+    snap.forEach(d => {
+      const u = d.data();
+      if (!window.USERS.find(x => x.id === u.id)) window.USERS.push(u);
+    });
+  } catch(e) { console.error('Erro ao carregar usuários:', e); }
+
+  // Listener tempo real — clínicas
+  onSnapshot(collection(db, 'clinicas'), snap => {
+    snap.docChanges().forEach(change => {
+      const c = change.doc.data();
+      if (change.type === 'added' || change.type === 'modified') {
+        const idx = window.CLIENTS.findIndex(x => x.id === c.id);
+        if (idx >= 0) window.CLIENTS[idx] = c; else window.CLIENTS.push(c);
+        if (c.id >= window._nextId) window._nextId = c.id + 1;
+      } else if (change.type === 'removed') {
+        window.CLIENTS = window.CLIENTS.filter(x => x.id !== c.id);
+      }
+    });
+    updateDashboard();
+    renderClinicas();
+    renderPipeline();
+  });
+
+  _showStatus('Firebase conectado ✓', '#34d399');
+  setTimeout(() => _hideStatus(), 2500);
+
+  updateDashboard();
+  renderClinicas();
+  renderPipeline();
+};
+
+function _showStatus(msg, color) {
+  let el = document.getElementById('fb-status');
+  if (!el) {
+    el = document.createElement('div');
+    el.id = 'fb-status';
+    el.style.cssText = 'position:fixed;bottom:16px;right:16px;background:#060b18;border:0.5px solid #1e3a5f;border-radius:8px;padding:8px 14px;font-size:11px;z-index:9999;display:flex;align-items:center;gap:6px;transition:opacity 0.3s;';
+    document.body.appendChild(el);
+  }
+  el.style.opacity = '1';
+  el.style.color = color;
+  el.style.borderColor = color + '66';
+  el.innerHTML = `<svg width="10" height="10" viewBox="0 0 24 24" fill="${color}"><circle cx="12" cy="12" r="10"/></svg> ${msg}`;
+}
+function _hideStatus() {
+  const el = document.getElementById('fb-status');
+  if (el) el.style.opacity = '0';
+}
+
+// Aguarda o script principal estar pronto e depois inicia
+window.addEventListener('load', () => {
+  setTimeout(() => window.fbInit && window.fbInit(), 300);
+});
+</script>
+
 <script>
 // === DATA ===
-const CLIENTS=[
-  {id:1,initials:'DS',color:'#e05555',tcolor:'#fca5a5',name:'Dra. Camila Santos',city:'Fortaleza – CE',status:'Risco',stage:'Negociação',plan:'Eleva Pro',value:'R$ 3.800',payment:'Atrasado',consultant:'João Vitor',nextAction:'Ligar urgente — apresentar estimativa de perdas',score:31,scoreColor:'#f87171',scorePill:'pill-red'},
-  {id:2,initials:'MS',color:'#7c5fc4',tcolor:'#ddd6fe',name:'Dr. Marcos Silva',city:'Belo Horizonte – MG',status:'Atenção',stage:'Proposta',plan:'Eleva Pro',value:'R$ 3.800',payment:'Em dia',consultant:'João Vitor',nextAction:'Follow-up proposta — D+5 sem retorno',score:52,scoreColor:'#fbbf24',scorePill:'pill-yellow'},
-  {id:3,initials:'OP',color:'#1d4ed8',tcolor:'#bfdbfe',name:'Clínica Odonto Plus',city:'São Paulo – SP',status:'Ativo',stage:'Cliente Ativo',plan:'Eleva Pro',value:'R$ 3.800',payment:'Em dia',consultant:'João Vitor',nextAction:'Reunião mensal — 10 jul 2026',score:78,scoreColor:'#60a5fa',scorePill:'pill-blue'},
-  {id:4,initials:'IM',color:'#065f46',tcolor:'#6ee7b7',name:'Implant Med',city:'Curitiba – PR',status:'Ativo',stage:'Cliente Ativo',plan:'Eleva Scale',value:'R$ 6.500',payment:'Em dia',consultant:'Ana Beatriz',nextAction:'Proposta de upsell — plano Scale+',score:84,scoreColor:'#34d399',scorePill:'pill-green'},
-  {id:5,initials:'IX',color:'#d97706',tcolor:'#fde68a',name:'Clínica ImplantiX',city:'Recife – PE',status:'Negociação',stage:'Diagnóstico',plan:'Eleva Start',value:'R$ 2.200',payment:'—',consultant:'João Vitor',nextAction:'Enviar proposta revisada hoje',score:null,scoreColor:'#4a7fc1',scorePill:'pill-blue'},
-  {id:6,initials:'OS',color:'#0f766e',tcolor:'#99f6e4',name:'OdontoStar Campinas',city:'Campinas – SP',status:'Negociação',stage:'Qualificação',plan:'Eleva Pro',value:'R$ 3.800',payment:'—',consultant:'Ana Beatriz',nextAction:'Diagnóstico agendado — 14 jun',score:null,scoreColor:'#4a7fc1',scorePill:'pill-blue'},
-  {id:7,initials:'FN',color:'#9333ea',tcolor:'#e9d5ff',name:'Dr. Felipe Nascimento',city:'Porto Alegre – RS',status:'Negociação',stage:'Proposta',plan:'Eleva Pro',value:'R$ 3.800',payment:'—',consultant:'João Vitor',nextAction:'Follow-up D+3 — 16 jun',score:null,scoreColor:'#4a7fc1',scorePill:'pill-blue'},
-  {id:8,initials:'SP',color:'#be185d',tcolor:'#fbcfe8',name:'Sorriso Perfeito SP',city:'São Paulo – SP',status:'Negociação',stage:'Negociação',plan:'Eleva Scale',value:'R$ 6.500',payment:'—',consultant:'Ana Beatriz',nextAction:'Ligar — proposta fria há 10 dias',score:null,scoreColor:'#f87171',scorePill:'pill-red'},
+window.CLIENTS = [];
+window._nextId = 1;
+const CLIENTS = window.CLIENTS;
+const STAGES=['Lead Novo','Qualificação','Diagnóstico','Apresentação','Proposta','Negociação','Cliente Ativo','Perdido','Não entrar em contato'];
+let _dragId=null;
+window.USERS = [{id:1,name:'Administrador',initials:'AD',color:'#1d4ed8',tcolor:'#bfdbfe',cargo:'Admin',email:'admin@eleva.com.br',perms:['dashboard','clinicas','pipeline','followups','propostas','diagnosticos','financeiro','relatorios','usuarios','config']}];
+let USERS = window.USERS;
+const ALL_PAGES=[
+  {key:'dashboard',label:'Dashboard',icon:'ti-layout-dashboard'},
+  {key:'clinicas',label:'Clínicas',icon:'ti-building-hospital'},
+  {key:'pipeline',label:'Pipeline',icon:'ti-layout-kanban'},
+  {key:'followups',label:'Follow-ups',icon:'ti-bell'},
+  {key:'propostas',label:'Propostas',icon:'ti-file-invoice'},
+  {key:'diagnosticos',label:'Diagnósticos',icon:'ti-stethoscope'},
+  {key:'financeiro',label:'Financeiro',icon:'ti-coin'},
+  {key:'relatorios',label:'Relatórios',icon:'ti-chart-bar'},
+  {key:'usuarios',label:'Usuários',icon:'ti-users'},
+  {key:'config',label:'Configurações',icon:'ti-settings'},
 ];
+const AVATAR_COLORS=[['#1d4ed8','#bfdbfe'],['#7c5fc4','#ddd6fe'],['#065f46','#6ee7b7'],['#d97706','#fde68a'],['#be185d','#fbcfe8'],['#0f766e','#99f6e4'],['#9333ea','#e9d5ff'],['#e05555','#fca5a5']];
+let _colorIdx=0;
+const STAGE_COLORS={'Lead Novo':'#34d399','Qualificação':'#4a7fc1','Diagnóstico':'#7c5fc4','Apresentação':'#0f766e','Proposta':'#d97706','Negociação':'#e05555','Cliente Ativo':'#2563eb','Perdido':'#6b7280','Não entrar em contato':'#ef4444'};
+let _currentUser=USERS[0];
 
-const STAGES=['Lead Novo','Qualificação','Diagnóstico','Apresentação','Proposta','Negociação','Cliente Ativo','Perdido'];
+function _getInitials(n){const p=n.trim().split(' ').filter(Boolean);return p.length===1?p[0].slice(0,2).toUpperCase():(p[0][0]+(p[p.length-1][0]||'')).toUpperCase();}
+function _fmtMoeda(v){return'R$ '+parseFloat(v||0).toLocaleString('pt-BR');}
+function _hoje(){const d=new Date();return d.getDate()+' '+['jan','fev','mar','abr','mai','jun','jul','ago','set','out','nov','dez'][d.getMonth()]+' '+d.getFullYear();}
+
+// === MODAL ===
+function openModal(id){const m=document.getElementById(id);if(m){m.style.display='flex';requestAnimationFrame(()=>m.classList.add('open'));}}
+function closeModal(id){const m=document.getElementById(id);if(m){m.classList.remove('open');setTimeout(()=>{if(!m.classList.contains('open'))m.style.display='none';},200);}}
+function closeModalIfBg(e,id){if(e.target===document.getElementById(id))closeModal(id);}
+
+// === DASHBOARD ===
+function updateDashboard(){
+  if(!document.getElementById('dash-ativos'))return;
+  const ativos=CLIENTS.filter(c=>c.stage==='Cliente Ativo');
+  const neg=CLIENTS.filter(c=>!['Cliente Ativo','Perdido','Não entrar em contato'].includes(c.stage));
+  const block=CLIENTS.filter(c=>c.stage==='Não entrar em contato');
+  const mrr=ativos.reduce((s,c)=>s+(parseFloat(c.value)||0),0);
+  document.getElementById('dash-ativos').textContent=ativos.length;
+  document.getElementById('dash-mrr').textContent=mrr?_fmtMoeda(mrr):'R$ 0';
+  document.getElementById('dash-neg').textContent=neg.length;
+  document.getElementById('dash-block').textContent=block.length;
+  document.getElementById('badge-clinicas').textContent=CLIENTS.length;
+  // pipeline bars
+  const maxN=Math.max(...STAGES.map(s=>CLIENTS.filter(c=>c.stage===s).length),1);
+  let bars='';
+  STAGES.slice(0,8).forEach(s=>{
+    const n=CLIENTS.filter(c=>c.stage===s).length; if(!n)return;
+    bars+=`<div style="display:flex;align-items:center;gap:8px;padding:4px 0;"><div style="width:8px;height:8px;border-radius:50%;background:${STAGE_COLORS[s]};flex-shrink:0;"></div><span style="font-size:11px;color:#7a9cc0;flex:1;">${s}</span><div style="width:80px;height:4px;background:#0a0f1e;border-radius:2px;"><div style="width:${Math.round(n/maxN*100)}%;height:4px;background:${STAGE_COLORS[s]};border-radius:2px;"></div></div><span style="font-size:11px;font-weight:600;color:#e2e8f0;width:16px;text-align:right;">${n}</span></div>`;
+  });
+  document.getElementById('dash-pipeline-bars').innerHTML=bars||'<div style="font-size:12px;color:#4a7fc1;padding:10px 0;">Nenhum lead no pipeline ainda.</div>';
+  // recentes
+  let rec='';
+  CLIENTS.slice(-5).reverse().forEach(c=>{
+    const sc=c.stage==='Cliente Ativo'?'pill-green':c.stage==='Não entrar em contato'?'pill-red':'pill-blue';
+    rec+=`<div style="display:flex;align-items:center;gap:8px;padding:6px 0;border-bottom:0.5px solid #0d1f38;cursor:pointer;" onclick="openClient(${c.id})"><div class="avatar" style="background:${c.color};color:${c.tcolor};">${c.initials}</div><div style="flex:1;"><div style="font-size:12px;font-weight:600;">${c.name}</div><div style="font-size:10px;color:#4a7fc1;">${c.city||'—'}</div></div><span class="pill ${sc}" style="font-size:10px;">${c.stage}</span></div>`;
+  });
+  document.getElementById('dash-recent').innerHTML=rec||'<div style="font-size:12px;color:#4a7fc1;padding:10px 0;">Nenhuma clínica cadastrada ainda.</div>';
+  // IA
+  let ia='';
+  const risco=CLIENTS.filter(c=>c.score&&c.score<40);
+  if(risco.length) ia+=`<div class="ia-box"><div class="ia-label" style="color:#f87171;"><i class="ti ti-alert-circle" style="font-size:12px;"></i> Score crítico</div><div class="ia-text">${risco.map(c=>c.name).join(', ')} com score abaixo de 40. Intervenção imediata necessária.</div></div>`;
+  if(block.length) ia+=`<div class="ia-box" style="border-color:#ef4444;"><div class="ia-label" style="color:#f87171;"><i class="ti ti-ban" style="font-size:12px;"></i> Não entrar em contato</div><div class="ia-text">${block.map(c=>c.name).join(', ')} — contato comercial bloqueado.</div></div>`;
+  const inadim=CLIENTS.filter(c=>c.payment==='Atrasado');
+  if(inadim.length) ia+=`<div class="ia-box" style="border-color:#d97706;"><div class="ia-label" style="color:#fbbf24;"><i class="ti ti-coin" style="font-size:12px;"></i> Inadimplência</div><div class="ia-text">${inadim.map(c=>c.name).join(', ')} com pagamento em atraso.</div></div>`;
+  if(!ia) ia='<div style="font-size:12px;color:#4a7fc1;padding:8px 0;">Nenhum alerta no momento. Cadastre clínicas para ativar a IA Consultora.</div>';
+  document.getElementById('dash-ia').innerHTML=ia;
+}
+
+// === PÁGINAS DINÂMICAS ===
+function renderFollowups(){
+  const fu=CLIENTS.filter(c=>c.nextAction&&c.nextAction!=='Preencher diagnóstico');
+  if(!fu.length){document.getElementById('page-followups').innerHTML='<div style="text-align:center;padding:60px 20px;color:#4a7fc1;"><i class="ti ti-bell" style="font-size:48px;display:block;margin-bottom:12px;color:#1e3a5f;"></i><h3 style="font-size:14px;color:#7a9cc0;margin-bottom:6px;font-weight:500;">Nenhum follow-up cadastrado</h3><p style="font-size:12px;">Os follow-ups aparecerão aqui conforme você registrar próximas ações nas clínicas.</p></div>';return;}
+  let html=`<div style="margin-bottom:16px;display:flex;gap:10px;">
+    <div class="metric" style="flex:1;"><div class="mlabel"><i class="ti ti-building-hospital"></i> Com ação definida</div><div class="mval" style="color:#60a5fa;">${fu.length}</div></div>
+    <div class="metric" style="flex:1;"><div class="mlabel"><i class="ti ti-users"></i> Clientes ativos</div><div class="mval" style="color:#34d399;">${CLIENTS.filter(c=>c.stage==='Cliente Ativo').length}</div></div>
+    <div class="metric" style="flex:1;"><div class="mlabel"><i class="ti ti-ban"></i> Bloqueados</div><div class="mval" style="color:#f87171;">${CLIENTS.filter(c=>c.stage==='Não entrar em contato').length}</div></div>
+  </div><div class="card"><div class="card-title"><i class="ti ti-bell"></i> Próximas ações</div>`;
+  fu.forEach(c=>{
+    const bl=c.stage==='Não entrar em contato';
+    html+=`<div class="fu-card ${bl?'urgente':'ok'}" onclick="openClient(${c.id})" style="cursor:pointer;">
+      <div style="width:32px;height:32px;border-radius:50%;background:${c.color};color:${c.tcolor};display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0;">${c.initials}</div>
+      <div style="flex:1;"><div style="font-size:12px;font-weight:600;color:#e2e8f0;">${c.name}</div><div style="font-size:11px;color:#4a7fc1;margin-top:2px;">${c.nextAction}</div></div>
+      <div style="text-align:right;"><span class="pill ${bl?'pill-red':c.stage==='Cliente Ativo'?'pill-green':'pill-blue'}">${c.stage}</span><div style="font-size:10px;color:#4a7fc1;margin-top:4px;">${c.city||'—'}</div></div>
+    </div>`;
+  });
+  html+='</div>';
+  document.getElementById('page-followups').innerHTML=html;
+}
+
+function renderPropostas(){
+  const prop=CLIENTS.filter(c=>['Proposta','Negociação'].includes(c.stage));
+  if(!prop.length){document.getElementById('page-propostas').innerHTML='<div style="text-align:center;padding:60px 20px;color:#4a7fc1;"><i class="ti ti-file-invoice" style="font-size:48px;display:block;margin-bottom:12px;color:#1e3a5f;"></i><h3 style="font-size:14px;color:#7a9cc0;margin-bottom:6px;font-weight:500;">Nenhuma proposta em aberto</h3><p style="font-size:12px;">As propostas aparecerão quando leads chegarem às etapas Proposta ou Negociação.</p></div>';return;}
+  let html=`<div class="card" style="padding:0;overflow:hidden;"><table class="data-table"><thead><tr><th>Clínica</th><th>Cidade</th><th>Etapa</th><th>Score</th><th>Plano</th><th>Valor/mês</th><th>Próxima ação</th></tr></thead><tbody>`;
+  prop.forEach(c=>{
+    const sp=c.scorePill||'pill-blue';
+    html+=`<tr onclick="openClient(${c.id})"><td><div style="display:flex;align-items:center;gap:8px;"><div class="avatar" style="background:${c.color};color:${c.tcolor};">${c.initials}</div><div style="font-size:12px;font-weight:600;">${c.name}</div></div></td><td style="font-size:11px;color:#4a7fc1;">${c.city||'—'}</td><td><span class="pill ${c.stage==='Negociação'?'pill-yellow':'pill-blue'}">${c.stage}</span></td><td>${c.score?`<span class="pill ${sp}">${c.score}</span>`:'<span style="color:#4a7fc1;">—</span>'}</td><td style="font-size:11px;">${c.plan||'—'}</td><td style="font-size:11px;font-weight:600;">${c.value||'—'}</td><td style="font-size:11px;color:#93c5fd;max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${c.nextAction||'—'}</td></tr>`;
+  });
+  html+='</tbody></table></div>';
+  document.getElementById('page-propostas').innerHTML=html;
+}
+
+function renderDiagnosticos(){
+  const diag=CLIENTS.filter(c=>c.score);
+  if(!diag.length){document.getElementById('page-diagnosticos').innerHTML='<div style="text-align:center;padding:60px 20px;color:#4a7fc1;"><i class="ti ti-stethoscope" style="font-size:48px;display:block;margin-bottom:12px;color:#1e3a5f;"></i><h3 style="font-size:14px;color:#7a9cc0;margin-bottom:6px;font-weight:500;">Nenhum diagnóstico realizado</h3><p style="font-size:12px;">Os diagnósticos aparecerão aqui após o preenchimento nos cards das clínicas.</p></div>';return;}
+  let html=`<div class="card" style="padding:0;overflow:hidden;"><table class="data-table"><thead><tr><th>Clínica</th><th>Score</th><th>Captação</th><th>Atendimento</th><th>Comercial</th><th>Conversão</th><th>Faltas</th><th>Gestão</th><th>Perda/mês</th></tr></thead><tbody>`;
+  diag.forEach(c=>{
+    const sc=c.scores||{};
+    const clr=v=>v>=70?'#34d399':v>=40?'#fbbf24':'#f87171';
+    const perdaM=c.diagData&&c.diagData.aval&&c.diagData.conv&&c.diagData.faltas&&c.diagData.ticket?Math.round(parseFloat(c.diagData.aval)*(parseFloat(c.diagData.faltas)/100)*(parseFloat(c.diagData.conv)/100)*parseFloat(c.diagData.ticket)+parseFloat(c.diagData.aval)*(1-parseFloat(c.diagData.faltas)/100)*Math.max(0,0.55-parseFloat(c.diagData.conv)/100)*parseFloat(c.diagData.ticket)):null;
+    html+=`<tr onclick="openClient(${c.id})"><td><div style="display:flex;align-items:center;gap:8px;"><div class="avatar" style="background:${c.color};color:${c.tcolor};">${c.initials}</div><div style="font-size:12px;font-weight:600;">${c.name}</div></div></td><td><span class="pill ${c.scorePill||'pill-blue'}">${c.score}</span></td>${['cap','at','co','cv','fa','ge'].map(k=>`<td style="color:${clr(sc[k]||0)};font-weight:600;">${sc[k]||'—'}</td>`).join('')}<td style="color:#f87171;font-weight:600;">${perdaM?_fmtMoeda(perdaM):'—'}</td></tr>`;
+  });
+  html+='</tbody></table></div>';
+  document.getElementById('page-diagnosticos').innerHTML=html;
+}
+
+function renderFinanceiro(){
+  const ativos=CLIENTS.filter(c=>c.stage==='Cliente Ativo');
+  if(!ativos.length){document.getElementById('page-financeiro').innerHTML='<div style="text-align:center;padding:60px 20px;color:#4a7fc1;"><i class="ti ti-coin" style="font-size:48px;display:block;margin-bottom:12px;color:#1e3a5f;"></i><h3 style="font-size:14px;color:#7a9cc0;margin-bottom:6px;font-weight:500;">Nenhum contrato financeiro</h3><p style="font-size:12px;">Os dados financeiros aparecerão aqui após clínicas avançarem para "Cliente Ativo".</p></div>';return;}
+  const mrr=ativos.reduce((s,c)=>s+(parseFloat(c.value)||0),0);
+  const pagos=ativos.filter(c=>c.payment==='Em dia').length;
+  const atras=ativos.filter(c=>c.payment==='Atrasado');
+  const vRecup=atras.reduce((s,c)=>s+(parseFloat(c.value)||0),0);
+  let html=`<div class="grid4" style="margin-bottom:16px;">
+    <div class="metric"><div class="mlabel"><i class="ti ti-coin"></i> MRR total</div><div class="mval" style="font-size:18px;">${_fmtMoeda(mrr)}</div><div class="msub up">${ativos.length} contratos ativos</div></div>
+    <div class="metric"><div class="mlabel"><i class="ti ti-check"></i> Em dia</div><div class="mval" style="color:#34d399;">${pagos}</div><div class="msub up">${_fmtMoeda(ativos.filter(c=>c.payment==='Em dia').reduce((s,c)=>s+(parseFloat(c.value)||0),0))}</div></div>
+    <div class="metric"><div class="mlabel"><i class="ti ti-alert-triangle"></i> Inadimplentes</div><div class="mval" style="color:#f87171;">${atras.length}</div><div class="msub down">${vRecup?_fmtMoeda(vRecup)+' em aberto':'—'}</div></div>
+    <div class="metric"><div class="mlabel"><i class="ti ti-building-hospital"></i> Total clientes</div><div class="mval">${ativos.length}</div><div class="msub" style="color:#4a7fc1;">Contratos ativos</div></div>
+  </div>
+  <div class="card" style="padding:0;overflow:hidden;"><table class="data-table"><thead><tr><th>Clínica</th><th>Plano</th><th>Valor/mês</th><th>Vencimento</th><th>Status</th><th>Consultor</th><th>Observação</th></tr></thead><tbody>`;
+  ativos.forEach(c=>{
+    const st=c.payment==='Em dia'?'<span class="pill pill-green">Em dia</span>':c.payment==='Atrasado'?'<span class="pill pill-red">Atrasado</span>':'<span style="color:#4a7fc1;">—</span>';
+    html+=`<tr onclick="openClient(${c.id})"><td><div style="display:flex;align-items:center;gap:8px;"><div class="avatar" style="background:${c.color};color:${c.tcolor};">${c.initials}</div><div style="font-size:12px;font-weight:600;">${c.name}</div></div></td><td style="font-size:11px;">${c.plan||'—'}</td><td style="font-size:11px;font-weight:600;">${c.value||'—'}</td><td style="font-size:11px;color:#4a7fc1;">${c.vencimento||'—'}</td><td>${st}</td><td style="font-size:11px;color:#4a7fc1;">${c.consultant||'—'}</td><td style="font-size:11px;color:#93c5fd;">${c.obsFinanceiro||'—'}</td></tr>`;
+  });
+  html+='</tbody></table></div>';
+  document.getElementById('page-financeiro').innerHTML=html;
+}
+
+function renderRelatorios(){
+  if(!CLIENTS.length){document.getElementById('page-relatorios').innerHTML='<div style="text-align:center;padding:60px 20px;color:#4a7fc1;"><i class="ti ti-chart-bar" style="font-size:48px;display:block;margin-bottom:12px;color:#1e3a5f;"></i><h3 style="font-size:14px;color:#7a9cc0;margin-bottom:6px;font-weight:500;">Sem dados para relatório</h3><p style="font-size:12px;">Os relatórios serão gerados automaticamente conforme você usa o sistema.</p></div>';return;}
+  const ativos=CLIENTS.filter(c=>c.stage==='Cliente Ativo');
+  const leads=CLIENTS.filter(c=>!['Cliente Ativo','Perdido','Não entrar em contato'].includes(c.stage));
+  const comScore=CLIENTS.filter(c=>c.score);
+  const avgScore=comScore.length?Math.round(comScore.reduce((s,c)=>s+c.score,0)/comScore.length):0;
+  const acima70=comScore.filter(c=>c.score>=70).length;
+  const abaixo40=comScore.filter(c=>c.score<40).length;
+  const mrr=ativos.reduce((s,c)=>s+(parseFloat(c.value)||0),0);
+  const maxBar=Math.max(...STAGES.slice(0,8).map(s=>CLIENTS.filter(c=>c.stage===s).length),1);
+  let barsHtml='';
+  STAGES.slice(0,8).forEach(s=>{
+    const n=CLIENTS.filter(c=>c.stage===s).length;
+    const h=Math.round((n/maxBar)*70);
+    barsHtml+=`<div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:4px;"><div style="width:100%;height:${Math.max(h,4)}px;background:${STAGE_COLORS[s]};border-radius:4px 4px 0 0;opacity:${n?1:0.2};"></div><div style="font-size:9px;color:#4a7fc1;text-align:center;line-height:1.2;">${s.split(' ')[0]}</div><div style="font-size:10px;color:#e2e8f0;font-weight:600;">${n}</div></div>`;
+  });
+  document.getElementById('page-relatorios').innerHTML=`
+  <div class="grid2">
+    <div class="card">
+      <div class="card-title"><i class="ti ti-chart-bar"></i> Visão geral da operação</div>
+      <div class="field"><span class="fl">Total de clínicas cadastradas</span><span class="fv">${CLIENTS.length}</span></div>
+      <div class="field"><span class="fl">Clientes ativos</span><span class="fv g">${ativos.length}</span></div>
+      <div class="field"><span class="fl">Leads em negociação</span><span class="fv" style="color:#60a5fa;">${leads.length}</span></div>
+      <div class="field"><span class="fl">Bloqueados (não contatar)</span><span class="fv r">${CLIENTS.filter(c=>c.stage==='Não entrar em contato').length}</span></div>
+      <div class="field"><span class="fl">Perdidos</span><span class="fv" style="color:#6b7280;">${CLIENTS.filter(c=>c.stage==='Perdido').length}</span></div>
+      <div class="field"><span class="fl">MRR total</span><span class="fv g">${_fmtMoeda(mrr)}</span></div>
+    </div>
+    <div class="card">
+      <div class="card-title"><i class="ti ti-heart"></i> Saúde da base</div>
+      <div class="field"><span class="fl">Score médio da base</span><span class="fv" style="color:#60a5fa;">${avgScore||'—'} / 100</span></div>
+      <div class="field"><span class="fl">Clientes com score acima de 70</span><span class="fv g">${acima70}${comScore.length?` (${Math.round(acima70/comScore.length*100)}%)`:''}  </span></div>
+      <div class="field"><span class="fl">Clientes com score abaixo de 40</span><span class="fv r">${abaixo40}${comScore.length?` (${Math.round(abaixo40/comScore.length*100)}%)`:''}  </span></div>
+      <div class="field"><span class="fl">Diagnósticos realizados</span><span class="fv">${comScore.length}</span></div>
+      <div class="field"><span class="fl">Inadimplentes</span><span class="fv ${CLIENTS.filter(c=>c.payment==='Atrasado').length?'r':''}">${CLIENTS.filter(c=>c.payment==='Atrasado').length}</span></div>
+    </div>
+  </div>
+  <div class="card">
+    <div class="card-title"><i class="ti ti-layout-kanban"></i> Distribuição no pipeline</div>
+    <div style="display:flex;align-items:flex-end;gap:6px;height:90px;padding-top:10px;">${barsHtml}</div>
+  </div>`;
+}
+
+// === NAVEGAÇÃO ===
+function goPage(name){
+  document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
+  event.currentTarget.classList.add('active');
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.getElementById('page-'+name).classList.add('active');
+  const titles={dashboard:'Dashboard <span>— visão geral</span>',clinicas:'Clínicas <span>— lista completa</span>',pipeline:'Pipeline <span>— comercial</span>',followups:'Follow-ups <span>— tarefas</span>',propostas:'Propostas <span>— em aberto</span>',diagnosticos:'Diagnósticos <span>— base de dados</span>',financeiro:'Financeiro <span>— contratos</span>',relatorios:'Relatórios <span>— performance</span>',config:'Configurações',usuarios:'Usuários <span>— controle de acesso</span>'};
+  document.getElementById('topbar-title').innerHTML=titles[name]||name;
+  if(name==='clinicas') renderClinicas();
+  if(name==='pipeline') renderPipeline();
+  if(name==='dashboard') updateDashboard();
+  if(name==='usuarios') renderUsers();
+  if(name==='followups') renderFollowups();
+  if(name==='propostas') renderPropostas();
+  if(name==='diagnosticos') renderDiagnosticos();
+  if(name==='financeiro') renderFinanceiro();
+  if(name==='relatorios') renderRelatorios();
+}
+
+// === CLÍNICAS ===
+function renderClinicas(filter='',statusFilter=''){
+  let rows='';
+  CLIENTS.filter(c=>{
+    const q=(filter||'').toLowerCase();
+    const matchName=c.name.toLowerCase().includes(q)||(c.city||'').toLowerCase().includes(q);
+    const matchStatus=!statusFilter||c.stage===statusFilter;
+    return matchName&&matchStatus;
+  }).forEach(c=>{
+    const scoreHtml=c.score?`<span class="pill ${c.scorePill}">${c.score}</span>`:`<span style="font-size:11px;color:#4a7fc1;">—</span>`;
+    const pgto=c.payment==='Atrasado'?`<span class="pill pill-red">Atrasado</span>`:c.payment==='Em dia'?`<span class="pill pill-green">Em dia</span>`:`<span style="color:#4a7fc1;">—</span>`;
+    const stagePill=c.stage==='Cliente Ativo'?'pill-green':c.stage==='Não entrar em contato'?'pill-red':c.stage==='Perdido'?'pill-purple':'pill-blue';
+    rows+=`<tr onclick="openClient(${c.id})"><td><div style="display:flex;align-items:center;gap:8px;"><div class="avatar" style="background:${c.color};color:${c.tcolor};">${c.initials}</div><div style="font-size:12px;font-weight:600;">${c.name}</div></div></td><td style="font-size:11px;color:#4a7fc1;">${c.city||'—'}</td><td><span class="pill ${stagePill}">${c.stage}</span></td><td>${scoreHtml}</td><td style="font-size:11px;">${c.plan||'—'}</td><td style="font-size:11px;font-weight:600;">${c.value||'—'}</td><td>${pgto}</td><td style="font-size:11px;color:#4a7fc1;">${c.consultant||'—'}</td><td style="font-size:11px;color:#93c5fd;max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${c.nextAction||'—'}</td></tr>`;
+  });
+  document.getElementById('clinicas-body').innerHTML=rows||'<tr><td colspan="9" style="text-align:center;color:#4a7fc1;padding:40px;">Nenhuma clínica cadastrada. Clique em "+ Nova clínica" para começar.</td></tr>';
+}
+function filterClinicas(v){renderClinicas(v,document.querySelector('#page-clinicas select').value);}
+function filterByStatus(v){renderClinicas(document.querySelector('#page-clinicas input').value,v);}
+
+// === PIPELINE ===
+function renderPipeline(){
+  const board=document.getElementById('pipeline-board');
+  board.innerHTML='';
+  STAGES.forEach(stage=>{
+    const isBlocked=stage==='Não entrar em contato';
+    const clients=CLIENTS.filter(c=>c.stage===stage);
+    const col=document.createElement('div');col.className='pipeline-col';
+    const header=document.createElement('div');header.className='pipeline-col-header'+(isBlocked?' col-blocked':'');
+    header.innerHTML=(isBlocked?'<span style="display:flex;align-items:center;gap:4px;"><i class="ti ti-ban" style="font-size:11px;"></i> Não entrar em contato</span>':'<span>'+stage+'</span>')+'<span class="pipeline-count'+(isBlocked?' cnt-blocked':'')+'">'+clients.length+'</span>';
+    col.appendChild(header);
+    const drop=document.createElement('div');drop.className='pipeline-drop'+(isBlocked?' drop-blocked':'');drop.dataset.stage=stage;
+    drop.addEventListener('dragover',e=>{e.preventDefault();drop.classList.add('drag-over');});
+    drop.addEventListener('dragleave',()=>drop.classList.remove('drag-over'));
+    drop.addEventListener('drop',e=>{
+      e.preventDefault();drop.classList.remove('drag-over');
+      if(_dragId===null)return;
+      const c=CLIENTS.find(x=>x.id===_dragId);if(!c||c.stage===stage)return;
+      if(isBlocked&&!confirm('Mover "'+c.name+'" para "Não entrar em contato"?\n\nEste lead ficará BLOQUEADO. Nenhuma ação comercial será permitida.'))return;
+      c.stage=stage;
+      if(window.fbSaveClient) window.fbSaveClient(c);
+      // atualiza banner se painel aberto
+      const banner=document.getElementById('dp-blocked-banner');
+      if(banner&&currentClient&&currentClient.id===c.id){banner.style.display=isBlocked?'flex':'none';}
+      // atualiza etapa no header do painel
+      const dpCity=document.getElementById('dp-city');
+      if(dpCity&&currentClient&&currentClient.id===c.id){dpCity.innerHTML=`<i class="ti ti-map-pin" style="font-size:11px;"></i> ${c.city||'—'} &nbsp;|&nbsp; <span style="color:${STAGE_COLORS[stage]||'#4a7fc1'};">${stage}</span>`;}
+      renderPipeline();updateDashboard();
+    });
+    clients.forEach(c=>{
+      const card=document.createElement('div');card.className='pipeline-card'+(isBlocked?' card-blocked':'');card.draggable=true;
+      card.innerHTML='<div style="display:flex;align-items:center;gap:7px;margin-bottom:5px;"><div class="avatar" style="background:'+c.color+';color:'+c.tcolor+';width:26px;height:26px;font-size:10px;">'+c.initials+'</div><div class="pc-name">'+c.name+'</div></div><div class="pc-city">'+(c.city||'—')+'</div>'+(c.score?'<div style="margin-top:6px;"><span class="pill '+c.scorePill+'" style="font-size:10px;">Score '+c.score+'</span></div>':'')+(isBlocked?'<div style="font-size:10px;color:#f87171;margin-top:6px;display:flex;align-items:center;gap:3px;"><i class="ti ti-ban"></i> Contato bloqueado</div>':'<div class="pc-val">'+(c.value||'')+'</div>');
+      card.addEventListener('dragstart',()=>{_dragId=c.id;card.classList.add('dragging');});
+      card.addEventListener('dragend',()=>{_dragId=null;card.classList.remove('dragging');});
+      card.addEventListener('click',()=>openClient(c.id));
+      drop.appendChild(card);
+    });
+    if(!clients.length){const e=document.createElement('div');e.style.cssText='font-size:11px;color:#2a4a6b;padding:10px;text-align:center;';e.textContent='—';drop.appendChild(e);}
+    col.appendChild(drop);board.appendChild(col);
+  });
+}
+
+// === CARD DO CLIENTE ===
+let currentClient=null;
+function openClient(id){
+  const c=CLIENTS.find(x=>x.id===id);if(!c)return;
+  currentClient=c;
+  document.getElementById('dp-avatar').style.background=c.color;
+  document.getElementById('dp-avatar').style.color=c.tcolor;
+  document.getElementById('dp-avatar').textContent=c.initials;
+  document.getElementById('dp-name').textContent=c.name;
+  const stageColor=STAGE_COLORS[c.stage]||'#4a7fc1';
+  document.getElementById('dp-city').innerHTML=`<i class="ti ti-map-pin" style="font-size:11px;"></i> ${c.city||'—'} &nbsp;|&nbsp; <span style="color:${stageColor};">${c.stage}</span>`;
+  document.getElementById('dp-score-pill').textContent=c.score?`Score ${c.score}`:'Sem score';
+  document.getElementById('dp-score-pill').className='pill '+(c.scorePill||'pill-blue');
+  document.getElementById('dp-score-big').textContent=c.score||'—';
+  document.getElementById('dp-score-big').style.color=c.scoreColor||'#4a7fc1';
+  const banner=document.getElementById('dp-blocked-banner');
+  if(banner)banner.style.display=c.stage==='Não entrar em contato'?'flex':'none';
+  switchDpTab('resumo');
+  _loadClientPanel(c);
+  document.getElementById('overlay').classList.add('open');
+}
+function closeClient(){document.getElementById('overlay').classList.remove('open');currentClient=null;}
+function closeOverlayIfBg(e){if(e.target===document.getElementById('overlay'))closeClient();}
+function switchDpTab(name){
+  const tabs=['resumo','diagnostico','score','perdas','ia','plano','timeline','saude','financeiro'];
+  document.querySelectorAll('.dp-tab').forEach((t,i)=>t.classList.toggle('active',tabs[i]===name));
+  document.querySelectorAll('.dp-content').forEach(c=>c.classList.remove('active'));
+  document.getElementById('dpc-'+name).classList.add('active');
+}
+
+// === NOVA CLÍNICA ===
+function openNewClient(){
+  ['nc-nome','nc-cidade','nc-tel','nc-consultor'].forEach(id=>{document.getElementById(id).value='';});
+  document.getElementById('nc-stage').value='Lead Novo';
+  openModal('modal-nova-clinica');
+}
+function createClinica(){
+  const nome=document.getElementById('nc-nome').value.trim();
+  if(!nome){alert('Informe o nome da clínica ou doutor(a).');return;}
+  const [cor,tcor]=AVATAR_COLORS[_colorIdx%AVATAR_COLORS.length];_colorIdx++;
+  const c={id:++window._nextId,initials:_getInitials(nome),color:cor,tcolor:tcor,name:nome,city:document.getElementById('nc-cidade').value.trim()||'—',status:'Lead Novo',stage:document.getElementById('nc-stage').value,plan:'—',value:'—',payment:'—',consultant:document.getElementById('nc-consultor').value.trim()||_currentUser.name,nextAction:'Preencher diagnóstico',score:null,scoreColor:'#4a7fc1',scorePill:'pill-blue',tel:document.getElementById('nc-tel').value.trim(),diagData:{},scores:{},timeline:[],saude:{}};
+  CLIENTS.push(c);
+  if(window.fbSaveClient) window.fbSaveClient(c);
+  closeModal('modal-nova-clinica');
+  updateDashboard();renderPipeline();renderClinicas();
+  openClient(c.id);
+}
+
+// === HISTÓRICO ===
+function addObsDp(){
+  const inp=document.getElementById('nova-obs-dp');
+  if(!inp||!inp.value.trim())return;
+  if(!currentClient)return;
+  const hoje=_hoje();
+  const userName=_currentUser.name;
+  // salva no objeto
+  if(!currentClient.timeline)currentClient.timeline=[];
+  currentClient.timeline.unshift({date:hoje,text:inp.value,user:userName});
+  if(window.fbSaveClient) window.fbSaveClient(currentClient);
+  // insere no DOM antes do input
+  const tl=document.getElementById('dpc-timeline');
+  const inputRow=tl.querySelector('.input-row');
+  const novo=document.createElement('div');
+  novo.className='tl-item';
+  novo.innerHTML=`<div class="tl-dot" style="background:#2563eb;"></div><div class="tl-date">${hoje}</div><div><div class="tl-text">${inp.value}</div><div class="tl-user">${userName}</div></div>`;
+  tl.insertBefore(novo,inputRow);
+  inp.value='';
+}
+
+// === MISC ===
+function copyPrompt(txt){navigator.clipboard.writeText(txt).then(()=>alert('Prompt copiado!')).catch(()=>alert('Prompt: '+txt));}
+function toggleCbG(row){row.querySelector('.cb').classList.toggle('on');}
+
+function saveProfile(){
+  const nome=document.getElementById('cfg-nome')?.value?.trim()||'Admin';
+  const cargo=document.getElementById('cfg-cargo')?.value?.trim()||'Consultor';
+  const email=document.getElementById('cfg-email')?.value?.trim()||'';
+  _currentUser.name=nome;_currentUser.cargo=cargo;_currentUser.email=email;
+  _currentUser.initials=_getInitials(nome);
+  document.querySelector('.user-name').textContent=nome;
+  document.querySelector('.user-av').textContent=_getInitials(nome);
+  document.querySelector('.user-role').textContent=cargo;
+  USERS[0].name=nome;USERS[0].initials=_getInitials(nome);USERS[0].cargo=cargo;USERS[0].email=email;
+  alert('Perfil salvo!');
+}
+
+// === USUÁRIOS ===
+function renderUsers(){
+  const content=document.getElementById('usuarios-content');if(!content)return;
+  const lista=USERS.map(u=>{
+    const permsHtml=u.perms.map(k=>{const p=ALL_PAGES.find(x=>x.key===k);return p?`<span class="pill pill-blue" style="font-size:9px;padding:1px 6px;">${p.label}</span>`:''}).join('');
+    const isAdmin=u.id===1;
+    return `<div style="background:#0d1f38;border:0.5px solid #1e3a5f;border-radius:10px;padding:14px 16px;margin-bottom:10px;display:flex;align-items:flex-start;gap:12px;"><div style="width:38px;height:38px;border-radius:50%;background:${u.color};color:${u.tcolor};display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;flex-shrink:0;">${u.initials}</div><div style="flex:1;"><div style="font-size:13px;font-weight:600;color:#e2e8f0;">${u.name} ${isAdmin?'<span class="pill pill-green" style="font-size:9px;">Admin</span>':''}</div><div style="font-size:11px;color:#4a7fc1;margin-top:2px;">${u.email} &nbsp;·&nbsp; ${u.cargo}</div><div style="margin-top:8px;display:flex;flex-wrap:wrap;gap:4px;">${permsHtml||'<span style="font-size:11px;color:#4a7fc1;">Sem permissões</span>'}</div></div>${!isAdmin?`<button onclick="deleteUser(${u.id})" style="background:#1a0c0c;border:0.5px solid #7f1d1d;color:#f87171;border-radius:6px;padding:6px 10px;cursor:pointer;font-size:11px;display:flex;align-items:center;gap:4px;"><i class="ti ti-trash"></i> Remover</button>`:''}</div>`;
+  }).join('');
+  content.innerHTML=lista;
+}
+function openNewUserModal(){
+  ['nu-nome','nu-email','nu-cargo'].forEach(id=>{document.getElementById(id).value='';});
+  document.getElementById('perm-grid').innerHTML=ALL_PAGES.map(p=>`<div class="perm-btn" data-perm="${p.key}" onclick="togglePerm(this)"><i class="ti ${p.icon}"></i><span>${p.label}</span></div>`).join('');
+  openModal('modal-novo-usuario');
+}
+function togglePerm(btn){btn.classList.toggle('perm-on');}
+function createUser(){
+  const nome=document.getElementById('nu-nome').value.trim();
+  const email=document.getElementById('nu-email').value.trim();
+  const cargo=document.getElementById('nu-cargo').value.trim();
+  if(!nome||!email){alert('Nome e e-mail são obrigatórios.');return;}
+  const perms=[...document.querySelectorAll('#perm-grid .perm-btn.perm-on')].map(b=>b.dataset.perm);
+  const idx=parseInt(document.getElementById('nu-cor').value)||0;
+  const [cor,tcor]=AVATAR_COLORS[idx%AVATAR_COLORS.length];
+  const newUser={id:Date.now(),name:nome,initials:_getInitials(nome),color:cor,tcolor:tcor,cargo:cargo||'Consultor',email,perms};
+  USERS.push(newUser);
+  if(window.fbSaveUser) window.fbSaveUser(newUser);
+  closeModal('modal-novo-usuario');renderUsers();
+}
+function deleteUser(id){
+  if(!confirm('Remover este usuário?'))return;
+  USERS=USERS.filter(u=>u.id!==id);
+  window.USERS=USERS;
+  if(window.fbDeleteUser) window.fbDeleteUser(id);
+  renderUsers();
+}
+// === INIT ===
+updateDashboard();
+renderClinicas();
+renderPipeline();
+
+const STAGE_COLORS={'Lead Novo':'#34d399','Qualificação':'#4a7fc1','Diagnóstico':'#7c5fc4','Apresentação':'#0f766e','Proposta':'#d97706','Negociação':'#e05555','Cliente Ativo':'#2563eb','Perdido':'#6b7280','Não entrar em contato':'#ef4444'};
+
+function updateDashboard(){
+  if(!document.getElementById('dash-ativos')) return;
+  const ativos=CLIENTS.filter(c=>c.stage==='Cliente Ativo').length;
+  const neg=CLIENTS.filter(c=>!['Cliente Ativo','Perdido','Não entrar em contato'].includes(c.stage)).length;
+  const block=CLIENTS.filter(c=>c.stage==='Não entrar em contato').length;
+  document.getElementById('dash-ativos').textContent=ativos;
+  document.getElementById('dash-neg').textContent=neg;
+  document.getElementById('dash-block').textContent=block;
+  document.getElementById('badge-clinicas').textContent=CLIENTS.length;
+  // pipeline bars
+  let bars='';
+  const maxN=Math.max(...STAGES.map(s=>CLIENTS.filter(c=>c.stage===s).length),1);
+  STAGES.slice(0,8).forEach(s=>{
+    const n=CLIENTS.filter(c=>c.stage===s).length; if(!n) return;
+    bars+=`<div style="display:flex;align-items:center;gap:8px;padding:4px 0;"><div style="width:8px;height:8px;border-radius:50%;background:${STAGE_COLORS[s]};flex-shrink:0;"></div><span style="font-size:11px;color:#7a9cc0;flex:1;">${s}</span><div style="width:80px;height:4px;background:#0a0f1e;border-radius:2px;"><div style="width:${Math.round(n/maxN*100)}%;height:4px;background:${STAGE_COLORS[s]};border-radius:2px;"></div></div><span style="font-size:11px;font-weight:600;color:#e2e8f0;width:16px;text-align:right;">${n}</span></div>`;
+  });
+  document.getElementById('dash-pipeline-bars').innerHTML=bars||'<div style="font-size:12px;color:#4a7fc1;padding:10px 0;">Nenhum lead no pipeline ainda.</div>';
+  // recentes
+  let rec='';
+  CLIENTS.slice(-5).reverse().forEach(c=>{
+    const sc=c.stage==='Cliente Ativo'?'pill-green':c.stage==='Não entrar em contato'?'pill-red':'pill-blue';
+    rec+=`<div style="display:flex;align-items:center;gap:8px;padding:6px 0;border-bottom:0.5px solid #0d1f38;cursor:pointer;" onclick="openClient(${c.id})"><div class="avatar" style="background:${c.color};color:${c.tcolor};">${c.initials}</div><div style="flex:1;"><div style="font-size:12px;font-weight:600;">${c.name}</div><div style="font-size:10px;color:#4a7fc1;">${c.city||'—'}</div></div><span class="pill ${sc}" style="font-size:10px;">${c.stage}</span></div>`;
+  });
+  document.getElementById('dash-recent').innerHTML=rec||'<div style="font-size:12px;color:#4a7fc1;padding:10px 0;">Nenhuma clínica cadastrada ainda.</div>';
+  // IA
+  let ia='';
+  const risco=CLIENTS.filter(c=>c.score&&c.score<40);
+  const bloq=CLIENTS.filter(c=>c.stage==='Não entrar em contato');
+  if(risco.length) ia+=`<div class="ia-box"><div class="ia-label" style="color:#f87171;"><i class="ti ti-alert-circle" style="font-size:12px;"></i> Score crítico</div><div class="ia-text">${risco.map(c=>c.name).join(', ')} com score abaixo de 40. Intervenção imediata necessária.</div></div>`;
+  if(bloq.length) ia+=`<div class="ia-box" style="border-color:#ef4444;"><div class="ia-label" style="color:#f87171;"><i class="ti ti-ban" style="font-size:12px;"></i> Não entrar em contato</div><div class="ia-text">${bloq.map(c=>c.name).join(', ')} — contato comercial bloqueado.</div></div>`;
+  if(!ia) ia='<div style="font-size:12px;color:#4a7fc1;padding:8px 0;">Nenhum alerta no momento. Cadastre clínicas para ativar a IA Consultora.</div>';
+  document.getElementById('dash-ia').innerHTML=ia;
+}
 
 function goPage(name){
   document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
   event.currentTarget.classList.add('active');
   document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
   document.getElementById('page-'+name).classList.add('active');
-  const titles={dashboard:'Dashboard <span>— visão geral</span>',clinicas:'Clínicas <span>— lista completa</span>',pipeline:'Pipeline <span>— comercial</span>',followups:'Follow-ups <span>— tarefas</span>',propostas:'Propostas <span>— em aberto</span>',diagnosticos:'Diagnósticos <span>— base de dados</span>',financeiro:'Financeiro <span>— contratos</span>',relatorios:'Relatórios <span>— performance</span>',config:'Configurações'};
+  const titles={dashboard:'Dashboard <span>— visão geral</span>',clinicas:'Clínicas <span>— lista completa</span>',pipeline:'Pipeline <span>— comercial</span>',followups:'Follow-ups <span>— tarefas</span>',propostas:'Propostas <span>— em aberto</span>',diagnosticos:'Diagnósticos <span>— base de dados</span>',financeiro:'Financeiro <span>— contratos</span>',relatorios:'Relatórios <span>— performance</span>',config:'Configurações',usuarios:'Usuários <span>— controle de acesso</span>'};
   document.getElementById('topbar-title').innerHTML=titles[name]||name;
   if(name==='clinicas') renderClinicas();
   if(name==='pipeline') renderPipeline();
+  if(name==='dashboard') updateDashboard();
+  if(name==='usuarios') renderUsers();
 }
 
 function renderClinicas(filter='',statusFilter=''){
   let rows='';
   CLIENTS.filter(c=>{
-    let matchName=c.name.toLowerCase().includes(filter.toLowerCase())||c.city.toLowerCase().includes(filter.toLowerCase());
-    let matchStatus=!statusFilter||c.status===statusFilter;
+    const q=(filter||'').toLowerCase();
+    const matchName=c.name.toLowerCase().includes(q)||(c.city||'').toLowerCase().includes(q);
+    const matchStatus=!statusFilter||c.stage===statusFilter;
     return matchName&&matchStatus;
   }).forEach(c=>{
-    let scoreHtml=c.score?`<span class="pill ${c.scorePill}">${c.score}</span>`:`<span style="font-size:11px;color:#4a7fc1;">—</span>`;
-    let pgto=c.payment==='Atrasado'?`<span class="pill pill-red">Atrasado</span>`:c.payment==='Em dia'?`<span class="pill pill-green">Em dia</span>`:`<span style="color:#4a7fc1;">—</span>`;
-    let status=c.status==='Ativo'?`<span class="pill pill-green">Ativo</span>`:c.status==='Risco'?`<span class="pill pill-red">Risco</span>`:c.status==='Atenção'?`<span class="pill pill-yellow">Atenção</span>`:`<span class="pill pill-blue">${c.status}</span>`;
+    const scoreHtml=c.score?`<span class="pill ${c.scorePill}">${c.score}</span>`:`<span style="font-size:11px;color:#4a7fc1;">—</span>`;
+    const pgto=c.payment==='Atrasado'?`<span class="pill pill-red">Atrasado</span>`:c.payment==='Em dia'?`<span class="pill pill-green">Em dia</span>`:`<span style="color:#4a7fc1;">—</span>`;
+    const stagePill=c.stage==='Cliente Ativo'?'pill-green':c.stage==='Não entrar em contato'?'pill-red':c.stage==='Perdido'?'pill-purple':'pill-blue';
     rows+=`<tr onclick="openClient(${c.id})">
       <td><div style="display:flex;align-items:center;gap:8px;"><div class="avatar" style="background:${c.color};color:${c.tcolor};">${c.initials}</div><div><div style="font-size:12px;font-weight:600;">${c.name}</div></div></div></td>
-      <td style="font-size:11px;color:#4a7fc1;">${c.city}</td>
-      <td>${status}</td>
+      <td style="font-size:11px;color:#4a7fc1;">${c.city||'—'}</td>
+      <td><span class="pill ${stagePill}">${c.stage}</span></td>
       <td>${scoreHtml}</td>
       <td style="font-size:11px;">${c.plan||'—'}</td>
       <td style="font-size:11px;font-weight:600;">${c.value||'—'}</td>
       <td>${pgto}</td>
-      <td style="font-size:11px;color:#4a7fc1;">${c.consultant}</td>
-      <td style="font-size:11px;color:#93c5fd;max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${c.nextAction}</td>
+      <td style="font-size:11px;color:#4a7fc1;">${c.consultant||'—'}</td>
+      <td style="font-size:11px;color:#93c5fd;max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${c.nextAction||'—'}</td>
     </tr>`;
   });
-  document.getElementById('clinicas-body').innerHTML=rows||'<tr><td colspan="9" style="text-align:center;color:#4a7fc1;padding:30px;">Nenhuma clínica encontrada</td></tr>';
+  document.getElementById('clinicas-body').innerHTML=rows||'<tr><td colspan="9" style="text-align:center;color:#4a7fc1;padding:40px;">Nenhuma clínica cadastrada. Clique em "+ Nova clínica" para começar.</td></tr>';
 }
 
 function filterClinicas(v){renderClinicas(v,document.querySelector('#page-clinicas select').value);}
@@ -889,21 +1442,64 @@ function renderPipeline(){
   const board=document.getElementById('pipeline-board');
   board.innerHTML='';
   STAGES.forEach(stage=>{
+    const isBlocked=stage==='Não entrar em contato';
     const clients=CLIENTS.filter(c=>c.stage===stage);
-    let cards=clients.map(c=>`
-      <div class="pipeline-card" onclick="openClient(${c.id})">
-        <div style="display:flex;align-items:center;gap:7px;margin-bottom:5px;">
-          <div class="avatar" style="background:${c.color};color:${c.tcolor};width:26px;height:26px;font-size:10px;">${c.initials}</div>
-          <div class="pc-name">${c.name}</div>
-        </div>
-        <div class="pc-city">${c.city}</div>
-        ${c.score?`<div style="margin-top:6px;"><span class="pill ${c.scorePill}" style="font-size:10px;">Score ${c.score}</span></div>`:''}
-        <div class="pc-val">${c.value||''}</div>
-      </div>`).join('');
-    board.innerHTML+=`<div class="pipeline-col">
-      <div class="pipeline-col-header">${stage}<span class="pipeline-count">${clients.length}</span></div>
-      ${cards||'<div style="font-size:11px;color:#2a4a6b;padding:8px;text-align:center;">—</div>'}
-    </div>`;
+
+    const col=document.createElement('div');
+    col.className='pipeline-col';
+
+    const header=document.createElement('div');
+    header.className='pipeline-col-header'+(isBlocked?' col-blocked':'');
+    header.innerHTML=(isBlocked?'<span style="display:flex;align-items:center;gap:4px;"><i class="ti ti-ban" style="font-size:11px;"></i> Não entrar em contato</span>':'<span>'+stage+'</span>')+
+      '<span class="pipeline-count'+(isBlocked?' cnt-blocked':'')+'">'+clients.length+'</span>';
+    col.appendChild(header);
+
+    const drop=document.createElement('div');
+    drop.className='pipeline-drop'+(isBlocked?' drop-blocked':'');
+    drop.dataset.stage=stage;
+
+    drop.addEventListener('dragover',e=>{e.preventDefault();drop.classList.add('drag-over');});
+    drop.addEventListener('dragleave',()=>drop.classList.remove('drag-over'));
+    drop.addEventListener('drop',e=>{
+      e.preventDefault();drop.classList.remove('drag-over');
+      if(_dragId===null) return;
+      const c=CLIENTS.find(x=>x.id===_dragId);
+      if(!c||c.stage===stage) return;
+      if(isBlocked){
+        if(!confirm('Mover "'+c.name+'" para "Não entrar em contato"?\n\nEste lead ficará BLOQUEADO. Nenhuma ação comercial será permitida.')) return;
+      }
+      c.stage=stage;
+      renderPipeline();
+    });
+
+    clients.forEach(c=>{
+      const card=document.createElement('div');
+      card.className='pipeline-card'+(isBlocked?' card-blocked':'');
+      card.draggable=true;
+      card.innerHTML=
+        '<div style="display:flex;align-items:center;gap:7px;margin-bottom:5px;">'+
+          '<div class="avatar" style="background:'+c.color+';color:'+c.tcolor+';width:26px;height:26px;font-size:10px;">'+c.initials+'</div>'+
+          '<div class="pc-name">'+c.name+'</div>'+
+        '</div>'+
+        '<div class="pc-city">'+c.city+'</div>'+
+        (c.score?'<div style="margin-top:6px;"><span class="pill '+c.scorePill+'" style="font-size:10px;">Score '+c.score+'</span></div>':'')+
+        (isBlocked?'<div style="font-size:10px;color:#f87171;margin-top:6px;display:flex;align-items:center;gap:3px;"><i class="ti ti-ban"></i> Contato bloqueado</div>':
+          '<div class="pc-val">'+(c.value||'')+'</div>');
+      card.addEventListener('dragstart',()=>{_dragId=c.id;card.classList.add('dragging');});
+      card.addEventListener('dragend',()=>{_dragId=null;card.classList.remove('dragging');});
+      card.addEventListener('click',()=>openClient(c.id));
+      drop.appendChild(card);
+    });
+
+    if(!clients.length){
+      const empty=document.createElement('div');
+      empty.style.cssText='font-size:11px;color:#2a4a6b;padding:10px;text-align:center;';
+      empty.textContent='—';
+      drop.appendChild(empty);
+    }
+
+    col.appendChild(drop);
+    board.appendChild(col);
   });
 }
 
@@ -917,11 +1513,15 @@ function openClient(id){
   document.getElementById('dp-avatar').style.color=c.tcolor;
   document.getElementById('dp-avatar').textContent=c.initials;
   document.getElementById('dp-name').textContent=c.name;
-  document.getElementById('dp-city').innerHTML=`<i class="ti ti-map-pin" style="font-size:11px;"></i> ${c.city} &nbsp;|&nbsp; <span style="color:${c.scoreColor};">${c.status}</span>`;
+  const stageColor=c.stage==='Não entrar em contato'?'#ef4444':c.scoreColor||'#4a7fc1';
+  document.getElementById('dp-city').innerHTML=`<i class="ti ti-map-pin" style="font-size:11px;"></i> ${c.city} &nbsp;|&nbsp; <span style="color:${stageColor};">${c.stage||c.status}</span>`;
   document.getElementById('dp-score-pill').textContent=c.score?`Score ${c.score}`:'Sem score';
   document.getElementById('dp-score-pill').className='pill '+c.scorePill;
   document.getElementById('dp-score-big').textContent=c.score||'—';
   document.getElementById('dp-score-big').style.color=c.scoreColor;
+  // banner bloqueado
+  const banner=document.getElementById('dp-blocked-banner');
+  if(banner) banner.style.display=c.stage==='Não entrar em contato'?'flex':'none';
   switchDpTab('resumo');
   document.getElementById('overlay').classList.add('open');
 }
@@ -939,10 +1539,36 @@ function switchDpTab(name){
 }
 
 function openNewClient(){
-  const novo={id:CLIENTS.length+1,initials:'NC',color:'#4a7fc1',tcolor:'#bfdbfe',name:'Nova Clínica',city:'Cidade – UF',status:'Lead Novo',stage:'Lead Novo',plan:'—',value:'—',payment:'—',consultant:'João Vitor',nextAction:'Preencher diagnóstico',score:null,scoreColor:'#4a7fc1',scorePill:'pill-blue'};
-  CLIENTS.push(novo);
-  document.getElementById('badge-clinicas').textContent=CLIENTS.filter(c=>c.status==='Ativo').length;
-  openClient(novo.id);
+  // abre modal de nova clínica em branco
+  document.getElementById('nc-nome').value='';
+  document.getElementById('nc-cidade').value='';
+  document.getElementById('nc-tel').value='';
+  document.getElementById('nc-consultor').value='';
+  document.getElementById('nc-stage').value='Lead Novo';
+  document.getElementById('modal-nova-clinica').style.display='flex';
+}
+function closeModal(id){document.getElementById(id).style.display='none';}
+function createClinica(){
+  const nome=document.getElementById('nc-nome').value.trim();
+  if(!nome){alert('Informe o nome da clínica ou doutor(a).');return;}
+  const [cor,tcor]=AVATAR_COLORS[_colorIdx%AVATAR_COLORS.length]; _colorIdx++;
+  const c={
+    id:++_nextId, initials:_getInitials(nome), color:cor, tcolor:tcor,
+    name:nome, city:document.getElementById('nc-cidade').value.trim()||'—',
+    status:'Lead Novo', stage:document.getElementById('nc-stage').value,
+    plan:'—', value:'—', payment:'—',
+    consultant:document.getElementById('nc-consultor').value.trim()||'—',
+    nextAction:'Preencher diagnóstico',
+    score:null, scoreColor:'#4a7fc1', scorePill:'pill-blue',
+    tel:document.getElementById('nc-tel').value.trim(),
+    diagData:{}, timeline:[], saude:{}
+  };
+  CLIENTS.push(c);
+  closeModal('modal-nova-clinica');
+  updateDashboard();
+  renderPipeline();
+  renderClinicas();
+  openClient(c.id);
 }
 
 function addObsDp(){
@@ -965,11 +1591,80 @@ function copyPrompt(txt){
 
 function toggleCbG(row){row.querySelector('.cb').classList.toggle('on');}
 
-function focusSearch(){}
+function saveProfile(){
+  const nome=document.getElementById('cfg-nome')?.value||'Admin';
+  document.querySelector('.user-name').textContent=nome;
+  const initials=_getInitials(nome);
+  document.querySelector('.user-av').textContent=initials;
+  alert('Perfil salvo!');
+}
 
-// init
-renderClinicas();
-renderPipeline();
+// === SAÚDE ===
+function updateSaude(){
+  const keys=['fin','part','impl','res'];
+  const vals=keys.map(k=>{
+    const v=Math.min(100,Math.max(0,parseInt(document.getElementById('saude-'+k+'-inp')?.value)||0));
+    const bar=document.getElementById('hb-'+k);const lbl=document.getElementById('hbv-'+k);
+    const col=v>=70?'#34d399':v>=40?'#fbbf24':'#f87171';
+    if(bar){bar.style.width=v+'%';bar.style.background=v?col:'#1e3a5f';}
+    if(lbl){lbl.textContent=v;lbl.style.color=v?col:'#4a7fc1';}
+    return v;
+  });
+  const avg=Math.round(vals.reduce((a,b)=>a+b,0)/4);
+  const sg=document.getElementById('saude-geral');
+  if(sg){sg.textContent=avg+'%';sg.style.color=avg>=70?'#34d399':avg>=40?'#fbbf24':'#f87171';}
+}
+function saveSaude(){
+  if(!currentClient)return;
+  currentClient.saude={fin:parseInt(document.getElementById('saude-fin-inp').value)||0,part:parseInt(document.getElementById('saude-part-inp').value)||0,impl:parseInt(document.getElementById('saude-impl-inp').value)||0,res:parseInt(document.getElementById('saude-res-inp').value)||0};
+  if(window.fbSaveClient) window.fbSaveClient(currentClient);
+  alert('Saúde salva!');
+}
+
+// === FINANCEIRO DO CLIENTE ===
+function saveFinanceiro(){
+  if(!currentClient)return;
+  const plano=document.getElementById('fin-plano').value;
+  const valor=document.getElementById('fin-valor').value;
+  const dia=document.getElementById('fin-dia').value;
+  const status=document.getElementById('fin-status').value;
+  const obs=document.getElementById('fin-obs').value;
+  if(plano)currentClient.plan=plano;
+  if(valor){currentClient.value=_fmtMoeda(valor);currentClient.valor=valor;}
+  if(dia)currentClient.vencimento='Dia '+dia;
+  if(status)currentClient.payment=status;
+  if(obs)currentClient.obsFinanceiro=obs;
+  if(window.fbSaveClient) window.fbSaveClient(currentClient);
+  updateDashboard();renderClinicas();
+  alert('Contrato salvo!');
+}
+
+// === LOAD PAINEL CLIENTE ===
+function _loadClientPanel(c){
+  // timeline
+  const tl=document.getElementById('dp-timeline-entries');
+  if(tl){const items=c.timeline||[];tl.innerHTML=items.length?items.map(t=>`<div class="tl-item"><div class="tl-dot" style="background:#2563eb;"></div><div class="tl-date">${t.date}</div><div><div class="tl-text">${t.text}</div><div class="tl-user">${t.user}</div></div></div>`).join(''):'<div style="font-size:12px;color:#4a7fc1;padding:8px 0;">Nenhuma observação ainda.</div>';}
+  // saúde
+  const s=c.saude||{};
+  ['fin','part','impl','res'].forEach(k=>{const inp=document.getElementById('saude-'+k+'-inp');if(inp)inp.value=s[k]||0;});
+  updateSaude();
+  // financeiro
+  const fp=document.getElementById('fin-plano');const fv=document.getElementById('fin-valor');const fd=document.getElementById('fin-dia');const fs=document.getElementById('fin-status');const fo=document.getElementById('fin-obs');
+  if(fp)fp.value=c.plan&&['Eleva Start','Eleva Pro','Eleva Scale'].includes(c.plan)?c.plan:'';
+  if(fv)fv.value=c.valor||'';
+  if(fd)fd.value=c.vencimento?c.vencimento.replace('Dia ',''):'';
+  if(fs)fs.value=c.payment&&['Em dia','Em aberto','Atrasado'].includes(c.payment)?c.payment:'';
+  if(fo)fo.value=c.obsFinanceiro||'';
+}
+
+// === INIT ===
+// Firebase carrega os dados e chama updateDashboard/renderClinicas/renderPipeline
+// Se Firebase não estiver disponível, roda local
+if(!window.fbInit){
+  updateDashboard();
+  renderClinicas();
+  renderPipeline();
+}
 </script>
 </body>
 </html>
