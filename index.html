@@ -839,89 +839,59 @@ select.inp option{background:#0d1f38;color:#e2e8f0;}
   </div>
 </div>
 
-<script type="module">
+<!-- Firebase SDK compat (funciona sem type=module) -->
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+<script>
 // ========== FIREBASE CONFIG ==========
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-import { getFirestore, collection, doc, setDoc, getDoc, getDocs, deleteDoc, onSnapshot, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
-
-const firebaseConfig = {
+const _fbApp = firebase.initializeApp({
   apiKey: "AIzaSyC4aR6f104Dyn3HfE-8FEWc-lBukr8vJxs",
   authDomain: "crmelevaiplante.firebaseapp.com",
   projectId: "crmelevaiplante",
   storageBucket: "crmelevaiplante.firebasestorage.app",
   messagingSenderId: "308958905346",
   appId: "1:308958905346:web:52a3b24a70cdb3ffa3531b"
+});
+const _db = firebase.firestore();
+
+function _showFbStatus(msg, color) {
+  let el = document.getElementById('fb-status');
+  if (!el) {
+    el = document.createElement('div');
+    el.id = 'fb-status';
+    el.style.cssText = 'position:fixed;bottom:16px;right:16px;background:#060b18;border:0.5px solid #1e3a5f;border-radius:8px;padding:8px 14px;font-size:11px;z-index:9999;display:flex;align-items:center;gap:6px;transition:opacity 0.4s;';
+    document.body.appendChild(el);
+  }
+  el.style.opacity = '1';
+  el.style.color = color;
+  el.style.borderColor = color + '66';
+  el.innerHTML = `<svg width="8" height="8" viewBox="0 0 24 24" fill="${color}"><circle cx="12" cy="12" r="10"/></svg> ${msg}`;
+}
+function _hideFbStatus() {
+  const el = document.getElementById('fb-status');
+  if (el) el.style.opacity = '0';
+}
+
+window.fbSaveClient = function(c) {
+  const data = JSON.parse(JSON.stringify(c)); // serializa para remover undefined
+  _db.collection('clinicas').doc(String(c.id)).set(data).catch(e => console.error('fbSaveClient:', e));
+};
+window.fbDeleteClient = function(id) {
+  _db.collection('clinicas').doc(String(id)).delete().catch(e => console.error('fbDeleteClient:', e));
+};
+window.fbSaveUser = function(u) {
+  const data = JSON.parse(JSON.stringify(u));
+  _db.collection('usuarios').doc(String(u.id)).set(data).catch(e => console.error('fbSaveUser:', e));
+};
+window.fbDeleteUser = function(id) {
+  _db.collection('usuarios').doc(String(id)).delete().catch(e => console.error('fbDeleteUser:', e));
 };
 
-const app = initializeApp(firebaseConfig);
-const db = getFirestore(app);
-
-// ========== HELPERS FIRESTORE ==========
-window._db = db;
-window._fbCol = collection;
-window._fbDoc = doc;
-window._fbSet = setDoc;
-window._fbGet = getDoc;
-window._fbGetAll = getDocs;
-window._fbDel = deleteDoc;
-window._fbSnap = onSnapshot;
-window._fbTs = serverTimestamp;
-
-// Salva clínica
-window.fbSaveClient = async function(c) {
-  try {
-    await setDoc(doc(db, 'clinicas', String(c.id)), c);
-  } catch(e) { console.error('fbSaveClient:', e); }
-};
-
-// Deleta clínica
-window.fbDeleteClient = async function(id) {
-  try {
-    await deleteDoc(doc(db, 'clinicas', String(id)));
-  } catch(e) { console.error('fbDeleteClient:', e); }
-};
-
-// Salva usuário
-window.fbSaveUser = async function(u) {
-  try {
-    await setDoc(doc(db, 'usuarios', String(u.id)), u);
-  } catch(e) { console.error('fbSaveUser:', e); }
-};
-
-// Deleta usuário
-window.fbDeleteUser = async function(id) {
-  try {
-    await deleteDoc(doc(db, 'usuarios', String(id)));
-  } catch(e) { console.error('fbDeleteUser:', e); }
-};
-
-// Carrega tudo ao iniciar e ativa listener em tempo real
-window.fbInit = async function() {
-  _showStatus('Conectando ao Firebase…', '#4a7fc1');
-
-  // Carrega clínicas
-  try {
-    const snap = await getDocs(collection(db, 'clinicas'));
-    snap.forEach(d => {
-      const c = d.data();
-      if (!window.CLIENTS.find(x => x.id === c.id)) {
-        window.CLIENTS.push(c);
-        if (c.id >= window._nextId) window._nextId = c.id + 1;
-      }
-    });
-  } catch(e) { console.error('Erro ao carregar clínicas:', e); }
-
-  // Carrega usuários
-  try {
-    const snap = await getDocs(collection(db, 'usuarios'));
-    snap.forEach(d => {
-      const u = d.data();
-      if (!window.USERS.find(x => x.id === u.id)) window.USERS.push(u);
-    });
-  } catch(e) { console.error('Erro ao carregar usuários:', e); }
+window.fbInit = function() {
+  _showFbStatus('Conectando ao Firebase…', '#4a7fc1');
 
   // Listener tempo real — clínicas
-  onSnapshot(collection(db, 'clinicas'), snap => {
+  _db.collection('clinicas').onSnapshot(snap => {
     snap.docChanges().forEach(change => {
       const c = change.doc.data();
       if (change.type === 'added' || change.type === 'modified') {
@@ -930,42 +900,28 @@ window.fbInit = async function() {
         if (c.id >= window._nextId) window._nextId = c.id + 1;
       } else if (change.type === 'removed') {
         window.CLIENTS = window.CLIENTS.filter(x => x.id !== c.id);
+        const ref = window.CLIENTS;
+        while(ref.length) ref.pop();
+        window.CLIENTS.forEach && null; // mantém a referência
       }
     });
-    updateDashboard();
-    renderClinicas();
-    renderPipeline();
+    if(typeof updateDashboard==='function') updateDashboard();
+    if(typeof renderClinicas==='function') renderClinicas();
+    if(typeof renderPipeline==='function') renderPipeline();
+  }, err => {
+    console.error('Firebase snapshot error:', err);
+    _showFbStatus('Erro Firebase: ' + err.code, '#f87171');
   });
 
-  _showStatus('Firebase conectado ✓', '#34d399');
-  setTimeout(() => _hideStatus(), 2500);
-
-  updateDashboard();
-  renderClinicas();
-  renderPipeline();
+  _showFbStatus('Firebase conectado ✓', '#34d399');
+  setTimeout(_hideFbStatus, 3000);
 };
 
-function _showStatus(msg, color) {
-  let el = document.getElementById('fb-status');
-  if (!el) {
-    el = document.createElement('div');
-    el.id = 'fb-status';
-    el.style.cssText = 'position:fixed;bottom:16px;right:16px;background:#060b18;border:0.5px solid #1e3a5f;border-radius:8px;padding:8px 14px;font-size:11px;z-index:9999;display:flex;align-items:center;gap:6px;transition:opacity 0.3s;';
-    document.body.appendChild(el);
-  }
-  el.style.opacity = '1';
-  el.style.color = color;
-  el.style.borderColor = color + '66';
-  el.innerHTML = `<svg width="10" height="10" viewBox="0 0 24 24" fill="${color}"><circle cx="12" cy="12" r="10"/></svg> ${msg}`;
-}
-function _hideStatus() {
-  const el = document.getElementById('fb-status');
-  if (el) el.style.opacity = '0';
-}
-
-// Aguarda o script principal estar pronto e depois inicia
-window.addEventListener('load', () => {
-  setTimeout(() => window.fbInit && window.fbInit(), 300);
+// Inicia após o DOM carregar
+document.addEventListener('DOMContentLoaded', function() {
+  setTimeout(function() {
+    if(window.fbInit) window.fbInit();
+  }, 500);
 });
 </script>
 
