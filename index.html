@@ -3,1627 +3,1396 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Eleva OS — Sistema Operacional de Crescimento</title>
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.19.0/dist/tabler-icons.min.css">
+<title>Eleva · CRM</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore-compat.js"></script>
 <style>
-/* Fallback SVG icons via Unicode quando a webfont não carrega */
-.nav-item i, .dp-tab i, .card-title i, .mlabel i, .btn-primary i, .btn-secondary i, .topbar i, .modal-box i, .pill i, .ia-label i, .perda-title i, .section-label i { font-style:normal; }
-</style>
-<style>
-*{box-sizing:border-box;margin:0;padding:0;}
-body{background:#0a0f1e;color:#e2e8f0;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;font-size:13px;overflow:hidden;height:100vh;}
-::-webkit-scrollbar{width:5px;height:5px;}
-::-webkit-scrollbar-track{background:#060b18;}
-::-webkit-scrollbar-thumb{background:#1e3a5f;border-radius:3px;}
+:root{
+  --bg:#F2F5F8;
+  --surface:#FFFFFF;
+  --surface-alt:#EAF0F5;
+  --sidebar:#0F1A30;
+  --sidebar-soft:#1B2A47;
+  --sidebar-text:#A9B6CC;
+  --sidebar-text-active:#FFFFFF;
+  --accent:#19B6A4;
+  --accent-dark:#119488;
+  --accent-soft:#E3F7F4;
+  --gold:#F0AC4D;
+  --text:#1C2433;
+  --text-muted:#76839A;
+  --border:#E1E7EE;
+  --danger:#E0584C;
+  --danger-soft:#FBE7E5;
+  --success:#2FAE63;
+  --success-soft:#E4F6EA;
+  --warn:#E0A23B;
+  --warn-soft:#FCF1DE;
+  --radius:10px;
+  --radius-lg:16px;
+  --font-display:'Sora', sans-serif;
+  --font-body:'Inter', sans-serif;
+}
+*{box-sizing:border-box;}
+html,body{margin:0;padding:0;}
+body{
+  font-family:var(--font-body);
+  background:var(--bg);
+  color:var(--text);
+  font-size:14px;
+  -webkit-font-smoothing:antialiased;
+}
+button{font-family:inherit;cursor:pointer;}
+input,select,textarea{font-family:inherit;font-size:14px;}
 
-/* === LAYOUT === */
-.shell{display:flex;height:100vh;overflow:hidden;}
+/* ===== LAYOUT ===== */
+.app{display:flex;min-height:100vh;}
+.sidebar{
+  width:230px;flex-shrink:0;background:var(--sidebar);
+  display:flex;flex-direction:column;padding:24px 16px;position:sticky;top:0;height:100vh;
+}
+.logo{display:flex;align-items:center;gap:10px;padding:0 8px 28px 8px;}
+.logo-mark{
+  width:36px;height:36px;border-radius:10px;background:linear-gradient(135deg,var(--accent),var(--accent-dark));
+  display:flex;align-items:center;justify-content:center;font-family:var(--font-display);font-weight:800;
+  color:#fff;font-size:18px;flex-shrink:0;
+}
+.logo-text{font-family:var(--font-display);font-weight:800;color:#fff;font-size:17px;letter-spacing:2px;line-height:1.1;}
+.logo-text span{display:block;font-family:var(--font-body);font-weight:500;color:var(--accent);font-size:10px;letter-spacing:1.5px;text-transform:uppercase;margin-top:2px;}
+.nav{display:flex;flex-direction:column;gap:4px;margin-top:4px;}
+.nav-item{
+  display:flex;align-items:center;gap:12px;padding:11px 12px;border-radius:9px;border:none;background:transparent;
+  color:var(--sidebar-text);font-size:14px;font-weight:600;text-align:left;transition:background .15s,color .15s;
+}
+.nav-item svg{flex-shrink:0;width:18px;height:18px;}
+.nav-item:hover{background:var(--sidebar-soft);color:#fff;}
+.nav-item.active{background:var(--accent);color:#fff;}
+.sidebar-footer{margin-top:auto;padding:14px 8px 4px;border-top:1px solid rgba(255,255,255,.08);}
+.sidebar-footer button{
+  width:100%;background:var(--sidebar-soft);color:var(--sidebar-text-active);border:none;border-radius:8px;
+  padding:9px;font-size:12.5px;font-weight:600;margin-bottom:8px;
+}
+.sidebar-footer button:hover{background:#26395E;}
+#sync-status{display:block;font-size:11px;color:var(--sidebar-text);text-align:center;}
+.sidebar-note{font-size:11px;color:var(--sidebar-text);text-align:center;margin-top:6px;line-height:1.5;opacity:.8;}
 
-/* === SIDEBAR === */
-.sidebar{width:210px;min-width:210px;background:#060b18;border-right:0.5px solid #1e3a5f;display:flex;flex-direction:column;overflow:hidden;}
-.logo-area{padding:16px;border-bottom:0.5px solid #1e3a5f;display:flex;align-items:center;gap:10px;}
-.logo-circle{width:34px;height:34px;border-radius:50%;background:#0a1628;border:1.5px solid #2563eb;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:700;color:#3b82f6;flex-shrink:0;}
-.logo-text{font-size:14px;font-weight:700;color:#e2e8f0;}
-.logo-sub{font-size:9px;color:#4a7fc1;letter-spacing:2px;margin-top:1px;}
-.nav-section{padding:10px 8px 2px;}
-.nav-label{font-size:9px;color:#2a4a6b;letter-spacing:1.5px;padding:0 8px 6px;text-transform:uppercase;}
-.nav-item{display:flex;align-items:center;gap:8px;padding:7px 10px;border-radius:6px;cursor:pointer;color:#7a9cc0;font-size:12px;margin-bottom:1px;transition:all 0.15s;user-select:none;}
-.nav-item:hover{background:#0d1f38;color:#93c5fd;}
-.nav-item.active{background:#0d2447;color:#60a5fa;}
-.nav-item svg{flex-shrink:0;opacity:0.85;}
-.nav-item.active svg{opacity:1;}
-.nav-item i{font-size:16px;flex-shrink:0;}
-.nav-badge{margin-left:auto;background:#1e3a5f;color:#60a5fa;border-radius:10px;padding:1px 7px;font-size:10px;font-weight:600;}
-.nav-badge.red{background:#2a0f0f;color:#f87171;}
-.sidebar-footer{margin-top:auto;padding:14px;border-top:0.5px solid #1e3a5f;}
-.user-row{display:flex;align-items:center;gap:8px;}
-.user-av{width:30px;height:30px;border-radius:50%;background:#1d4ed8;display:flex;align-items:center;justify-content:center;font-size:11px;color:#bfdbfe;font-weight:600;}
-.user-name{font-size:11px;color:#e2e8f0;font-weight:500;}
-.user-role{font-size:10px;color:#4a7fc1;}
+.main{flex:1;min-width:0;padding:28px 36px 60px;}
+.topbar{display:flex;align-items:center;justify-content:space-between;gap:16px;margin-bottom:22px;flex-wrap:wrap;}
+.topbar h1{font-family:var(--font-display);font-size:24px;font-weight:800;margin:0;}
+#topbar-actions{display:flex;gap:10px;align-items:center;flex-wrap:wrap;}
 
-/* === MODAL FADE === */
-.modal-wrap{position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0);z-index:500;display:flex;align-items:center;justify-content:center;pointer-events:none;transition:background 0.2s;}
-.modal-wrap.open{background:rgba(0,0,0,0.75);pointer-events:all;}
-.modal-box{background:#060b18;border:0.5px solid #1e3a5f;border-radius:12px;padding:24px;width:440px;max-height:85vh;overflow-y:auto;transform:translateY(16px) scale(0.97);opacity:0;transition:transform 0.2s,opacity 0.2s;}
-.modal-wrap.open .modal-box{transform:translateY(0) scale(1);opacity:1;}
-.modal-box.wide{width:500px;}
-.perm-btn{display:flex;align-items:center;gap:8px;background:#060e1c;border:0.5px solid #1e3a5f;border-radius:7px;padding:9px 12px;cursor:pointer;user-select:none;transition:all 0.15s;}
-.perm-btn:hover{border-color:#2563eb;}
-.perm-btn.perm-on{background:#0d2447;border-color:#2563eb;}
-.perm-btn i{font-size:15px;color:#4a7fc1;}
-.perm-btn.perm-on i{color:#60a5fa;}
-.perm-btn span{font-size:12px;color:#7a9cc0;}
-.perm-btn.perm-on span{color:#e2e8f0;}
+/* ===== BUTTONS ===== */
+.btn{
+  border:none;border-radius:8px;padding:9px 16px;font-size:13.5px;font-weight:700;
+  display:inline-flex;align-items:center;gap:6px;transition:opacity .15s, background .15s;white-space:nowrap;
+}
+.btn-primary{background:var(--accent);color:#fff;}
+.btn-primary:hover{background:var(--accent-dark);}
+.btn-secondary{background:var(--surface-alt);color:var(--text);}
+.btn-secondary:hover{background:#dbe4ec;}
+.btn-danger{background:var(--danger-soft);color:var(--danger);}
+.btn-danger:hover{background:var(--danger);color:#fff;}
+.btn-danger.confirm{background:var(--danger);color:#fff;}
+.btn-small{padding:6px 10px;font-size:12px;border-radius:6px;}
+.search-input{
+  padding:9px 14px;border:1px solid var(--border);border-radius:8px;background:var(--surface);
+  font-size:13.5px;min-width:220px;
+}
+.search-input:focus{outline:2px solid var(--accent);border-color:transparent;}
 
-/* === MAIN === */
-.main{flex:1;display:flex;flex-direction:column;overflow:hidden;}
-.topbar{background:#060b18;border-bottom:0.5px solid #1e3a5f;padding:10px 20px;display:flex;align-items:center;gap:12px;flex-shrink:0;}
-.topbar-title{font-size:15px;font-weight:600;color:#e2e8f0;flex:1;}
-.topbar-title span{font-size:12px;color:#4a7fc1;font-weight:400;}
-.search-box{display:flex;align-items:center;gap:6px;background:#0d1f38;border:0.5px solid #1e3a5f;border-radius:6px;padding:6px 10px;font-size:12px;color:#7a9cc0;cursor:pointer;}
-.btn-primary{background:#1d4ed8;color:#e2e8f0;border:none;border-radius:7px;padding:7px 14px;font-size:12px;cursor:pointer;display:flex;align-items:center;gap:6px;font-weight:500;transition:background 0.15s;white-space:nowrap;}
-.btn-primary:hover{background:#2563eb;}
-.btn-secondary{background:#0d1f38;color:#93c5fd;border:0.5px solid #1e3a5f;border-radius:7px;padding:7px 12px;font-size:12px;cursor:pointer;display:flex;align-items:center;gap:6px;transition:all 0.15s;}
-.btn-secondary:hover{background:#0d2447;}
-.page{flex:1;overflow-y:auto;padding:20px;display:none;}
-.page.active{display:block;}
-.page.active.flex-page{display:flex;}
+/* ===== ROTEIRO / STAGE LEGEND ===== */
+.roteiro-bar{
+  display:flex;align-items:flex-start;background:var(--surface);border:1px solid var(--border);
+  border-radius:var(--radius-lg);padding:20px 24px;margin-bottom:22px;overflow-x:auto;
+}
+.roteiro-step{flex:1;min-width:150px;padding:0 14px;}
+.roteiro-dot{width:12px;height:12px;border-radius:50%;margin-bottom:10px;}
+.roteiro-label{font-family:var(--font-display);font-weight:700;font-size:13px;margin-bottom:4px;}
+.roteiro-desc{font-size:11.5px;color:var(--text-muted);line-height:1.5;}
+.roteiro-line{flex:0 0 24px;height:1px;background:var(--border);margin-top:6px;}
 
-/* === CARDS === */
-.card{background:#0d1f38;border:0.5px solid #1e3a5f;border-radius:10px;padding:14px 16px;}
-.card-title{font-size:12px;font-weight:600;color:#93c5fd;margin-bottom:12px;display:flex;align-items:center;gap:6px;}
-.grid2{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:16px;}
-.grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-bottom:16px;}
-.grid4{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin-bottom:16px;}
+/* ===== KANBAN ===== */
+.kanban{display:flex;gap:14px;overflow-x:auto;padding-bottom:12px;align-items:flex-start;}
+.kanban-col{background:var(--surface-alt);border-radius:var(--radius-lg);min-width:270px;max-width:270px;flex-shrink:0;display:flex;flex-direction:column;max-height:calc(100vh - 280px);}
+.kanban-col-header{
+  display:flex;justify-content:space-between;align-items:center;padding:13px 14px;font-family:var(--font-display);
+  font-weight:700;font-size:13px;border-top:4px solid;border-radius:var(--radius-lg) var(--radius-lg) 0 0;
+}
+.kanban-col-header .count{background:rgba(0,0,0,.06);border-radius:20px;padding:2px 9px;font-size:12px;font-weight:700;}
+.kanban-col-body{padding:6px 10px 12px;overflow-y:auto;flex:1;min-height:60px;}
+.kanban-col-body.drag-over{background:var(--accent-soft);border-radius:8px;}
+.empty-col{color:var(--text-muted);font-size:12.5px;text-align:center;padding:18px 6px;}
 
-/* === METRICS === */
-.metric{background:#060e1c;border:0.5px solid #1e3a5f;border-radius:8px;padding:12px 14px;}
-.mlabel{font-size:10px;color:#4a7fc1;margin-bottom:5px;text-transform:uppercase;letter-spacing:0.5px;display:flex;align-items:center;gap:4px;}
-.mval{font-size:22px;font-weight:700;color:#e2e8f0;line-height:1;}
-.msub{font-size:10px;margin-top:4px;}
-.msub.up{color:#34d399;}
-.msub.down{color:#f87171;}
-.msub.warn{color:#fbbf24;}
+.lead-card{
+  background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:12px 13px;
+  margin-bottom:8px;cursor:grab;transition:box-shadow .15s, border-color .15s;
+}
+.lead-card:hover{box-shadow:0 4px 14px rgba(20,30,60,.08);border-color:var(--accent);}
+.lead-card:active{cursor:grabbing;}
+.lead-clinic{font-size:11px;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:.5px;}
+.lead-name{font-family:var(--font-display);font-weight:700;font-size:14.5px;margin:3px 0 5px;}
+.lead-meta{display:flex;align-items:center;gap:6px;font-size:12px;color:var(--text-muted);flex-wrap:wrap;}
+.lead-meta .dot{opacity:.5;}
+.lead-footer{margin-top:8px;}
+.badge{display:inline-flex;align-items:center;padding:3px 9px;border-radius:20px;font-size:11px;font-weight:700;}
+.badge-invest{background:var(--accent-soft);color:var(--accent-dark);}
 
-/* === TABLE === */
-.data-table{width:100%;border-collapse:collapse;}
-.data-table th{font-size:10px;color:#4a7fc1;text-transform:uppercase;letter-spacing:0.5px;padding:8px 10px;text-align:left;border-bottom:0.5px solid #1e3a5f;white-space:nowrap;}
-.data-table td{padding:9px 10px;border-bottom:0.5px solid #0d1f38;font-size:12px;color:#e2e8f0;vertical-align:middle;}
-.data-table tr:last-child td{border-bottom:none;}
-.data-table tr:hover td{background:#060e1c;}
-.data-table tr{cursor:pointer;}
+/* ===== GRID / CARDS (Clientes, Equipe) ===== */
+.card-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:14px;}
+.client-card{
+  background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);padding:18px;cursor:pointer;
+  transition:box-shadow .15s, border-color .15s;
+}
+.client-card:hover{box-shadow:0 6px 18px rgba(20,30,60,.08);border-color:var(--accent);}
+.client-card .top-row{display:flex;justify-content:space-between;align-items:flex-start;gap:10px;}
+.client-card .clinic-name{font-family:var(--font-display);font-weight:800;font-size:15.5px;}
+.client-card .dentist-name{color:var(--text-muted);font-size:12.5px;margin-top:2px;}
+.client-card .stats{display:flex;gap:18px;margin-top:14px;}
+.client-card .stat-label{font-size:11px;color:var(--text-muted);text-transform:uppercase;letter-spacing:.5px;}
+.client-card .stat-value{font-family:var(--font-display);font-weight:700;font-size:16px;margin-top:2px;}
 
-/* === PILLS / BADGES === */
-.pill{font-size:10px;padding:2px 8px;border-radius:10px;font-weight:600;white-space:nowrap;}
-.pill-green{background:#0a2b1a;color:#34d399;border:0.5px solid #065f46;}
-.pill-yellow{background:#1a1208;color:#fbbf24;border:0.5px solid #78350f;}
-.pill-red{background:#1a0c0c;color:#f87171;border:0.5px solid #7f1d1d;}
-.pill-blue{background:#0d2447;color:#60a5fa;border:0.5px solid #1e3a5f;}
-.pill-purple{background:#180f3a;color:#a78bfa;border:0.5px solid #3c2a8a;}
+.team-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);padding:18px;}
+.team-card .avatar{
+  width:42px;height:42px;border-radius:50%;background:var(--accent-soft);color:var(--accent-dark);
+  display:flex;align-items:center;justify-content:center;font-family:var(--font-display);font-weight:800;font-size:16px;margin-bottom:10px;
+}
+.team-card .name{font-family:var(--font-display);font-weight:700;font-size:15px;}
+.team-card .role{color:var(--accent-dark);font-size:12px;font-weight:700;margin:2px 0 8px;}
+.team-card .meta-line{font-size:12.5px;color:var(--text-muted);margin-bottom:2px;}
+.team-card .actions{margin-top:12px;display:flex;gap:8px;}
 
-/* === PIPELINE === */
-.pipeline-wrap{display:flex;gap:10px;overflow-x:auto;padding-bottom:8px;height:100%;}
-.pipeline-col{min-width:185px;flex-shrink:0;display:flex;flex-direction:column;}
-.pipeline-col-header{font-size:10px;font-weight:600;color:#4a7fc1;text-transform:uppercase;letter-spacing:0.5px;padding:7px 10px;display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;border-radius:6px;background:#060e1c;border:0.5px solid #1e3a5f;}
-.pipeline-col-header.col-blocked{background:#1a0505;border-color:#7f1d1d;color:#f87171;}
-.pipeline-count{background:#1e3a5f;color:#60a5fa;border-radius:10px;padding:1px 7px;font-size:10px;}
-.pipeline-count.cnt-blocked{background:#2a0f0f;color:#f87171;}
-.pipeline-drop{flex:1;min-height:60px;border-radius:6px;padding:3px;transition:background 0.2s;}
-.pipeline-drop.drag-over{background:#0d2447;}
-.pipeline-drop.drop-blocked{background:#0d0505;}
-.pipeline-card{background:#0d1f38;border:0.5px solid #1e3a5f;border-radius:8px;padding:10px;margin-bottom:7px;cursor:grab;transition:border-color 0.15s,opacity 0.15s;user-select:none;}
-.pipeline-card:hover{border-color:#2563eb;}
-.pipeline-card.dragging{opacity:0.35;cursor:grabbing;}
-.pipeline-card.card-blocked{border-color:#7f1d1d;background:#1a0505;}
-.pipeline-card.card-blocked:hover{border-color:#ef4444;}
-.pipeline-card .pc-name{font-size:12px;font-weight:600;color:#e2e8f0;margin-bottom:3px;}
-.pipeline-card .pc-city{font-size:10px;color:#4a7fc1;}
-.pipeline-card .pc-score{font-size:11px;font-weight:600;}
-.pipeline-card .pc-val{font-size:11px;color:#4a7fc1;margin-top:5px;}
+/* ===== TABLES ===== */
+.table-wrap{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);overflow:hidden;}
+table.data-table{width:100%;border-collapse:collapse;font-size:13px;}
+table.data-table th{
+  text-align:left;background:var(--surface-alt);padding:11px 14px;font-size:11.5px;text-transform:uppercase;
+  letter-spacing:.5px;color:var(--text-muted);font-weight:700;
+}
+table.data-table td{padding:11px 14px;border-top:1px solid var(--border);vertical-align:middle;}
+table.data-table tr:hover td{background:var(--surface-alt);}
+.status-pill{padding:3px 10px;border-radius:20px;font-size:11px;font-weight:700;display:inline-block;}
+.status-pendente{background:var(--warn-soft);color:#9c6b1c;}
+.status-pago{background:var(--success-soft);color:var(--success);}
+.status-atrasado{background:var(--danger-soft);color:var(--danger);}
+.status-prospect{background:var(--surface-alt);color:var(--text-muted);}
+.status-negociacao{background:var(--warn-soft);color:#9c6b1c;}
+.status-cliente{background:var(--success-soft);color:var(--success);}
+.status-sem_interesse{background:var(--danger-soft);color:var(--danger);}
 
-/* === FIELDS === */
-.field{display:flex;justify-content:space-between;align-items:center;padding:7px 0;border-bottom:0.5px solid #0d1f38;}
-.field:last-child{border-bottom:none;}
-.fl{font-size:11px;color:#4a7fc1;}
-.fv{font-size:12px;font-weight:600;color:#e2e8f0;}
-.fv.g{color:#34d399;} .fv.r{color:#f87171;} .fv.y{color:#fbbf24;}
+/* ===== SUMMARY CARDS ===== */
+.summary-row{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:14px;margin-bottom:20px;}
+.summary-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);padding:16px 18px;}
+.summary-card .label{font-size:11.5px;text-transform:uppercase;letter-spacing:.5px;color:var(--text-muted);font-weight:700;}
+.summary-card .value{font-family:var(--font-display);font-weight:800;font-size:22px;margin-top:6px;}
+.value.positive{color:var(--success);}
+.value.negative{color:var(--danger);}
 
-/* === INPUTS === */
-.input-row{display:flex;flex-direction:column;gap:4px;margin-bottom:10px;}
-.input-row:last-child{margin-bottom:0;}
-.input-row label{font-size:11px;color:#4a7fc1;}
-.inp{background:#060e1c;border:0.5px solid #1e3a5f;border-radius:6px;padding:8px 10px;color:#e2e8f0;font-size:12px;width:100%;outline:none;transition:border-color 0.15s;}
-.inp:focus{border-color:#2563eb;}
-select.inp option{background:#0d1f38;color:#e2e8f0;}
+.section-title{font-family:var(--font-display);font-weight:800;font-size:15px;margin:26px 0 12px;}
 
-/* === SCORE BARS === */
-.sbar-row{display:flex;align-items:center;gap:8px;margin-bottom:7px;}
-.sbar-name{font-size:11px;color:#7a9cc0;width:85px;flex-shrink:0;}
-.sbar-track{flex:1;height:5px;background:#0a0f1e;border-radius:3px;}
-.sbar-fill{height:5px;border-radius:3px;transition:width 0.4s;}
-.sbar-val{font-size:11px;font-weight:600;width:24px;text-align:right;flex-shrink:0;}
+/* ===== HINT BANNER ===== */
+.hint-banner{
+  background:var(--accent-soft);color:var(--accent-dark);border:1px solid var(--accent);
+  border-radius:8px;padding:10px 14px;font-size:12.5px;font-weight:600;margin-bottom:16px;
+}
 
-/* === DETAIL PANEL (client modal) === */
-.overlay{position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.7);z-index:200;display:none;align-items:flex-start;justify-content:flex-end;}
-.overlay.open{display:flex;}
-.detail-panel{width:720px;height:100vh;background:#060b18;border-left:0.5px solid #1e3a5f;display:flex;flex-direction:column;overflow:hidden;}
-.dp-header{padding:16px 20px;border-bottom:0.5px solid #1e3a5f;display:flex;align-items:center;gap:12px;flex-shrink:0;}
-.dp-avatar{width:40px;height:40px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:700;flex-shrink:0;}
-.dp-name{font-size:15px;font-weight:700;color:#e2e8f0;}
-.dp-city{font-size:11px;color:#4a7fc1;}
-.dp-tabs{display:flex;padding:0 20px;background:#060b18;border-bottom:0.5px solid #1e3a5f;overflow-x:auto;flex-shrink:0;scrollbar-width:none;}
-.dp-tab{font-size:11px;padding:9px 12px;cursor:pointer;color:#4a7fc1;border-bottom:2px solid transparent;white-space:nowrap;transition:color 0.15s;display:flex;align-items:center;gap:5px;}
-.dp-tab:hover{color:#93c5fd;}
-.dp-tab.active{color:#60a5fa;border-bottom-color:#2563eb;}
-.dp-tab svg{flex-shrink:0;opacity:0.8;}
-.dp-tab.active svg{opacity:1;}
-.dp-body{flex:1;overflow-y:auto;padding:18px 20px;}
-.dp-content{display:none;}
-.dp-content.active{display:block;}
+/* ===== AGENDA ===== */
+.agenda-item{
+  display:flex;align-items:center;gap:16px;padding:12px 16px;border-bottom:1px solid var(--border);cursor:pointer;
+  transition:background .15s;
+}
+.agenda-item:last-child{border-bottom:none;}
+.agenda-item:hover{background:var(--surface-alt);}
+.agenda-item.agenda-atrasada .agenda-day, .agenda-item.agenda-atrasada .agenda-time{color:var(--danger);}
+.agenda-date{flex:0 0 64px;text-align:center;}
+.agenda-day{font-family:var(--font-display);font-weight:800;font-size:15px;}
+.agenda-time{font-size:12px;color:var(--text-muted);}
+.agenda-info{flex:1;min-width:0;}
+.agenda-clinic{font-family:var(--font-display);font-weight:700;font-size:14px;}
+.agenda-dentist{font-size:12.5px;color:var(--text-muted);margin-top:2px;}
+.agenda-tag{font-size:11px;font-weight:700;color:var(--text-muted);background:var(--surface-alt);padding:4px 10px;border-radius:20px;white-space:nowrap;}
+.agenda-item.agenda-atrasada .agenda-tag{background:var(--danger-soft);color:var(--danger);}
 
-/* === IA BOX === */
-.ia-box{background:#060e1c;border:0.5px solid #1d4ed8;border-radius:8px;padding:12px;margin-bottom:10px;}
-.ia-label{font-size:9px;color:#3b82f6;letter-spacing:1px;text-transform:uppercase;margin-bottom:6px;display:flex;align-items:center;gap:4px;}
-.ia-text{font-size:12px;color:#93c5fd;line-height:1.6;}
+/* ===== EMPTY STATE ===== */
+.empty-state{text-align:center;padding:60px 20px;color:var(--text-muted);}
+.empty-state h3{font-family:var(--font-display);color:var(--text);margin-bottom:6px;}
 
-/* === PERDA === */
-.perda-box{background:#1a0c0c;border:0.5px solid #7f1d1d;border-radius:8px;padding:12px;margin-bottom:12px;}
-.perda-title{font-size:9px;color:#ef4444;letter-spacing:1px;text-transform:uppercase;margin-bottom:8px;display:flex;align-items:center;gap:4px;}
-.perda-val{font-size:22px;font-weight:700;color:#f87171;}
-.perda-sub{font-size:10px;color:#991b1b;margin-top:2px;}
+/* ===== MODAL ===== */
+.modal-overlay{
+  position:fixed;inset:0;background:rgba(15,26,48,.5);display:flex;align-items:center;justify-content:center;
+  z-index:1000;padding:20px;
+}
+.modal{background:var(--surface);border-radius:var(--radius-lg);width:100%;max-width:620px;max-height:88vh;
+  display:flex;flex-direction:column;overflow:hidden;}
+.modal-small{max-width:440px;}
+.modal-header{display:flex;justify-content:space-between;align-items:flex-start;padding:20px 22px 14px;border-bottom:1px solid var(--border);}
+.modal-title{font-family:var(--font-display);font-weight:800;font-size:18px;}
+.modal-subtitle{font-size:12.5px;color:var(--text-muted);margin-top:3px;}
+.modal-close{background:none;border:none;font-size:24px;line-height:1;color:var(--text-muted);padding:0 4px;}
+.modal-close:hover{color:var(--text);}
+.modal-tabs{display:flex;border-bottom:1px solid var(--border);padding:0 22px;gap:6px;}
+.tab{background:none;border:none;padding:12px 4px;margin-right:18px;font-size:13px;font-weight:700;color:var(--text-muted);
+  border-bottom:2px solid transparent;}
+.tab.active{color:var(--accent-dark);border-color:var(--accent);}
+.modal-body{padding:18px 22px;overflow-y:auto;flex:1;}
+.modal-footer{display:flex;justify-content:space-between;align-items:center;padding:14px 22px;border-top:1px solid var(--border);}
 
-/* === TIMELINE === */
-.tl-item{display:flex;gap:10px;padding:9px 0;border-bottom:0.5px solid #0d1f38;}
-.tl-item:last-child{border-bottom:none;}
-.tl-dot{width:7px;height:7px;border-radius:50%;margin-top:4px;flex-shrink:0;}
-.tl-date{font-size:10px;color:#4a7fc1;width:75px;flex-shrink:0;}
-.tl-text{font-size:11px;color:#93c5fd;line-height:1.5;flex:1;}
-.tl-user{font-size:10px;color:#4a7fc1;margin-top:1px;}
+/* ===== FORMS ===== */
+.field{margin-bottom:14px;}
+.field label{display:block;font-size:12px;font-weight:700;color:var(--text-muted);margin-bottom:5px;text-transform:uppercase;letter-spacing:.4px;}
+.field input,.field select,.field textarea{
+  width:100%;padding:9px 11px;border:1px solid var(--border);border-radius:8px;background:var(--surface);color:var(--text);
+}
+.field input:focus,.field select:focus,.field textarea:focus{outline:2px solid var(--accent);border-color:transparent;}
+.field textarea{resize:vertical;min-height:70px;}
+.field-row{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+.field-hint{font-size:11px;color:var(--text-muted);margin-top:4px;}
 
-/* === FOLLOWUP === */
-.fu-card{background:#0d1f38;border:0.5px solid #1e3a5f;border-radius:8px;padding:12px;margin-bottom:8px;display:flex;align-items:flex-start;gap:10px;}
-.fu-card.urgente{border-left:2px solid #e05555;}
-.fu-card.hoje{border-left:2px solid #fbbf24;}
-.fu-card.ok{border-left:2px solid #34d399;}
-.fu-check{width:16px;height:16px;border-radius:50%;border:0.5px solid #1e3a5f;background:#060e1c;flex-shrink:0;margin-top:1px;cursor:pointer;display:flex;align-items:center;justify-content:center;}
+/* ===== PASSWORD GATE ===== */
+.password-gate{text-align:center;padding:30px 10px;}
+.password-gate .lock-icon{font-size:34px;margin-bottom:10px;}
+.password-gate p{color:var(--text-muted);font-size:13.5px;margin-bottom:16px;}
+.password-gate input{max-width:220px;margin:0 auto 10px;display:block;text-align:center;}
+.error-text{color:var(--danger);font-size:12.5px;margin-top:8px;min-height:16px;}
 
-/* === SCORE RING === */
-.score-ring{background:#0d2447;border-radius:8px;padding:12px 14px;display:flex;align-items:center;gap:12px;margin-bottom:12px;}
-.score-big{font-size:36px;font-weight:700;line-height:1;}
-.score-sub{font-size:10px;color:#4a7fc1;}
+/* ===== FINANCE WIDGETS ===== */
+.add-finance-form{display:flex;gap:8px;margin-top:14px;flex-wrap:wrap;align-items:flex-end;}
+.add-finance-form .field{margin-bottom:0;flex:1;min-width:110px;}
+.add-finance-form .field-small{flex:0 0 90px;}
 
-/* === CHECKBOX === */
-.cb-row{display:flex;align-items:center;gap:8px;padding:6px 0;border-bottom:0.5px solid #0d1f38;cursor:pointer;user-select:none;}
-.cb-row:last-child{border-bottom:none;}
-.cb{width:14px;height:14px;border:0.5px solid #1e3a5f;border-radius:3px;background:#060e1c;flex-shrink:0;display:flex;align-items:center;justify-content:center;transition:background 0.15s;}
-.cb.on{background:#1d4ed8;border-color:#2563eb;}
-.cb-label{font-size:12px;color:#93c5fd;}
-
-/* === HEALTH BAR === */
-.hb-row{display:flex;align-items:center;gap:8px;margin-bottom:8px;}
-.hb-label{font-size:11px;color:#7a9cc0;width:120px;flex-shrink:0;}
-.hb-track{flex:1;height:7px;background:#0a0f1e;border-radius:3px;}
-.hb-fill{height:7px;border-radius:3px;}
-.hb-val{font-size:11px;font-weight:600;width:26px;text-align:right;}
-
-/* === ACTION CARD === */
-.action-card{background:#0d1f38;border:0.5px solid #1e3a5f;border-radius:9px;padding:12px 14px;margin-bottom:9px;display:flex;align-items:flex-start;gap:10px;}
-.action-num{width:24px;height:24px;border-radius:50%;background:#0d2447;color:#60a5fa;font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
-.action-title{font-size:12px;font-weight:600;color:#e2e8f0;margin-bottom:2px;}
-.action-desc{font-size:11px;color:#4a7fc1;line-height:1.5;}
-.action-tag{font-size:10px;padding:2px 7px;border-radius:4px;flex-shrink:0;font-weight:600;}
-.tag-urg{background:#1a0c0c;color:#f87171;border:0.5px solid #7f1d1d;}
-.tag-med{background:#1a1208;color:#fbbf24;border:0.5px solid #78350f;}
-.tag-low{background:#0a2b1a;color:#34d399;border:0.5px solid #065f46;}
-
-/* === MISC === */
-.section-label{font-size:10px;color:#4a7fc1;text-transform:uppercase;letter-spacing:1px;margin-bottom:10px;display:flex;align-items:center;gap:5px;}
-.objecao-tag{display:inline-flex;align-items:center;gap:3px;background:#0d1f38;border:0.5px solid #1e3a5f;border-radius:5px;padding:3px 8px;font-size:11px;color:#93c5fd;margin:3px;}
-.btn-ia{background:#0d2447;color:#60a5fa;border:0.5px solid #1e3a5f;border-radius:7px;padding:7px 12px;font-size:11px;cursor:pointer;display:inline-flex;align-items:center;gap:5px;transition:background 0.15s;font-weight:500;margin:3px 3px 3px 0;}
-.btn-ia:hover{background:#0d1f38;}
-.divider{height:0.5px;background:#1e3a5f;margin:14px 0;}
-.avatar{width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0;}
-.empty-state{text-align:center;padding:40px 20px;color:#4a7fc1;}
-.empty-state i{font-size:40px;display:block;margin-bottom:10px;color:#1e3a5f;}
-.empty-state p{font-size:13px;}
+@media (max-width:880px){
+  .app{flex-direction:column;}
+  .sidebar{width:100%;height:auto;flex-direction:row;align-items:center;padding:12px 16px;position:relative;}
+  .logo{padding:0;margin-right:auto;}
+  .nav{flex-direction:row;flex-wrap:wrap;}
+  .sidebar-footer{display:none;}
+  .main{padding:18px;}
+  .field-row{grid-template-columns:1fr;}
+}
 </style>
 </head>
 <body>
-<div class="shell">
-
-<!-- ===== SIDEBAR ===== -->
-<div class="sidebar">
-  <div class="logo-area">
-    <div class="logo-circle">E</div>
-    <div>
-      <div class="logo-text">ELEVA</div>
-      <div class="logo-sub">OPERATING SYSTEM</div>
+<div class="app">
+  <aside class="sidebar">
+    <div class="logo">
+      <div class="logo-mark">E</div>
+      <div class="logo-text">ELEVA<span>Growth Ops</span></div>
     </div>
-  </div>
-
-  <div class="nav-section">
-    <div class="nav-label">Principal</div>
-    <div class="nav-item active" data-page="dashboard" onclick="goPage('dashboard',this)">
-      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;"><rect x="3" y="3" width="7" height="9"/><rect x="14" y="3" width="7" height="5"/><rect x="14" y="12" width="7" height="9"/><rect x="3" y="16" width="7" height="5"/></svg>
-      Dashboard
-    </div>
-    <div class="nav-item" data-page="clinicas" onclick="goPage('clinicas',this)">
-      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/><line x1="12" y1="7" x2="12" y2="7.01"/><line x1="9" y1="10" x2="9" y2="10.01"/><line x1="15" y1="10" x2="15" y2="10.01"/></svg>
-      Clínicas <span class="nav-badge" id="badge-clinicas">0</span>
-    </div>
-    <div class="nav-item" data-page="pipeline" onclick="goPage('pipeline',this)">
-      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;"><rect x="3" y="3" width="5" height="18"/><rect x="10" y="3" width="5" height="11"/><rect x="17" y="3" width="5" height="15"/></svg>
-      Pipeline
-    </div>
-  </div>
-
-  <div class="nav-section">
-    <div class="nav-label">Comercial</div>
-    <div class="nav-item" data-page="followups" onclick="goPage('followups',this)">
-      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
-      Follow-ups
-    </div>
-    <div class="nav-item" data-page="propostas" onclick="goPage('propostas',this)">
-      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><line x1="10" y1="9" x2="8" y2="9"/></svg>
-      Propostas
-    </div>
-    <div class="nav-item" data-page="diagnosticos" onclick="goPage('diagnosticos',this)">
-      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
-      Diagnósticos
-    </div>
-  </div>
-
-  <div class="nav-section">
-    <div class="nav-label">Gestão</div>
-    <div class="nav-item" data-page="financeiro" onclick="goPage('financeiro',this)">
-      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><path d="M12 16h.01"/><path d="M9 12h6"/></svg>
-      Financeiro
-    </div>
-    <div class="nav-item" data-page="relatorios" onclick="goPage('relatorios',this)">
-      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
-      Relatórios
-    </div>
-    <div class="nav-item" data-page="usuarios" onclick="goPage('usuarios',this)">
-      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
-      Usuários
-    </div>
-    <div class="nav-item" data-page="config" onclick="goPage('config',this)">
-      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
-      Configurações
-    </div>
-  </div>
-
-  <div class="sidebar-footer">
-    <div class="user-row">
-      <div class="user-av">JV</div>
-      <div>
-        <div class="user-name">João Vitor</div>
-        <div class="user-role">Consultor Eleva</div>
-      </div>
-    </div>
-  </div>
-</div>
-
-<!-- ===== MAIN ===== -->
-<div class="main">
-
-  <!-- TOPBAR -->
-  <div class="topbar">
-    <div class="topbar-title" id="topbar-title">Dashboard <span>— visão geral</span></div>
-    <div class="search-box" onclick="focusSearch()">
-      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color:#4a7fc1;flex-shrink:0;"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-      <span id="search-label">Buscar clínica...</span>
-    </div>
-    <button class="btn-primary" onclick="openNewClient()">
-      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-      Nova clínica
-    </button>
-  </div>
-
-  <!-- ===== DASHBOARD ===== -->
-  <div id="page-dashboard" class="page active">
-    <div class="grid4">
-      <div class="metric">
-        <div class="mlabel">
-          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
-          Clientes ativos
-        </div>
-        <div class="mval" id="dash-ativos">0</div><div class="msub" id="dash-ativos-sub" style="color:#4a7fc1;">Nenhum ainda</div>
-      </div>
-      <div class="metric">
-        <div class="mlabel">
-          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><path d="M12 16h.01"/><path d="M9 12h6"/></svg>
-          Receita mensal
-        </div>
-        <div class="mval" id="dash-mrr">R$ 0</div><div class="msub" style="color:#4a7fc1;">Contratos ativos</div>
-      </div>
-      <div class="metric">
-        <div class="mlabel">
-          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-          Em negociação
-        </div>
-        <div class="mval" id="dash-neg">0</div><div class="msub" style="color:#4a7fc1;">No pipeline</div>
-      </div>
-      <div class="metric">
-        <div class="mlabel">
-          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="4.93" y1="4.93" x2="19.07" y2="19.07"/></svg>
-          Bloqueados
-        </div>
-        <div class="mval" id="dash-block" style="color:#f87171;">0</div><div class="msub down">Não contatar</div>
-      </div>
-    </div>
-
-    <div class="grid2" style="margin-bottom:16px;">
-      <div class="card">
-        <div class="card-title"><i class="ti ti-layout-kanban"></i> Pipeline comercial</div>
-        <div id="dash-pipeline-bars" style="display:flex;flex-direction:column;gap:5px;"></div>
-      </div>
-      <div class="card">
-        <div class="card-title"><i class="ti ti-building-hospital"></i> Clínicas recentes</div>
-        <div id="dash-recent"></div>
-      </div>
-    </div>
-
-    <div class="card">
-      <div class="card-title"><i class="ti ti-robot"></i> IA Consultora — alertas do dia</div>
-      <div id="dash-ia"></div>
-    </div>
-  </div>
-
-  <!-- ===== CLÍNICAS ===== -->
-  <div id="page-clinicas" class="page">
-    <div style="display:flex;align-items:center;gap:10px;margin-bottom:16px;">
-      <input class="inp" style="width:260px;" placeholder="Buscar clínica..." oninput="filterClinicas(this.value)">
-      <select class="inp" style="width:180px;" onchange="filterByStatus(this.value)">
-        <option value="">Todos os status</option>
-        <option value="Lead Novo">Lead Novo</option>
-        <option value="Cliente Ativo">Cliente Ativo</option>
-        <option value="Perdido">Perdido</option>
-        <option value="Não entrar em contato">Bloqueado</option>
-      </select>
-    </div>
-    <div class="card" style="padding:0;overflow:hidden;">
-      <table class="data-table" id="clinicas-table">
-        <thead>
-          <tr>
-            <th>Clínica / Doutor</th>
-            <th>Cidade</th>
-            <th>Etapa</th>
-            <th>Score</th>
-            <th>Plano</th>
-            <th>Valor/mês</th>
-            <th>Pgto</th>
-            <th>Consultor</th>
-            <th>Próxima ação</th>
-          </tr>
-        </thead>
-        <tbody id="clinicas-body"></tbody>
-      </table>
-    </div>
-  </div>
-
-  <!-- ===== PIPELINE ===== -->
-  <div id="page-pipeline" class="page flex-page" style="flex-direction:column;overflow:hidden;padding:16px 20px;">
-    <div style="margin-bottom:12px;font-size:12px;color:#4a7fc1;flex-shrink:0;">Arraste os cards entre etapas. &nbsp;<span style="color:#f87171;font-weight:600;"><i class="ti ti-ban" style="font-size:11px;"></i> Não entrar em contato</span> — leads bloqueados para contato.</div>
-    <div id="pipeline-board" class="pipeline-wrap" style="flex:1;overflow-x:auto;overflow-y:hidden;align-items:flex-start;"></div>
-  </div>
-
-  <!-- ===== FOLLOW-UPS ===== -->
-  <div id="page-followups" class="page">
-    <div style="text-align:center;padding:60px 20px;color:#4a7fc1;">
-      <i class="ti ti-bell" style="font-size:48px;display:block;margin-bottom:12px;color:#1e3a5f;"></i>
-      <h3 style="font-size:14px;color:#7a9cc0;margin-bottom:6px;font-weight:500;">Nenhum follow-up cadastrado</h3>
-      <p style="font-size:12px;">Os follow-ups aparecerão aqui conforme você registrar próximas ações nos cards das clínicas.</p>
-    </div>
-  </div>
-
-  <!-- ===== PROPOSTAS ===== -->
-  <div id="page-propostas" class="page">
-    <div style="text-align:center;padding:60px 20px;color:#4a7fc1;">
-      <i class="ti ti-file-invoice" style="font-size:48px;display:block;margin-bottom:12px;color:#1e3a5f;"></i>
-      <h3 style="font-size:14px;color:#7a9cc0;margin-bottom:6px;font-weight:500;">Nenhuma proposta em aberto</h3>
-      <p style="font-size:12px;">As propostas aparecerão aqui conforme você avançar leads no pipeline.</p>
-    </div>
-  </div>
-
-  <!-- ===== DIAGNÓSTICOS ===== -->
-  <div id="page-diagnosticos" class="page">
-    <div style="text-align:center;padding:60px 20px;color:#4a7fc1;">
-      <i class="ti ti-stethoscope" style="font-size:48px;display:block;margin-bottom:12px;color:#1e3a5f;"></i>
-      <h3 style="font-size:14px;color:#7a9cc0;margin-bottom:6px;font-weight:500;">Nenhum diagnóstico realizado</h3>
-      <p style="font-size:12px;">Os diagnósticos aparecerão aqui após o preenchimento nos cards das clínicas.</p>
-    </div>
-  </div>
-
-  <!-- ===== FINANCEIRO ===== -->
-  <div id="page-financeiro" class="page">
-    <div style="text-align:center;padding:60px 20px;color:#4a7fc1;">
-      <i class="ti ti-coin" style="font-size:48px;display:block;margin-bottom:12px;color:#1e3a5f;"></i>
-      <h3 style="font-size:14px;color:#7a9cc0;margin-bottom:6px;font-weight:500;">Nenhum contrato financeiro</h3>
-      <p style="font-size:12px;">Os dados financeiros aparecerão aqui após o cadastro de contratos nas clínicas.</p>
-    </div>
-  </div>
-
-  <!-- ===== RELATÓRIOS ===== -->
-  <div id="page-relatorios" class="page">
-    <div style="text-align:center;padding:60px 20px;color:#4a7fc1;">
-      <i class="ti ti-chart-bar" style="font-size:48px;display:block;margin-bottom:12px;color:#1e3a5f;"></i>
-      <h3 style="font-size:14px;color:#7a9cc0;margin-bottom:6px;font-weight:500;">Sem dados para relatório</h3>
-      <p style="font-size:12px;">Os relatórios serão gerados automaticamente conforme você cadastra e acompanha as clínicas.</p>
-    </div>
-  </div>
-
-  <!-- ===== CONFIG ===== -->
-  <div id="page-config" class="page">
-    <div class="grid2">
-      <div class="card">
-        <div class="card-title">
-          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
-          Meu perfil
-        </div>
-        <div class="input-row"><label>Nome</label><input class="inp" id="cfg-nome" placeholder="Seu nome completo"></div>
-        <div class="input-row"><label>E-mail</label><input class="inp" id="cfg-email" placeholder="seu@email.com"></div>
-        <div class="input-row"><label>Cargo</label><input class="inp" id="cfg-cargo" placeholder="Ex: Consultor de Crescimento"></div>
-        <div class="input-row"><label>WhatsApp</label><input class="inp" id="cfg-tel" placeholder="(00) 00000-0000"></div>
-        <button class="btn-primary" style="margin-top:12px;" onclick="saveProfile()">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
-          Salvar alterações
-        </button>
-      </div>
-      <div class="card">
-        <div class="card-title">
-          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
-          Notificações
-        </div>
-        <div class="cb-row" onclick="toggleCbG(this)"><div class="cb on"></div><span class="cb-label">Alertar follow-ups atrasados</span></div>
-        <div class="cb-row" onclick="toggleCbG(this)"><div class="cb on"></div><span class="cb-label">Alertar inadimplência</span></div>
-        <div class="cb-row" onclick="toggleCbG(this)"><div class="cb on"></div><span class="cb-label">Resumo diário da IA Consultora</span></div>
-        <div class="cb-row" onclick="toggleCbG(this)"><div class="cb"></div><span class="cb-label">Notificar novos leads por e-mail</span></div>
-        <div class="cb-row" onclick="toggleCbG(this)"><div class="cb on"></div><span class="cb-label">Alertar quando score cair abaixo de 40</span></div>
-      </div>
-    </div>
-    <div class="card">
-      <div class="card-title">
-        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
-        Parâmetros do sistema
-      </div>
-      <div class="grid2" style="margin-bottom:0;">
-        <div>
-          <div class="input-row"><label>Meta de conversão de mercado (%)</label><input class="inp" type="number" value="55"></div>
-          <div class="input-row"><label>Meta de faltas (%)</label><input class="inp" type="number" value="10"></div>
-          <div class="input-row"><label>Dias para follow-up urgente</label><input class="inp" type="number" value="3"></div>
-        </div>
-        <div>
-          <div class="input-row"><label>Score mínimo para alerta de risco</label><input class="inp" type="number" value="40"></div>
-          <div class="input-row"><label>Meta de saúde do cliente (%)</label><input class="inp" type="number" value="70"></div>
-          <div class="input-row"><label>Prazo de inadimplência para alerta (dias)</label><input class="inp" type="number" value="5"></div>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- ===== USUÁRIOS ===== -->
-  <div id="page-usuarios" class="page">
-    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:18px;">
-      <div style="font-size:12px;color:#4a7fc1;">Gerencie os consultores e suas permissões de acesso ao Eleva OS.</div>
-      <button class="btn-primary" onclick="openNewUserModal()">
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/><line x1="19" y1="8" x2="19" y2="14"/><line x1="22" y1="11" x2="16" y2="11"/></svg>
-        Novo usuário
+    <nav class="nav">
+      <button class="nav-item" data-page="pipeline">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="5" height="16" rx="1.5"/><rect x="10" y="4" width="5" height="10" rx="1.5"/><rect x="17" y="4" width="5" height="13" rx="1.5"/></svg>
+        Pipeline
       </button>
-    </div>
-    <div id="usuarios-content"></div>
-  </div>
-
-</div><!-- /main -->
-</div><!-- /shell -->
-
-<!-- ===== OVERLAY — CARD DO CLIENTE ===== -->
-<div class="overlay" id="overlay" onclick="closeOverlayIfBg(event)">
-  <div class="detail-panel" id="detail-panel">
-    <div class="dp-header">
-      <div class="dp-avatar" id="dp-avatar" style="background:#1d4ed8;color:#bfdbfe;">—</div>
-      <div style="flex:1;">
-        <div class="dp-name" id="dp-name">—</div>
-        <div class="dp-city" id="dp-city"><i class="ti ti-map-pin" style="font-size:11px;"></i> —</div>
-      </div>
-      <div style="display:flex;gap:8px;align-items:center;">
-        <span class="pill pill-blue" id="dp-score-pill">Sem score</span>
-        <button class="btn-secondary" onclick="closeClient()">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
-        </button>
-      </div>
-    </div>
-
-    <div class="dp-tabs">
-      <div class="dp-tab active" onclick="switchDpTab('resumo')">
-        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="9"/><rect x="14" y="3" width="7" height="5"/><rect x="14" y="12" width="7" height="9"/><rect x="3" y="16" width="7" height="5"/></svg>
-        Resumo
-      </div>
-      <div class="dp-tab" onclick="switchDpTab('diagnostico')">
-        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>
-        Diagnóstico
-      </div>
-      <div class="dp-tab" onclick="switchDpTab('score')">
-        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
-        Score
-      </div>
-      <div class="dp-tab" onclick="switchDpTab('perdas')">
-        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 18 13.5 8.5 8.5 13.5 1 6"/><polyline points="17 18 23 18 23 12"/></svg>
-        Perdas
-      </div>
-      <div class="dp-tab" onclick="switchDpTab('ia')">
-        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="10" rx="2"/><circle cx="12" cy="5" r="2"/><path d="M12 7v4"/><line x1="8" y1="16" x2="8" y2="16"/><line x1="16" y1="16" x2="16" y2="16"/></svg>
-        IA
-      </div>
-      <div class="dp-tab" onclick="switchDpTab('plano')">
-        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>
-        Plano
-      </div>
-      <div class="dp-tab" onclick="switchDpTab('timeline')">
-        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-        Histórico
-      </div>
-      <div class="dp-tab" onclick="switchDpTab('saude')">
-        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
-        Saúde
-      </div>
-      <div class="dp-tab" onclick="switchDpTab('financeiro')">
-        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg>
+      <button class="nav-item" data-page="agenda">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="17" rx="2"/><path d="M3 9h18M8 2v4M16 2v4"/></svg>
+        Agenda
+      </button>
+      <button class="nav-item" data-page="clientes">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2l2.7 5.8 6.3.9-4.6 4.4 1.1 6.2L12 16.2 6.5 19.3l1.1-6.2L3 8.7l6.3-.9z"/></svg>
+        Clientes
+      </button>
+      <button class="nav-item" data-page="clinicas">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 21V7l8-4 8 4v14"/><path d="M9 21v-6h6v6"/><path d="M9 11h.01M15 11h.01M9 7h.01M15 7h.01"/></svg>
+        Clínicas
+      </button>
+      <button class="nav-item" data-page="financeiro">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="6" width="20" height="13" rx="2"/><path d="M2 10h20"/><circle cx="17" cy="14" r="1.4" fill="currentColor" stroke="none"/></svg>
         Financeiro
-      </div>
-    </div>
-
-    <div class="dp-body">
-
-      <!-- RESUMO -->
-      <div class="dp-content active" id="dpc-resumo">
-        <div id="dp-blocked-banner" style="display:none;background:#1a0505;border:1px solid #ef4444;border-radius:8px;padding:14px 16px;margin-bottom:14px;align-items:center;gap:10px;">
-          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#ef4444" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;"><circle cx="12" cy="12" r="10"/><line x1="4.93" y1="4.93" x2="19.07" y2="19.07"/></svg>
-          <div><div style="font-size:13px;font-weight:700;color:#fca5a5;">Não entrar em contato</div><div style="font-size:11px;color:#f87171;margin-top:3px;">Este lead está bloqueado. Nenhuma ação comercial deve ser tomada.</div></div>
-        </div>
-        <div class="score-ring">
-          <div>
-            <div class="score-big" id="dp-score-big" style="color:#60a5fa;">78</div>
-            <div class="score-sub">Score Eleva</div>
-          </div>
-          <div style="flex:1;">
-            <div class="sbar-row"><span class="sbar-name">Captação</span><div class="sbar-track"><div class="sbar-fill" style="width:80%;background:#60a5fa;"></div></div><span class="sbar-val" style="color:#60a5fa;">80</span></div>
-            <div class="sbar-row"><span class="sbar-name">Atendimento</span><div class="sbar-track"><div class="sbar-fill" style="width:68%;background:#60a5fa;"></div></div><span class="sbar-val" style="color:#60a5fa;">68</span></div>
-            <div class="sbar-row"><span class="sbar-name">Comercial</span><div class="sbar-track"><div class="sbar-fill" style="width:65%;background:#fbbf24;"></div></div><span class="sbar-val" style="color:#fbbf24;">65</span></div>
-            <div class="sbar-row"><span class="sbar-name">Conversão</span><div class="sbar-track"><div class="sbar-fill" style="width:72%;background:#60a5fa;"></div></div><span class="sbar-val" style="color:#60a5fa;">72</span></div>
-            <div class="sbar-row"><span class="sbar-name">Faltas</span><div class="sbar-track"><div class="sbar-fill" style="width:35%;background:#f87171;"></div></div><span class="sbar-val" style="color:#f87171;">35</span></div>
-            <div class="sbar-row"><span class="sbar-name">Gestão</span><div class="sbar-track"><div class="sbar-fill" style="width:60%;background:#fbbf24;"></div></div><span class="sbar-val" style="color:#fbbf24;">60</span></div>
-          </div>
-        </div>
-        <div class="grid2" style="margin-bottom:12px;">
-          <div class="metric"><div class="mlabel">Avaliações/mês</div><div class="mval">40</div></div>
-          <div class="metric"><div class="mlabel">Taxa de fechamento</div><div class="mval">35%</div></div>
-          <div class="metric"><div class="mlabel">Índice de faltas</div><div class="mval" style="color:#f87171;">28%</div></div>
-          <div class="metric"><div class="mlabel">Ticket médio</div><div class="mval">R$ 4.200</div></div>
-        </div>
-        <div class="perda-box">
-          <div class="perda-title"><i class="ti ti-trending-down" style="font-size:12px;"></i> Receita perdida estimada</div>
-          <div class="perda-val">R$ 48.000<span style="font-size:12px;color:#991b1b;"> / mês</span></div>
-          <div class="perda-sub">R$ 576.000 perdidos por ano</div>
-        </div>
-        <div style="background:#0d1f38;border-radius:8px;padding:12px;border-left:2px solid #2563eb;">
-          <div style="font-size:10px;color:#4a7fc1;margin-bottom:5px;text-transform:uppercase;letter-spacing:0.5px;">Próxima ação</div>
-          <div style="font-size:12px;color:#93c5fd;"><i class="ti ti-calendar" style="font-size:13px;"></i> Reunião mensal de revisão — 10 jul 2026</div>
-        </div>
-      </div>
-
-      <!-- DIAGNÓSTICO -->
-      <div class="dp-content" id="dpc-diagnostico">
-        <div class="section-label"><i class="ti ti-building-hospital"></i> Dados gerais</div>
-        <div class="grid2" style="margin-bottom:14px;">
-          <div class="card" style="padding:12px;">
-            <div class="field"><span class="fl">Doutor(a)</span><span class="fv">Dr. Ricardo Almeida</span></div>
-            <div class="field"><span class="fl">Cidade</span><span class="fv">São Paulo – SP</span></div>
-            <div class="field"><span class="fl">Cadeiras</span><span class="fv">4</span></div>
-            <div class="field"><span class="fl">Funcionários</span><span class="fv">6</span></div>
-          </div>
-          <div class="card" style="padding:12px;">
-            <div class="field"><span class="fl">Ticket médio</span><span class="fv">R$ 4.200</span></div>
-            <div class="field"><span class="fl">Faturamento atual</span><span class="fv">R$ 58.800</span></div>
-            <div class="field"><span class="fl">Invest. marketing</span><span class="fv">R$ 3.500/mês</span></div>
-            <div class="field"><span class="fl">Urgência declarada</span><span class="fv y">8 / 10</span></div>
-          </div>
-        </div>
-        <div class="section-label"><i class="ti ti-antenna"></i> Captação</div>
-        <div class="card" style="padding:12px;margin-bottom:12px;">
-          <div class="field"><span class="fl">Avaliações/mês</span><span class="fv">40</span></div>
-          <div class="field"><span class="fl">Dependência de indicação</span><span class="fv y">70%</span></div>
-          <div class="field"><span class="fl">Tráfego pago ativo</span><span class="fv r">Não</span></div>
-          <div class="field"><span class="fl">Origem principal</span><span class="fv">Instagram</span></div>
-        </div>
-        <div class="section-label"><i class="ti ti-exchange"></i> Comercial e conversão</div>
-        <div class="card" style="padding:12px;margin-bottom:12px;">
-          <div class="field"><span class="fl">Script de vendas</span><span class="fv r">Não tem</span></div>
-          <div class="field"><span class="fl">CRM / ferramenta</span><span class="fv r">Não tem</span></div>
-          <div class="field"><span class="fl">Faz follow-up</span><span class="fv r">Não</span></div>
-          <div class="field"><span class="fl">Taxa de conversão</span><span class="fv y">35%</span></div>
-          <div class="field"><span class="fl">Tempo de fechamento</span><span class="fv">12 dias</span></div>
-        </div>
-        <div class="section-label"><i class="ti ti-calendar-off"></i> Faltas e gestão</div>
-        <div class="card" style="padding:12px;">
-          <div class="field"><span class="fl">Índice de faltas</span><span class="fv r">28%</span></div>
-          <div class="field"><span class="fl">Confirmação automática</span><span class="fv r">Não</span></div>
-          <div class="field"><span class="fl">Acompanha indicadores</span><span class="fv r">Não</span></div>
-          <div class="field"><span class="fl">Tem metas definidas</span><span class="fv r">Não</span></div>
-        </div>
-      </div>
-
-      <!-- SCORE -->
-      <div class="dp-content" id="dpc-score">
-        <div class="section-label">Score Eleva — detalhamento por pilar</div>
-        <div style="background:#060e1c;border:0.5px solid #1e3a5f;border-radius:10px;padding:16px;margin-bottom:14px;">
-          <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:16px;">
-            <div><div style="font-size:48px;font-weight:700;color:#60a5fa;line-height:1;">78</div><div style="font-size:11px;color:#4a7fc1;margin-top:4px;">Score Eleva geral</div></div>
-            <div style="text-align:right;"><div style="font-size:14px;font-weight:600;color:#60a5fa;">Clínica em desenvolvimento</div><div style="font-size:11px;color:#4a7fc1;margin-top:3px;">Melhorias em andamento</div></div>
-          </div>
-          <div class="sbar-row"><span class="sbar-name">Captação</span><div class="sbar-track"><div class="sbar-fill" style="width:80%;background:#34d399;"></div></div><span class="sbar-val" style="color:#34d399;">80</span></div>
-          <div class="sbar-row"><span class="sbar-name">Atendimento</span><div class="sbar-track"><div class="sbar-fill" style="width:68%;background:#60a5fa;"></div></div><span class="sbar-val" style="color:#60a5fa;">68</span></div>
-          <div class="sbar-row"><span class="sbar-name">Comercial</span><div class="sbar-track"><div class="sbar-fill" style="width:65%;background:#fbbf24;"></div></div><span class="sbar-val" style="color:#fbbf24;">65</span></div>
-          <div class="sbar-row"><span class="sbar-name">Conversão</span><div class="sbar-track"><div class="sbar-fill" style="width:72%;background:#60a5fa;"></div></div><span class="sbar-val" style="color:#60a5fa;">72</span></div>
-          <div class="sbar-row"><span class="sbar-name">Faltas</span><div class="sbar-track"><div class="sbar-fill" style="width:35%;background:#f87171;"></div></div><span class="sbar-val" style="color:#f87171;">35</span></div>
-          <div class="sbar-row"><span class="sbar-name">Gestão</span><div class="sbar-track"><div class="sbar-fill" style="width:60%;background:#fbbf24;"></div></div><span class="sbar-val" style="color:#fbbf24;">60</span></div>
-        </div>
-        <div class="card" style="padding:12px;">
-          <div class="field"><span class="fl">0 – 39</span><span class="fv r">Clínica em risco crítico</span></div>
-          <div class="field"><span class="fl">40 – 59</span><span class="fv y">Clínica com gargalos severos</span></div>
-          <div class="field"><span class="fl">60 – 74</span><span class="fv" style="color:#60a5fa;">Clínica em desenvolvimento</span></div>
-          <div class="field"><span class="fl">75 – 100</span><span class="fv g">Clínica em crescimento</span></div>
-        </div>
-      </div>
-
-      <!-- PERDAS -->
-      <div class="dp-content" id="dpc-perdas">
-        <div class="perda-box" style="margin-bottom:14px;">
-          <div class="perda-title"><i class="ti ti-trending-down" style="font-size:12px;"></i> Estimativa de receita perdida</div>
-          <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
-            <div style="background:#1f0f0f;border-radius:7px;padding:10px;"><div style="font-size:10px;color:#991b1b;margin-bottom:3px;text-transform:uppercase;">Por faltas / mês</div><div class="perda-val" style="font-size:20px;">R$ 16.464</div></div>
-            <div style="background:#1f0f0f;border-radius:7px;padding:10px;"><div style="font-size:10px;color:#991b1b;margin-bottom:3px;text-transform:uppercase;">Por baixa conversão / mês</div><div class="perda-val" style="font-size:20px;">R$ 31.500</div></div>
-            <div style="background:#1f0f0f;border-radius:7px;padding:10px;border:0.5px solid #7f1d1d;"><div style="font-size:10px;color:#991b1b;margin-bottom:3px;text-transform:uppercase;">Total / mês</div><div class="perda-val">R$ 47.964</div></div>
-            <div style="background:#1f0f0f;border-radius:7px;padding:10px;border:0.5px solid #7f1d1d;"><div style="font-size:10px;color:#991b1b;margin-bottom:3px;text-transform:uppercase;">Total / ano</div><div class="perda-val">R$ 575.568</div></div>
-          </div>
-        </div>
-        <div class="card" style="padding:12px;">
-          <div class="field"><span class="fl">Faturamento atual</span><span class="fv">R$ 58.800/mês</span></div>
-          <div class="field"><span class="fl">Faturamento potencial</span><span class="fv g">R$ 106.764/mês</span></div>
-          <div class="field"><span class="fl">Crescimento possível</span><span class="fv g">+82%</span></div>
-          <div class="field"><span class="fl">Receita adicional/ano</span><span class="fv g">R$ 575.568</span></div>
-        </div>
-      </div>
-
-      <!-- IA -->
-      <div class="dp-content" id="dpc-ia">
-        <div class="ia-box" style="margin-bottom:10px;">
-          <div class="ia-label" style="color:#f87171;"><i class="ti ti-flame" style="font-size:12px;"></i> Principal gargalo</div>
-          <div class="ia-text">Faltas (28%) + baixa conversão (35%) + ausência de follow-up. A clínica perde R$ 48k/mês por falta de processo. O maior ROI está em reduzir faltas e estruturar follow-up.</div>
-        </div>
-        <div class="ia-box" style="border-color:#4a9c6b;margin-bottom:10px;">
-          <div class="ia-label" style="color:#34d399;"><i class="ti ti-trending-up" style="font-size:12px;"></i> Oportunidade imediata</div>
-          <div class="ia-text">Implementar confirmação automática de consultas (WhatsApp) pode reduzir faltas para menos de 10% em 30 dias. Impacto estimado: +R$ 12.000/mês sem custo adicional.</div>
-        </div>
-        <div class="ia-box" style="border-color:#d97706;margin-bottom:10px;">
-          <div class="ia-label" style="color:#fbbf24;"><i class="ti ti-chart-pie" style="font-size:12px;"></i> Probabilidade de cancelamento</div>
-          <div class="ia-text">Baixa (18%). Cliente paga em dia, participa das reuniões e está implementando. Implementação em 55% é o ponto de atenção — acompanhar ritmo de execução.</div>
-        </div>
-        <div class="ia-box" style="border-color:#2563eb;margin-bottom:14px;">
-          <div class="ia-label"><i class="ti ti-bolt" style="font-size:12px;"></i> Próxima melhor ação</div>
-          <div class="ia-text">Na reunião de julho: apresentar o score atualizado, mostrar evolução das faltas e introduzir o script de objeções como próximo passo do plano.</div>
-        </div>
-        <div class="section-label">Atalhos de análise</div>
-        <div style="display:flex;flex-wrap:wrap;gap:4px;">
-          <button class="btn-ia" onclick="copyPrompt('5 ações prioritárias para Clínica Odonto Plus com score 78, faltas 28% e conversão 35%')"><i class="ti ti-list-check"></i> 5 ações prioritárias</button>
-          <button class="btn-ia" onclick="copyPrompt('Script de follow-up D+1, D+3 e D+7 pós-avaliação de implante para clínica com objeção principal de preço')"><i class="ti ti-brand-whatsapp"></i> Script follow-up</button>
-          <button class="btn-ia" onclick="copyPrompt('Como apresentar a estimativa de R$ 576k em perdas anuais para convencer o doutor da Clínica Odonto Plus a agir agora')"><i class="ti ti-coin"></i> Argumento de venda</button>
-          <button class="btn-ia" onclick="copyPrompt('Cronograma de 90 dias para Clínica Odonto Plus reduzir faltas de 28% para 10% e aumentar conversão de 35% para 50%')"><i class="ti ti-calendar"></i> Cronograma 90 dias</button>
-        </div>
-      </div>
-
-      <!-- PLANO -->
-      <div class="dp-content" id="dpc-plano">
-        <div style="font-size:11px;color:#4a7fc1;margin-bottom:12px;display:flex;align-items:center;gap:5px;"><i class="ti ti-info-circle"></i> Priorização baseada no score e diagnóstico. Execute na ordem para maximizar resultado.</div>
-        <div class="action-card"><div class="action-num">1</div><div style="flex:1;"><div class="action-title">Confirmação automática de consultas</div><div class="action-desc">WhatsApp automático D-48h, D-24h e D-2h. Reduz faltas de 28% para menos de 10% em 30 dias.</div></div><div class="action-tag tag-urg">Urgente</div></div>
-        <div class="action-card"><div class="action-num">2</div><div style="flex:1;"><div class="action-title">Script de apresentação de valor na avaliação</div><div class="action-desc">Roteiro completo: anamnese → dor → valor → preço → pergunta de fechamento.</div></div><div class="action-tag tag-urg">Urgente</div></div>
-        <div class="action-card"><div class="action-num">3</div><div style="flex:1;"><div class="action-title">Régua de follow-up pós-avaliação</div><div class="action-desc">Mensagens específicas para D+1, D+3 e D+7 com script por objeção.</div></div><div class="action-tag tag-urg">Urgente</div></div>
-        <div class="action-card"><div class="action-num">4</div><div style="flex:1;"><div class="action-title">Treinar recepcionista em pré-qualificação</div><div class="action-desc">3 perguntas-chave antes da avaliação para aumentar qualidade dos leads.</div></div><div class="action-tag tag-med">30 dias</div></div>
-        <div class="action-card"><div class="action-num">5</div><div style="flex:1;"><div class="action-title">Definir e acompanhar 5 indicadores semanais</div><div class="action-desc">Leads, avaliações, fechamentos, faltas, faturamento. Reunião semanal de 20 min.</div></div><div class="action-tag tag-med">30 dias</div></div>
-        <div class="action-card"><div class="action-num">6</div><div style="flex:1;"><div class="action-title">Diversificar canais de captação</div><div class="action-desc">Reduzir dependência de indicação de 70% para 50%. Google Ads local + Instagram.</div></div><div class="action-tag tag-low">90 dias</div></div>
-      </div>
-
-      <!-- HISTÓRICO -->
-      <div class="dp-content" id="dpc-timeline">
-        <div id="dp-timeline-entries"></div>
-        <div class="divider"></div>
-        <div class="input-row"><label>Registrar nova observação</label><input class="inp" id="nova-obs-dp" placeholder="Digite aqui..."></div>
-        <button class="btn-primary" onclick="addObsDp()" style="margin-top:4px;"><i class="ti ti-plus"></i> Registrar</button>
-      </div>
-
-      <!-- SAÚDE -->
-      <div class="dp-content" id="dpc-saude">
-        <div class="card" style="padding:14px;margin-bottom:12px;">
-          <div class="card-title"><i class="ti ti-heart"></i> Saúde do cliente</div>
-          <div class="hb-row"><span class="hb-label">Financeiro</span><div class="hb-track"><div class="hb-fill" id="hb-fin" style="width:0%;background:#2563eb;"></div></div><span class="hb-val" id="hbv-fin" style="color:#4a7fc1;">0</span></div>
-          <div class="hb-row"><span class="hb-label">Participação</span><div class="hb-track"><div class="hb-fill" id="hb-part" style="width:0%;background:#2563eb;"></div></div><span class="hb-val" id="hbv-part" style="color:#4a7fc1;">0</span></div>
-          <div class="hb-row"><span class="hb-label">Implementação</span><div class="hb-track"><div class="hb-fill" id="hb-impl" style="width:0%;background:#2563eb;"></div></div><span class="hb-val" id="hbv-impl" style="color:#4a7fc1;">0</span></div>
-          <div class="hb-row"><span class="hb-label">Resultado</span><div class="hb-track"><div class="hb-fill" id="hb-res" style="width:0%;background:#2563eb;"></div></div><span class="hb-val" id="hbv-res" style="color:#4a7fc1;">0</span></div>
-          <div class="divider"></div>
-          <div style="display:flex;justify-content:space-between;align-items:center;">
-            <span style="font-size:12px;color:#4a7fc1;font-weight:600;">Saúde geral</span>
-            <span style="font-size:26px;font-weight:700;color:#60a5fa;" id="saude-geral">0%</span>
-          </div>
-        </div>
-        <div class="grid2" style="margin-bottom:0;">
-          <div class="input-row"><label>Financeiro (%)</label><input class="inp" type="number" id="saude-fin-inp" min="0" max="100" value="0" oninput="updateSaude()"></div>
-          <div class="input-row"><label>Participação (%)</label><input class="inp" type="number" id="saude-part-inp" min="0" max="100" value="0" oninput="updateSaude()"></div>
-          <div class="input-row"><label>Implementação (%)</label><input class="inp" type="number" id="saude-impl-inp" min="0" max="100" value="0" oninput="updateSaude()"></div>
-          <div class="input-row"><label>Resultado (%)</label><input class="inp" type="number" id="saude-res-inp" min="0" max="100" value="0" oninput="updateSaude()"></div>
-        </div>
-        <button class="btn-primary" onclick="saveSaude()" style="margin-top:8px;"><i class="ti ti-device-floppy"></i> Salvar saúde</button>
-      </div>
-
-      <!-- FINANCEIRO -->
-      <div class="dp-content" id="dpc-financeiro">
-        <div class="card" style="padding:12px;margin-bottom:12px;">
-          <div class="card-title"><i class="ti ti-coin"></i> Contrato</div>
-          <div class="input-row"><label>Plano contratado</label><select class="inp" id="fin-plano"><option value="">Selecione</option><option>Eleva Start</option><option>Eleva Pro</option><option>Eleva Scale</option></select></div>
-          <div class="input-row"><label>Valor mensal (R$)</label><input class="inp" type="number" id="fin-valor" placeholder="0"></div>
-          <div class="input-row"><label>Dia de vencimento</label><input class="inp" type="number" id="fin-dia" placeholder="Ex: 10" min="1" max="31"></div>
-          <div class="input-row"><label>Status do pagamento</label><select class="inp" id="fin-status"><option value="">Selecione</option><option>Em dia</option><option>Em aberto</option><option>Atrasado</option></select></div>
-          <div class="input-row"><label>Observação</label><input class="inp" id="fin-obs" placeholder="Ex: Cobrar hoje"></div>
-          <button class="btn-primary" onclick="saveFinanceiro()" style="margin-top:10px;"><i class="ti ti-device-floppy"></i> Salvar contrato</button>
-        </div>
-      </div>
-
-    </div><!-- /dp-body -->
-  </div><!-- /detail-panel -->
-</div><!-- /overlay -->
-
-<!-- ===== MODAL NOVA CLÍNICA ===== -->
-<div id="modal-nova-clinica" class="modal-wrap" onclick="closeModalIfBg(event,'modal-nova-clinica')">
-  <div class="modal-box">
-    <div style="font-size:15px;font-weight:700;color:#e2e8f0;margin-bottom:18px;display:flex;align-items:center;gap:8px;"><i class="ti ti-building-hospital" style="color:#60a5fa;"></i> Cadastrar nova clínica</div>
-    <div class="input-row"><label>Nome da clínica / Doutor(a) *</label><input class="inp" id="nc-nome" placeholder="Ex: Dr. João Silva"></div>
-    <div class="input-row"><label>Cidade / Estado</label><input class="inp" id="nc-cidade" placeholder="Ex: São Paulo – SP"></div>
-    <div class="input-row"><label>Telefone / WhatsApp</label><input class="inp" id="nc-tel" placeholder="(00) 00000-0000"></div>
-    <div class="input-row"><label>Etapa inicial no pipeline</label>
-      <select class="inp" id="nc-stage">
-        <option value="Lead Novo">Lead Novo</option><option value="Qualificação">Qualificação</option>
-        <option value="Diagnóstico">Diagnóstico</option><option value="Apresentação">Apresentação</option>
-        <option value="Proposta">Proposta</option><option value="Negociação">Negociação</option>
-      </select>
-    </div>
-    <div class="input-row"><label>Consultor responsável</label><input class="inp" id="nc-consultor" placeholder="Nome do consultor"></div>
-    <div style="display:flex;gap:8px;margin-top:18px;">
-      <button class="btn-primary" style="flex:1;" onclick="createClinica()">
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-        Cadastrar
       </button>
-      <button class="btn-secondary" onclick="closeModal('modal-nova-clinica')">
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
-        Cancelar
+      <button class="nav-item" data-page="equipe">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="8" r="3.2"/><path d="M2.5 20c0-3.3 2.9-6 6.5-6s6.5 2.7 6.5 6"/><circle cx="17" cy="7" r="2.4"/><path d="M15.5 11.3c2.7.4 4.5 2.4 4.5 5.2"/></svg>
+        Equipe
       </button>
+    </nav>
+    <div class="sidebar-footer">
+      <button id="export-btn">⬇ Exportar dados</button>
+      <button id="import-btn">⬆ Importar dados</button>
+      <input type="file" id="import-file-input" accept="application/json" style="display:none">
+      <span id="sync-status">Carregando...</span>
+      <div class="sidebar-note">Dados sincronizados em tempo real para toda a equipe via banco de dados na nuvem. Use "Exportar" para backups.</div>
     </div>
-  </div>
+  </aside>
+  <main class="main">
+    <header class="topbar">
+      <h1 id="page-title">Pipeline</h1>
+      <div id="topbar-actions"></div>
+    </header>
+    <div id="page-content"></div>
+  </main>
 </div>
-
-<!-- ===== MODAL NOVO USUÁRIO ===== -->
-<div id="modal-novo-usuario" class="modal-wrap" onclick="closeModalIfBg(event,'modal-novo-usuario')">
-  <div class="modal-box wide">
-    <div style="font-size:15px;font-weight:700;color:#e2e8f0;margin-bottom:18px;display:flex;align-items:center;gap:8px;"><i class="ti ti-user-plus" style="color:#60a5fa;"></i> Criar novo usuário</div>
-    <div class="input-row"><label>Nome completo *</label><input class="inp" id="nu-nome" placeholder="Ex: Ana Beatriz"></div>
-    <div class="input-row"><label>E-mail *</label><input class="inp" id="nu-email" placeholder="ana@eleva.com.br"></div>
-    <div class="input-row"><label>Cargo / função</label><input class="inp" id="nu-cargo" placeholder="Ex: Consultora de Crescimento"></div>
-    <div class="input-row"><label>Cor do avatar</label>
-      <select class="inp" id="nu-cor">
-        <option value="0">Azul</option><option value="1">Roxo</option><option value="2">Verde</option>
-        <option value="3">Laranja</option><option value="4">Rosa</option><option value="5">Teal</option>
-      </select>
-    </div>
-    <div style="margin-top:14px;">
-      <div style="font-size:10px;color:#4a7fc1;text-transform:uppercase;letter-spacing:1px;margin-bottom:10px;">Permissões — clique para ativar/desativar</div>
-      <div id="perm-grid" style="display:grid;grid-template-columns:1fr 1fr;gap:7px;"></div>
-    </div>
-    <div style="display:flex;gap:8px;margin-top:18px;">
-      <button class="btn-primary" style="flex:1;" onclick="createUser()">
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/><line x1="19" y1="8" x2="19" y2="14"/><line x1="22" y1="11" x2="16" y2="11"/></svg>
-        Criar usuário
-      </button>
-      <button class="btn-secondary" onclick="closeModal('modal-novo-usuario')">
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
-        Cancelar
-      </button>
-    </div>
-  </div>
-</div>
-
-<!-- Firebase SDK compat (funciona sem type=module) -->
-<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
-<script>
-// ========== FIREBASE CONFIG ==========
-const _fbApp = firebase.initializeApp({
-  apiKey: "AIzaSyC4aR6f104Dyn3HfE-8FEWc-lBukr8vJxs",
-  authDomain: "crmelevaiplante.firebaseapp.com",
-  projectId: "crmelevaiplante",
-  storageBucket: "crmelevaiplante.firebasestorage.app",
-  messagingSenderId: "308958905346",
-  appId: "1:308958905346:web:52a3b24a70cdb3ffa3531b"
-});
-const _db = firebase.firestore();
-
-function _showFbStatus(msg, color) {
-  let el = document.getElementById('fb-status');
-  if (!el) {
-    el = document.createElement('div');
-    el.id = 'fb-status';
-    el.style.cssText = 'position:fixed;bottom:16px;right:16px;background:#060b18;border:0.5px solid #1e3a5f;border-radius:8px;padding:8px 14px;font-size:11px;z-index:9999;display:flex;align-items:center;gap:6px;transition:opacity 0.4s;';
-    document.body.appendChild(el);
-  }
-  el.style.opacity = '1';
-  el.style.color = color;
-  el.style.borderColor = color + '66';
-  el.innerHTML = `<svg width="8" height="8" viewBox="0 0 24 24" fill="${color}"><circle cx="12" cy="12" r="10"/></svg> ${msg}`;
-}
-function _hideFbStatus() {
-  const el = document.getElementById('fb-status');
-  if (el) el.style.opacity = '0';
-}
-
-window.fbSaveClient = function(c) {
-  const data = JSON.parse(JSON.stringify(c)); // serializa para remover undefined
-  _db.collection('clinicas').doc(String(c.id)).set(data).catch(e => console.error('fbSaveClient:', e));
-};
-window.fbDeleteClient = function(id) {
-  _db.collection('clinicas').doc(String(id)).delete().catch(e => console.error('fbDeleteClient:', e));
-};
-window.fbSaveUser = function(u) {
-  const data = JSON.parse(JSON.stringify(u));
-  _db.collection('usuarios').doc(String(u.id)).set(data).catch(e => console.error('fbSaveUser:', e));
-};
-window.fbDeleteUser = function(id) {
-  _db.collection('usuarios').doc(String(id)).delete().catch(e => console.error('fbDeleteUser:', e));
-};
-
-window.fbInit = function() {
-  _showFbStatus('Conectando ao Firebase…', '#4a7fc1');
-
-  // Listener tempo real — clínicas
-  _db.collection('clinicas').onSnapshot(snap => {
-    snap.docChanges().forEach(change => {
-      const c = change.doc.data();
-      if (change.type === 'added' || change.type === 'modified') {
-        const idx = window.CLIENTS.findIndex(x => x.id === c.id);
-        if (idx >= 0) window.CLIENTS[idx] = c; else window.CLIENTS.push(c);
-        if (c.id >= window._nextId) window._nextId = c.id + 1;
-      } else if (change.type === 'removed') {
-        window.CLIENTS = window.CLIENTS.filter(x => x.id !== c.id);
-        const ref = window.CLIENTS;
-        while(ref.length) ref.pop();
-        window.CLIENTS.forEach && null; // mantém a referência
-      }
-    });
-    if(typeof updateDashboard==='function') updateDashboard();
-    if(typeof renderClinicas==='function') renderClinicas();
-    if(typeof renderPipeline==='function') renderPipeline();
-  }, err => {
-    console.error('Firebase snapshot error:', err);
-    _showFbStatus('Erro Firebase: ' + err.code, '#f87171');
-  });
-
-  _showFbStatus('Firebase conectado ✓', '#34d399');
-  setTimeout(_hideFbStatus, 3000);
-};
-
-// Inicia após o DOM carregar
-document.addEventListener('DOMContentLoaded', function() {
-  setTimeout(function() {
-    if(window.fbInit) window.fbInit();
-  }, 500);
-});
-</script>
+<div id="modal-root"></div>
+<div id="form-modal-root"></div>
 
 <script>
-// === DATA ===
-window.CLIENTS = [];
-window._nextId = 1;
-const CLIENTS = window.CLIENTS;
-const STAGES=['Lead Novo','Qualificação','Diagnóstico','Apresentação','Proposta','Negociação','Cliente Ativo','Perdido','Não entrar em contato'];
-let _dragId=null;
-window.USERS = [{id:1,name:'Administrador',initials:'AD',color:'#1d4ed8',tcolor:'#bfdbfe',cargo:'Admin',email:'admin@eleva.com.br',perms:['dashboard','clinicas','pipeline','followups','propostas','diagnosticos','financeiro','relatorios','usuarios','config']}];
-let USERS = window.USERS;
-const ALL_PAGES=[
-  {key:'dashboard',label:'Dashboard',icon:'ti-layout-dashboard'},
-  {key:'clinicas',label:'Clínicas',icon:'ti-building-hospital'},
-  {key:'pipeline',label:'Pipeline',icon:'ti-layout-kanban'},
-  {key:'followups',label:'Follow-ups',icon:'ti-bell'},
-  {key:'propostas',label:'Propostas',icon:'ti-file-invoice'},
-  {key:'diagnosticos',label:'Diagnósticos',icon:'ti-stethoscope'},
-  {key:'financeiro',label:'Financeiro',icon:'ti-coin'},
-  {key:'relatorios',label:'Relatórios',icon:'ti-chart-bar'},
-  {key:'usuarios',label:'Usuários',icon:'ti-users'},
-  {key:'config',label:'Configurações',icon:'ti-settings'},
+/* ============================================================
+   ESTADO E CONFIGURAÇÃO
+   ============================================================ */
+/* ============================================================
+   FIREBASE (banco de dados compartilhado em tempo real)
+   ============================================================
+   1. Crie um projeto gratuito em https://console.firebase.google.com
+   2. Ative o Firestore Database (modo produção) na região mais próxima
+   3. Cole as regras de segurança indicadas na documentação enviada
+   4. Em "Configurações do projeto > Seus apps", registre um app Web
+   5. Copie os valores abaixo, substituindo "COLE_AQUI..."
+   ============================================================ */
+const firebaseConfig = {
+  apiKey: "AIzaSyC435qtJrdnDUu2fB5EIg4OKJ5-j-87c94",
+  authDomain: "elevacrm-e57a2.firebaseapp.com",
+  projectId: "elevacrm-e57a2",
+  storageBucket: "elevacrm-e57a2.firebasestorage.app",
+  messagingSenderId: "515104714142",
+  appId: "1:515104714142:web:0d65ccc23cfb1bacc83a8f"
+};
+
+let db = null;
+let docRef = null;
+let firebaseReady = false;
+
+try{
+  firebase.initializeApp(firebaseConfig);
+  db = firebase.firestore();
+  docRef = db.collection('eleva_crm').doc('dados');
+  firebaseReady = true;
+}catch(e){
+  console.error('Erro ao iniciar o Firebase:', e);
+}
+let state = { leads: [], clinics: [], team: [], financeGeral: [] };
+
+const STAGES = [
+  {key:'frio', label:'Lead Frio', desc:'Leads que chegaram para a gente, ainda sem nenhum contato.', color:'#94A3B8'},
+  {key:'tratado', label:'Lead Tratado', desc:'Já chamamos o lead pela primeira vez.', color:'#5B9BD5'},
+  {key:'agendado', label:'Lead Agendado', desc:'Reunião marcada para fechar em call.', color:'#19B6A4'},
+  {key:'followup', label:'Em Follow Up', desc:'Sumiu após a reunião ou parou de responder mensagens.', color:'#E0A23B'},
+  {key:'morto', label:'Lead Morto', desc:'Não quer absolutamente nada. Não chamar de novo.', color:'#C2554A'},
 ];
-const AVATAR_COLORS=[['#1d4ed8','#bfdbfe'],['#7c5fc4','#ddd6fe'],['#065f46','#6ee7b7'],['#d97706','#fde68a'],['#be185d','#fbcfe8'],['#0f766e','#99f6e4'],['#9333ea','#e9d5ff'],['#e05555','#fca5a5']];
-let _colorIdx=0;
-const STAGE_COLORS={'Lead Novo':'#34d399','Qualificação':'#4a7fc1','Diagnóstico':'#7c5fc4','Apresentação':'#0f766e','Proposta':'#d97706','Negociação':'#e05555','Cliente Ativo':'#2563eb','Perdido':'#6b7280','Não entrar em contato':'#ef4444'};
-let _currentUser=USERS[0];
+const STAGE_FECHADO = {key:'fechado', label:'Cliente Fechado', color:'#2FAE63'};
+const ALL_STAGES = [...STAGES, STAGE_FECHADO];
 
-function _getInitials(n){const p=n.trim().split(' ').filter(Boolean);return p.length===1?p[0].slice(0,2).toUpperCase():(p[0][0]+(p[p.length-1][0]||'')).toUpperCase();}
-function _fmtMoeda(v){return'R$ '+parseFloat(v||0).toLocaleString('pt-BR');}
-function _hoje(){const d=new Date();return d.getDate()+' '+['jan','fev','mar','abr','mai','jun','jul','ago','set','out','nov','dez'][d.getMonth()]+' '+d.getFullYear();}
+const FINANCE_PASSWORD = 'elevasecret';
 
-// === MODAL ===
-function openModal(id){const m=document.getElementById(id);if(m){m.style.display='flex';requestAnimationFrame(()=>m.classList.add('open'));}}
-function closeModal(id){const m=document.getElementById(id);if(m){m.classList.remove('open');setTimeout(()=>{if(!m.classList.contains('open'))m.style.display='none';},200);}}
-function closeModalIfBg(e,id){if(e.target===document.getElementById(id))closeModal(id);}
+const CARGOS = ['CEO','Financeiro','Closer','SDR','BDR'];
+const CLINIC_STATUS = [
+  {key:'prospect', label:'Prospect'},
+  {key:'negociacao', label:'Em negociação'},
+  {key:'cliente', label:'Cliente'},
+  {key:'sem_interesse', label:'Sem interesse'},
+];
 
-// === DASHBOARD ===
-function updateDashboard(){
-  if(!document.getElementById('dash-ativos'))return;
-  const ativos=CLIENTS.filter(c=>c.stage==='Cliente Ativo');
-  const neg=CLIENTS.filter(c=>!['Cliente Ativo','Perdido','Não entrar em contato'].includes(c.stage));
-  const block=CLIENTS.filter(c=>c.stage==='Não entrar em contato');
-  const mrr=ativos.reduce((s,c)=>s+(parseFloat(c.value)||0),0);
-  document.getElementById('dash-ativos').textContent=ativos.length;
-  document.getElementById('dash-mrr').textContent=mrr?_fmtMoeda(mrr):'R$ 0';
-  document.getElementById('dash-neg').textContent=neg.length;
-  document.getElementById('dash-block').textContent=block.length;
-  document.getElementById('badge-clinicas').textContent=CLIENTS.length;
-  // pipeline bars
-  const maxN=Math.max(...STAGES.map(s=>CLIENTS.filter(c=>c.stage===s).length),1);
-  let bars='';
-  STAGES.slice(0,8).forEach(s=>{
-    const n=CLIENTS.filter(c=>c.stage===s).length; if(!n)return;
-    bars+=`<div style="display:flex;align-items:center;gap:8px;padding:4px 0;"><div style="width:8px;height:8px;border-radius:50%;background:${STAGE_COLORS[s]};flex-shrink:0;"></div><span style="font-size:11px;color:#7a9cc0;flex:1;">${s}</span><div style="width:80px;height:4px;background:#0a0f1e;border-radius:2px;"><div style="width:${Math.round(n/maxN*100)}%;height:4px;background:${STAGE_COLORS[s]};border-radius:2px;"></div></div><span style="font-size:11px;font-weight:600;color:#e2e8f0;width:16px;text-align:right;">${n}</span></div>`;
-  });
-  document.getElementById('dash-pipeline-bars').innerHTML=bars||'<div style="font-size:12px;color:#4a7fc1;padding:10px 0;">Nenhum lead no pipeline ainda.</div>';
-  // recentes
-  let rec='';
-  CLIENTS.slice(-5).reverse().forEach(c=>{
-    const sc=c.stage==='Cliente Ativo'?'pill-green':c.stage==='Não entrar em contato'?'pill-red':'pill-blue';
-    rec+=`<div style="display:flex;align-items:center;gap:8px;padding:6px 0;border-bottom:0.5px solid #0d1f38;cursor:pointer;" onclick="openClient(${c.id})"><div class="avatar" style="background:${c.color};color:${c.tcolor};">${c.initials}</div><div style="flex:1;"><div style="font-size:12px;font-weight:600;">${c.name}</div><div style="font-size:10px;color:#4a7fc1;">${c.city||'—'}</div></div><span class="pill ${sc}" style="font-size:10px;">${c.stage}</span></div>`;
-  });
-  document.getElementById('dash-recent').innerHTML=rec||'<div style="font-size:12px;color:#4a7fc1;padding:10px 0;">Nenhuma clínica cadastrada ainda.</div>';
-  // IA
-  let ia='';
-  const risco=CLIENTS.filter(c=>c.score&&c.score<40);
-  if(risco.length) ia+=`<div class="ia-box"><div class="ia-label" style="color:#f87171;"><i class="ti ti-alert-circle" style="font-size:12px;"></i> Score crítico</div><div class="ia-text">${risco.map(c=>c.name).join(', ')} com score abaixo de 40. Intervenção imediata necessária.</div></div>`;
-  if(block.length) ia+=`<div class="ia-box" style="border-color:#ef4444;"><div class="ia-label" style="color:#f87171;"><i class="ti ti-ban" style="font-size:12px;"></i> Não entrar em contato</div><div class="ia-text">${block.map(c=>c.name).join(', ')} — contato comercial bloqueado.</div></div>`;
-  const inadim=CLIENTS.filter(c=>c.payment==='Atrasado');
-  if(inadim.length) ia+=`<div class="ia-box" style="border-color:#d97706;"><div class="ia-label" style="color:#fbbf24;"><i class="ti ti-coin" style="font-size:12px;"></i> Inadimplência</div><div class="ia-text">${inadim.map(c=>c.name).join(', ')} com pagamento em atraso.</div></div>`;
-  if(!ia) ia='<div style="font-size:12px;color:#4a7fc1;padding:8px 0;">Nenhum alerta no momento. Cadastre clínicas para ativar a IA Consultora.</div>';
-  document.getElementById('dash-ia').innerHTML=ia;
+let currentPage = 'pipeline';
+let pipelineSearch = '';
+
+let currentModalLead = null;
+let isNewLead = false;
+let modalActiveTab = 'geral';
+let modalFinanceUnlocked = false;
+let modalFinanceError = '';
+let modalOriginalStage = null;
+let modalHintMessage = '';
+
+let financeUnlocked = false;
+let financeError = '';
+
+let formModalConfig = null;
+let pendingDeleteKey = null;
+
+/* ============================================================
+   HELPERS
+   ============================================================ */
+function uid(prefix){ return prefix + '_' + Math.random().toString(36).slice(2,10); }
+function escapeHTML(str){
+  if(str===undefined||str===null) return '';
+  return String(str).replace(/[&<>"']/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 }
-
-// === PÁGINAS DINÂMICAS ===
-function renderFollowups(){
-  const fu=CLIENTS.filter(c=>c.nextAction&&c.nextAction!=='Preencher diagnóstico');
-  if(!fu.length){document.getElementById('page-followups').innerHTML='<div style="text-align:center;padding:60px 20px;color:#4a7fc1;"><i class="ti ti-bell" style="font-size:48px;display:block;margin-bottom:12px;color:#1e3a5f;"></i><h3 style="font-size:14px;color:#7a9cc0;margin-bottom:6px;font-weight:500;">Nenhum follow-up cadastrado</h3><p style="font-size:12px;">Os follow-ups aparecerão aqui conforme você registrar próximas ações nas clínicas.</p></div>';return;}
-  let html=`<div style="margin-bottom:16px;display:flex;gap:10px;">
-    <div class="metric" style="flex:1;"><div class="mlabel"><i class="ti ti-building-hospital"></i> Com ação definida</div><div class="mval" style="color:#60a5fa;">${fu.length}</div></div>
-    <div class="metric" style="flex:1;"><div class="mlabel"><i class="ti ti-users"></i> Clientes ativos</div><div class="mval" style="color:#34d399;">${CLIENTS.filter(c=>c.stage==='Cliente Ativo').length}</div></div>
-    <div class="metric" style="flex:1;"><div class="mlabel"><i class="ti ti-ban"></i> Bloqueados</div><div class="mval" style="color:#f87171;">${CLIENTS.filter(c=>c.stage==='Não entrar em contato').length}</div></div>
-  </div><div class="card"><div class="card-title"><i class="ti ti-bell"></i> Próximas ações</div>`;
-  fu.forEach(c=>{
-    const bl=c.stage==='Não entrar em contato';
-    html+=`<div class="fu-card ${bl?'urgente':'ok'}" onclick="openClient(${c.id})" style="cursor:pointer;">
-      <div style="width:32px;height:32px;border-radius:50%;background:${c.color};color:${c.tcolor};display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0;">${c.initials}</div>
-      <div style="flex:1;"><div style="font-size:12px;font-weight:600;color:#e2e8f0;">${c.name}</div><div style="font-size:11px;color:#4a7fc1;margin-top:2px;">${c.nextAction}</div></div>
-      <div style="text-align:right;"><span class="pill ${bl?'pill-red':c.stage==='Cliente Ativo'?'pill-green':'pill-blue'}">${c.stage}</span><div style="font-size:10px;color:#4a7fc1;margin-top:4px;">${c.city||'—'}</div></div>
-    </div>`;
-  });
-  html+='</div>';
-  document.getElementById('page-followups').innerHTML=html;
+function formatCurrency(v){
+  return new Intl.NumberFormat('pt-BR',{style:'currency',currency:'BRL'}).format(Number(v)||0);
 }
-
-function renderPropostas(){
-  const prop=CLIENTS.filter(c=>['Proposta','Negociação'].includes(c.stage));
-  if(!prop.length){document.getElementById('page-propostas').innerHTML='<div style="text-align:center;padding:60px 20px;color:#4a7fc1;"><i class="ti ti-file-invoice" style="font-size:48px;display:block;margin-bottom:12px;color:#1e3a5f;"></i><h3 style="font-size:14px;color:#7a9cc0;margin-bottom:6px;font-weight:500;">Nenhuma proposta em aberto</h3><p style="font-size:12px;">As propostas aparecerão quando leads chegarem às etapas Proposta ou Negociação.</p></div>';return;}
-  let html=`<div class="card" style="padding:0;overflow:hidden;"><table class="data-table"><thead><tr><th>Clínica</th><th>Cidade</th><th>Etapa</th><th>Score</th><th>Plano</th><th>Valor/mês</th><th>Próxima ação</th></tr></thead><tbody>`;
-  prop.forEach(c=>{
-    const sp=c.scorePill||'pill-blue';
-    html+=`<tr onclick="openClient(${c.id})"><td><div style="display:flex;align-items:center;gap:8px;"><div class="avatar" style="background:${c.color};color:${c.tcolor};">${c.initials}</div><div style="font-size:12px;font-weight:600;">${c.name}</div></div></td><td style="font-size:11px;color:#4a7fc1;">${c.city||'—'}</td><td><span class="pill ${c.stage==='Negociação'?'pill-yellow':'pill-blue'}">${c.stage}</span></td><td>${c.score?`<span class="pill ${sp}">${c.score}</span>`:'<span style="color:#4a7fc1;">—</span>'}</td><td style="font-size:11px;">${c.plan||'—'}</td><td style="font-size:11px;font-weight:600;">${c.value||'—'}</td><td style="font-size:11px;color:#93c5fd;max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${c.nextAction||'—'}</td></tr>`;
-  });
-  html+='</tbody></table></div>';
-  document.getElementById('page-propostas').innerHTML=html;
+function formatDate(d){
+  if(!d) return '-';
+  const date = new Date(d);
+  if(isNaN(date.getTime())) return '-';
+  return date.toLocaleDateString('pt-BR');
 }
-
-function renderDiagnosticos(){
-  const diag=CLIENTS.filter(c=>c.score);
-  if(!diag.length){document.getElementById('page-diagnosticos').innerHTML='<div style="text-align:center;padding:60px 20px;color:#4a7fc1;"><i class="ti ti-stethoscope" style="font-size:48px;display:block;margin-bottom:12px;color:#1e3a5f;"></i><h3 style="font-size:14px;color:#7a9cc0;margin-bottom:6px;font-weight:500;">Nenhum diagnóstico realizado</h3><p style="font-size:12px;">Os diagnósticos aparecerão aqui após o preenchimento nos cards das clínicas.</p></div>';return;}
-  let html=`<div class="card" style="padding:0;overflow:hidden;"><table class="data-table"><thead><tr><th>Clínica</th><th>Score</th><th>Captação</th><th>Atendimento</th><th>Comercial</th><th>Conversão</th><th>Faltas</th><th>Gestão</th><th>Perda/mês</th></tr></thead><tbody>`;
-  diag.forEach(c=>{
-    const sc=c.scores||{};
-    const clr=v=>v>=70?'#34d399':v>=40?'#fbbf24':'#f87171';
-    const perdaM=c.diagData&&c.diagData.aval&&c.diagData.conv&&c.diagData.faltas&&c.diagData.ticket?Math.round(parseFloat(c.diagData.aval)*(parseFloat(c.diagData.faltas)/100)*(parseFloat(c.diagData.conv)/100)*parseFloat(c.diagData.ticket)+parseFloat(c.diagData.aval)*(1-parseFloat(c.diagData.faltas)/100)*Math.max(0,0.55-parseFloat(c.diagData.conv)/100)*parseFloat(c.diagData.ticket)):null;
-    html+=`<tr onclick="openClient(${c.id})"><td><div style="display:flex;align-items:center;gap:8px;"><div class="avatar" style="background:${c.color};color:${c.tcolor};">${c.initials}</div><div style="font-size:12px;font-weight:600;">${c.name}</div></div></td><td><span class="pill ${c.scorePill||'pill-blue'}">${c.score}</span></td>${['cap','at','co','cv','fa','ge'].map(k=>`<td style="color:${clr(sc[k]||0)};font-weight:600;">${sc[k]||'—'}</td>`).join('')}<td style="color:#f87171;font-weight:600;">${perdaM?_fmtMoeda(perdaM):'—'}</td></tr>`;
-  });
-  html+='</tbody></table></div>';
-  document.getElementById('page-diagnosticos').innerHTML=html;
+function todayISO(){ return new Date().toISOString().slice(0,10); }
+function val(sel){ const el=document.querySelector(sel); return el ? el.value : ''; }
+function numVal(sel){ const v = parseFloat(val(sel)); return isNaN(v) ? 0 : v; }
+function matchesSearch(lead,q){
+  if(!q) return true;
+  q = q.toLowerCase();
+  return (lead.dentista||'').toLowerCase().includes(q) ||
+         (lead.clinica||'').toLowerCase().includes(q) ||
+         (lead.cidade||'').toLowerCase().includes(q);
 }
+function stageInfo(key){ return ALL_STAGES.find(s=>s.key===key) || ALL_STAGES[0]; }
 
-function renderFinanceiro(){
-  const ativos=CLIENTS.filter(c=>c.stage==='Cliente Ativo');
-  if(!ativos.length){document.getElementById('page-financeiro').innerHTML='<div style="text-align:center;padding:60px 20px;color:#4a7fc1;"><i class="ti ti-coin" style="font-size:48px;display:block;margin-bottom:12px;color:#1e3a5f;"></i><h3 style="font-size:14px;color:#7a9cc0;margin-bottom:6px;font-weight:500;">Nenhum contrato financeiro</h3><p style="font-size:12px;">Os dados financeiros aparecerão aqui após clínicas avançarem para "Cliente Ativo".</p></div>';return;}
-  const mrr=ativos.reduce((s,c)=>s+(parseFloat(c.value)||0),0);
-  const pagos=ativos.filter(c=>c.payment==='Em dia').length;
-  const atras=ativos.filter(c=>c.payment==='Atrasado');
-  const vRecup=atras.reduce((s,c)=>s+(parseFloat(c.value)||0),0);
-  let html=`<div class="grid4" style="margin-bottom:16px;">
-    <div class="metric"><div class="mlabel"><i class="ti ti-coin"></i> MRR total</div><div class="mval" style="font-size:18px;">${_fmtMoeda(mrr)}</div><div class="msub up">${ativos.length} contratos ativos</div></div>
-    <div class="metric"><div class="mlabel"><i class="ti ti-check"></i> Em dia</div><div class="mval" style="color:#34d399;">${pagos}</div><div class="msub up">${_fmtMoeda(ativos.filter(c=>c.payment==='Em dia').reduce((s,c)=>s+(parseFloat(c.value)||0),0))}</div></div>
-    <div class="metric"><div class="mlabel"><i class="ti ti-alert-triangle"></i> Inadimplentes</div><div class="mval" style="color:#f87171;">${atras.length}</div><div class="msub down">${vRecup?_fmtMoeda(vRecup)+' em aberto':'—'}</div></div>
-    <div class="metric"><div class="mlabel"><i class="ti ti-building-hospital"></i> Total clientes</div><div class="mval">${ativos.length}</div><div class="msub" style="color:#4a7fc1;">Contratos ativos</div></div>
-  </div>
-  <div class="card" style="padding:0;overflow:hidden;"><table class="data-table"><thead><tr><th>Clínica</th><th>Plano</th><th>Valor/mês</th><th>Vencimento</th><th>Status</th><th>Consultor</th><th>Observação</th></tr></thead><tbody>`;
-  ativos.forEach(c=>{
-    const st=c.payment==='Em dia'?'<span class="pill pill-green">Em dia</span>':c.payment==='Atrasado'?'<span class="pill pill-red">Atrasado</span>':'<span style="color:#4a7fc1;">—</span>';
-    html+=`<tr onclick="openClient(${c.id})"><td><div style="display:flex;align-items:center;gap:8px;"><div class="avatar" style="background:${c.color};color:${c.tcolor};">${c.initials}</div><div style="font-size:12px;font-weight:600;">${c.name}</div></div></td><td style="font-size:11px;">${c.plan||'—'}</td><td style="font-size:11px;font-weight:600;">${c.value||'—'}</td><td style="font-size:11px;color:#4a7fc1;">${c.vencimento||'—'}</td><td>${st}</td><td style="font-size:11px;color:#4a7fc1;">${c.consultant||'—'}</td><td style="font-size:11px;color:#93c5fd;">${c.obsFinanceiro||'—'}</td></tr>`;
-  });
-  html+='</tbody></table></div>';
-  document.getElementById('page-financeiro').innerHTML=html;
-}
-
-function renderRelatorios(){
-  if(!CLIENTS.length){document.getElementById('page-relatorios').innerHTML='<div style="text-align:center;padding:60px 20px;color:#4a7fc1;"><i class="ti ti-chart-bar" style="font-size:48px;display:block;margin-bottom:12px;color:#1e3a5f;"></i><h3 style="font-size:14px;color:#7a9cc0;margin-bottom:6px;font-weight:500;">Sem dados para relatório</h3><p style="font-size:12px;">Os relatórios serão gerados automaticamente conforme você usa o sistema.</p></div>';return;}
-  const ativos=CLIENTS.filter(c=>c.stage==='Cliente Ativo');
-  const leads=CLIENTS.filter(c=>!['Cliente Ativo','Perdido','Não entrar em contato'].includes(c.stage));
-  const comScore=CLIENTS.filter(c=>c.score);
-  const avgScore=comScore.length?Math.round(comScore.reduce((s,c)=>s+c.score,0)/comScore.length):0;
-  const acima70=comScore.filter(c=>c.score>=70).length;
-  const abaixo40=comScore.filter(c=>c.score<40).length;
-  const mrr=ativos.reduce((s,c)=>s+(parseFloat(c.value)||0),0);
-  const maxBar=Math.max(...STAGES.slice(0,8).map(s=>CLIENTS.filter(c=>c.stage===s).length),1);
-  let barsHtml='';
-  STAGES.slice(0,8).forEach(s=>{
-    const n=CLIENTS.filter(c=>c.stage===s).length;
-    const h=Math.round((n/maxBar)*70);
-    barsHtml+=`<div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:4px;"><div style="width:100%;height:${Math.max(h,4)}px;background:${STAGE_COLORS[s]};border-radius:4px 4px 0 0;opacity:${n?1:0.2};"></div><div style="font-size:9px;color:#4a7fc1;text-align:center;line-height:1.2;">${s.split(' ')[0]}</div><div style="font-size:10px;color:#e2e8f0;font-weight:600;">${n}</div></div>`;
-  });
-  document.getElementById('page-relatorios').innerHTML=`
-  <div class="grid2">
-    <div class="card">
-      <div class="card-title"><i class="ti ti-chart-bar"></i> Visão geral da operação</div>
-      <div class="field"><span class="fl">Total de clínicas cadastradas</span><span class="fv">${CLIENTS.length}</span></div>
-      <div class="field"><span class="fl">Clientes ativos</span><span class="fv g">${ativos.length}</span></div>
-      <div class="field"><span class="fl">Leads em negociação</span><span class="fv" style="color:#60a5fa;">${leads.length}</span></div>
-      <div class="field"><span class="fl">Bloqueados (não contatar)</span><span class="fv r">${CLIENTS.filter(c=>c.stage==='Não entrar em contato').length}</span></div>
-      <div class="field"><span class="fl">Perdidos</span><span class="fv" style="color:#6b7280;">${CLIENTS.filter(c=>c.stage==='Perdido').length}</span></div>
-      <div class="field"><span class="fl">MRR total</span><span class="fv g">${_fmtMoeda(mrr)}</span></div>
-    </div>
-    <div class="card">
-      <div class="card-title"><i class="ti ti-heart"></i> Saúde da base</div>
-      <div class="field"><span class="fl">Score médio da base</span><span class="fv" style="color:#60a5fa;">${avgScore||'—'} / 100</span></div>
-      <div class="field"><span class="fl">Clientes com score acima de 70</span><span class="fv g">${acima70}${comScore.length?` (${Math.round(acima70/comScore.length*100)}%)`:''}  </span></div>
-      <div class="field"><span class="fl">Clientes com score abaixo de 40</span><span class="fv r">${abaixo40}${comScore.length?` (${Math.round(abaixo40/comScore.length*100)}%)`:''}  </span></div>
-      <div class="field"><span class="fl">Diagnósticos realizados</span><span class="fv">${comScore.length}</span></div>
-      <div class="field"><span class="fl">Inadimplentes</span><span class="fv ${CLIENTS.filter(c=>c.payment==='Atrasado').length?'r':''}">${CLIENTS.filter(c=>c.payment==='Atrasado').length}</span></div>
-    </div>
-  </div>
-  <div class="card">
-    <div class="card-title"><i class="ti ti-layout-kanban"></i> Distribuição no pipeline</div>
-    <div style="display:flex;align-items:flex-end;gap:6px;height:90px;padding-top:10px;">${barsHtml}</div>
-  </div>`;
-}
-
-// === NAVEGAÇÃO ===
-function goPage(name, el){
-  document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
-  const navEl = el || document.querySelector('[data-page="'+name+'"]');
-  if(navEl) navEl.classList.add('active');
-  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
-  const pg = document.getElementById('page-'+name);
-  if(pg) pg.classList.add('active');
-  const titles={dashboard:'Dashboard <span>— visão geral</span>',clinicas:'Clínicas <span>— lista completa</span>',pipeline:'Pipeline <span>— comercial</span>',followups:'Follow-ups <span>— tarefas</span>',propostas:'Propostas <span>— em aberto</span>',diagnosticos:'Diagnósticos <span>— base de dados</span>',financeiro:'Financeiro <span>— contratos</span>',relatorios:'Relatórios <span>— performance</span>',config:'Configurações',usuarios:'Usuários <span>— controle de acesso</span>'};
-  document.getElementById('topbar-title').innerHTML=titles[name]||name;
-  if(name==='clinicas') renderClinicas();
-  if(name==='pipeline') renderPipeline();
-  if(name==='dashboard') updateDashboard();
-  if(name==='usuarios') renderUsers();
-  if(name==='followups') renderFollowups();
-  if(name==='propostas') renderPropostas();
-  if(name==='diagnosticos') renderDiagnosticos();
-  if(name==='financeiro') renderFinanceiro();
-  if(name==='relatorios') renderRelatorios();
-}
-window.goPage = goPage;
-
-// === CLÍNICAS ===
-function renderClinicas(filter='',statusFilter=''){
-  let rows='';
-  CLIENTS.filter(c=>{
-    const q=(filter||'').toLowerCase();
-    const matchName=c.name.toLowerCase().includes(q)||(c.city||'').toLowerCase().includes(q);
-    const matchStatus=!statusFilter||c.stage===statusFilter;
-    return matchName&&matchStatus;
-  }).forEach(c=>{
-    const scoreHtml=c.score?`<span class="pill ${c.scorePill}">${c.score}</span>`:`<span style="font-size:11px;color:#4a7fc1;">—</span>`;
-    const pgto=c.payment==='Atrasado'?`<span class="pill pill-red">Atrasado</span>`:c.payment==='Em dia'?`<span class="pill pill-green">Em dia</span>`:`<span style="color:#4a7fc1;">—</span>`;
-    const stagePill=c.stage==='Cliente Ativo'?'pill-green':c.stage==='Não entrar em contato'?'pill-red':c.stage==='Perdido'?'pill-purple':'pill-blue';
-    rows+=`<tr onclick="openClient(${c.id})"><td><div style="display:flex;align-items:center;gap:8px;"><div class="avatar" style="background:${c.color};color:${c.tcolor};">${c.initials}</div><div style="font-size:12px;font-weight:600;">${c.name}</div></div></td><td style="font-size:11px;color:#4a7fc1;">${c.city||'—'}</td><td><span class="pill ${stagePill}">${c.stage}</span></td><td>${scoreHtml}</td><td style="font-size:11px;">${c.plan||'—'}</td><td style="font-size:11px;font-weight:600;">${c.value||'—'}</td><td>${pgto}</td><td style="font-size:11px;color:#4a7fc1;">${c.consultant||'—'}</td><td style="font-size:11px;color:#93c5fd;max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${c.nextAction||'—'}</td></tr>`;
-  });
-  document.getElementById('clinicas-body').innerHTML=rows||'<tr><td colspan="9" style="text-align:center;color:#4a7fc1;padding:40px;">Nenhuma clínica cadastrada. Clique em "+ Nova clínica" para começar.</td></tr>';
-}
-function filterClinicas(v){renderClinicas(v,document.querySelector('#page-clinicas select').value);}
-function filterByStatus(v){renderClinicas(document.querySelector('#page-clinicas input').value,v);}
-
-// === PIPELINE ===
-function renderPipeline(){
-  const board=document.getElementById('pipeline-board');
-  board.innerHTML='';
-  STAGES.forEach(stage=>{
-    const isBlocked=stage==='Não entrar em contato';
-    const clients=CLIENTS.filter(c=>c.stage===stage);
-    const col=document.createElement('div');col.className='pipeline-col';
-    const header=document.createElement('div');header.className='pipeline-col-header'+(isBlocked?' col-blocked':'');
-    header.innerHTML=(isBlocked?'<span style="display:flex;align-items:center;gap:4px;"><i class="ti ti-ban" style="font-size:11px;"></i> Não entrar em contato</span>':'<span>'+stage+'</span>')+'<span class="pipeline-count'+(isBlocked?' cnt-blocked':'')+'">'+clients.length+'</span>';
-    col.appendChild(header);
-    const drop=document.createElement('div');drop.className='pipeline-drop'+(isBlocked?' drop-blocked':'');drop.dataset.stage=stage;
-    drop.addEventListener('dragover',e=>{e.preventDefault();drop.classList.add('drag-over');});
-    drop.addEventListener('dragleave',()=>drop.classList.remove('drag-over'));
-    drop.addEventListener('drop',e=>{
-      e.preventDefault();drop.classList.remove('drag-over');
-      if(_dragId===null)return;
-      const c=CLIENTS.find(x=>x.id===_dragId);if(!c||c.stage===stage)return;
-      if(isBlocked&&!confirm('Mover "'+c.name+'" para "Não entrar em contato"?\n\nEste lead ficará BLOQUEADO. Nenhuma ação comercial será permitida.'))return;
-      c.stage=stage;
-      if(window.fbSaveClient) window.fbSaveClient(c);
-      // atualiza banner se painel aberto
-      const banner=document.getElementById('dp-blocked-banner');
-      if(banner&&currentClient&&currentClient.id===c.id){banner.style.display=isBlocked?'flex':'none';}
-      // atualiza etapa no header do painel
-      const dpCity=document.getElementById('dp-city');
-      if(dpCity&&currentClient&&currentClient.id===c.id){dpCity.innerHTML=`<i class="ti ti-map-pin" style="font-size:11px;"></i> ${c.city||'—'} &nbsp;|&nbsp; <span style="color:${STAGE_COLORS[stage]||'#4a7fc1'};">${stage}</span>`;}
-      renderPipeline();updateDashboard();
-    });
-    clients.forEach(c=>{
-      const card=document.createElement('div');card.className='pipeline-card'+(isBlocked?' card-blocked':'');card.draggable=true;
-      card.innerHTML='<div style="display:flex;align-items:center;gap:7px;margin-bottom:5px;"><div class="avatar" style="background:'+c.color+';color:'+c.tcolor+';width:26px;height:26px;font-size:10px;">'+c.initials+'</div><div class="pc-name">'+c.name+'</div></div><div class="pc-city">'+(c.city||'—')+'</div>'+(c.score?'<div style="margin-top:6px;"><span class="pill '+c.scorePill+'" style="font-size:10px;">Score '+c.score+'</span></div>':'')+(isBlocked?'<div style="font-size:10px;color:#f87171;margin-top:6px;display:flex;align-items:center;gap:3px;"><i class="ti ti-ban"></i> Contato bloqueado</div>':'<div class="pc-val">'+(c.value||'')+'</div>');
-      card.addEventListener('dragstart',()=>{_dragId=c.id;card.classList.add('dragging');});
-      card.addEventListener('dragend',()=>{_dragId=null;card.classList.remove('dragging');});
-      card.addEventListener('click',()=>openClient(c.id));
-      drop.appendChild(card);
-    });
-    if(!clients.length){const e=document.createElement('div');e.style.cssText='font-size:11px;color:#2a4a6b;padding:10px;text-align:center;';e.textContent='—';drop.appendChild(e);}
-    col.appendChild(drop);board.appendChild(col);
-  });
-}
-
-// === CARD DO CLIENTE ===
-let currentClient=null;
-function openClient(id){
-  const c=CLIENTS.find(x=>x.id===id);if(!c)return;
-  currentClient=c;
-  document.getElementById('dp-avatar').style.background=c.color;
-  document.getElementById('dp-avatar').style.color=c.tcolor;
-  document.getElementById('dp-avatar').textContent=c.initials;
-  document.getElementById('dp-name').textContent=c.name;
-  const stageColor=STAGE_COLORS[c.stage]||'#4a7fc1';
-  document.getElementById('dp-city').innerHTML=`<i class="ti ti-map-pin" style="font-size:11px;"></i> ${c.city||'—'} &nbsp;|&nbsp; <span style="color:${stageColor};">${c.stage}</span>`;
-  document.getElementById('dp-score-pill').textContent=c.score?`Score ${c.score}`:'Sem score';
-  document.getElementById('dp-score-pill').className='pill '+(c.scorePill||'pill-blue');
-  document.getElementById('dp-score-big').textContent=c.score||'—';
-  document.getElementById('dp-score-big').style.color=c.scoreColor||'#4a7fc1';
-  const banner=document.getElementById('dp-blocked-banner');
-  if(banner)banner.style.display=c.stage==='Não entrar em contato'?'flex':'none';
-  switchDpTab('resumo');
-  _loadClientPanel(c);
-  document.getElementById('overlay').classList.add('open');
-}
-function closeClient(){document.getElementById('overlay').classList.remove('open');currentClient=null;}
-function closeOverlayIfBg(e){if(e.target===document.getElementById('overlay'))closeClient();}
-function switchDpTab(name){
-  const tabs=['resumo','diagnostico','score','perdas','ia','plano','timeline','saude','financeiro'];
-  document.querySelectorAll('.dp-tab').forEach((t,i)=>t.classList.toggle('active',tabs[i]===name));
-  document.querySelectorAll('.dp-content').forEach(c=>c.classList.remove('active'));
-  document.getElementById('dpc-'+name).classList.add('active');
-}
-
-// === NOVA CLÍNICA ===
-function openNewClient(){
-  ['nc-nome','nc-cidade','nc-tel','nc-consultor'].forEach(id=>{document.getElementById(id).value='';});
-  document.getElementById('nc-stage').value='Lead Novo';
-  openModal('modal-nova-clinica');
-}
-function createClinica(){
-  const nome=document.getElementById('nc-nome').value.trim();
-  if(!nome){alert('Informe o nome da clínica ou doutor(a).');return;}
-  const [cor,tcor]=AVATAR_COLORS[_colorIdx%AVATAR_COLORS.length];_colorIdx++;
-  const c={id:++window._nextId,initials:_getInitials(nome),color:cor,tcolor:tcor,name:nome,city:document.getElementById('nc-cidade').value.trim()||'—',status:'Lead Novo',stage:document.getElementById('nc-stage').value,plan:'—',value:'—',payment:'—',consultant:document.getElementById('nc-consultor').value.trim()||_currentUser.name,nextAction:'Preencher diagnóstico',score:null,scoreColor:'#4a7fc1',scorePill:'pill-blue',tel:document.getElementById('nc-tel').value.trim(),diagData:{},scores:{},timeline:[],saude:{}};
-  CLIENTS.push(c);
-  if(window.fbSaveClient) window.fbSaveClient(c);
-  closeModal('modal-nova-clinica');
-  updateDashboard();renderPipeline();renderClinicas();
-  openClient(c.id);
-}
-
-// === HISTÓRICO ===
-function addObsDp(){
-  const inp=document.getElementById('nova-obs-dp');
-  if(!inp||!inp.value.trim())return;
-  if(!currentClient)return;
-  const hoje=_hoje();
-  const userName=_currentUser.name;
-  // salva no objeto
-  if(!currentClient.timeline)currentClient.timeline=[];
-  currentClient.timeline.unshift({date:hoje,text:inp.value,user:userName});
-  if(window.fbSaveClient) window.fbSaveClient(currentClient);
-  // insere no DOM antes do input
-  const tl=document.getElementById('dpc-timeline');
-  const inputRow=tl.querySelector('.input-row');
-  const novo=document.createElement('div');
-  novo.className='tl-item';
-  novo.innerHTML=`<div class="tl-dot" style="background:#2563eb;"></div><div class="tl-date">${hoje}</div><div><div class="tl-text">${inp.value}</div><div class="tl-user">${userName}</div></div>`;
-  tl.insertBefore(novo,inputRow);
-  inp.value='';
-}
-
-// === MISC ===
-function copyPrompt(txt){navigator.clipboard.writeText(txt).then(()=>alert('Prompt copiado!')).catch(()=>alert('Prompt: '+txt));}
-function toggleCbG(row){row.querySelector('.cb').classList.toggle('on');}
-
-function saveProfile(){
-  const nome=document.getElementById('cfg-nome')?.value?.trim()||'Admin';
-  const cargo=document.getElementById('cfg-cargo')?.value?.trim()||'Consultor';
-  const email=document.getElementById('cfg-email')?.value?.trim()||'';
-  _currentUser.name=nome;_currentUser.cargo=cargo;_currentUser.email=email;
-  _currentUser.initials=_getInitials(nome);
-  document.querySelector('.user-name').textContent=nome;
-  document.querySelector('.user-av').textContent=_getInitials(nome);
-  document.querySelector('.user-role').textContent=cargo;
-  USERS[0].name=nome;USERS[0].initials=_getInitials(nome);USERS[0].cargo=cargo;USERS[0].email=email;
-  alert('Perfil salvo!');
-}
-
-// === USUÁRIOS ===
-function renderUsers(){
-  const content=document.getElementById('usuarios-content');if(!content)return;
-  const lista=USERS.map(u=>{
-    const permsHtml=u.perms.map(k=>{const p=ALL_PAGES.find(x=>x.key===k);return p?`<span class="pill pill-blue" style="font-size:9px;padding:1px 6px;">${p.label}</span>`:''}).join('');
-    const isAdmin=u.id===1;
-    return `<div style="background:#0d1f38;border:0.5px solid #1e3a5f;border-radius:10px;padding:14px 16px;margin-bottom:10px;display:flex;align-items:flex-start;gap:12px;"><div style="width:38px;height:38px;border-radius:50%;background:${u.color};color:${u.tcolor};display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;flex-shrink:0;">${u.initials}</div><div style="flex:1;"><div style="font-size:13px;font-weight:600;color:#e2e8f0;">${u.name} ${isAdmin?'<span class="pill pill-green" style="font-size:9px;">Admin</span>':''}</div><div style="font-size:11px;color:#4a7fc1;margin-top:2px;">${u.email} &nbsp;·&nbsp; ${u.cargo}</div><div style="margin-top:8px;display:flex;flex-wrap:wrap;gap:4px;">${permsHtml||'<span style="font-size:11px;color:#4a7fc1;">Sem permissões</span>'}</div></div>${!isAdmin?`<button onclick="deleteUser(${u.id})" style="background:#1a0c0c;border:0.5px solid #7f1d1d;color:#f87171;border-radius:6px;padding:6px 10px;cursor:pointer;font-size:11px;display:flex;align-items:center;gap:4px;"><i class="ti ti-trash"></i> Remover</button>`:''}</div>`;
-  }).join('');
-  content.innerHTML=lista;
-}
-function openNewUserModal(){
-  ['nu-nome','nu-email','nu-cargo'].forEach(id=>{document.getElementById(id).value='';});
-  document.getElementById('perm-grid').innerHTML=ALL_PAGES.map(p=>`<div class="perm-btn" data-perm="${p.key}" onclick="togglePerm(this)"><i class="ti ${p.icon}"></i><span>${p.label}</span></div>`).join('');
-  openModal('modal-novo-usuario');
-}
-function togglePerm(btn){btn.classList.toggle('perm-on');}
-function createUser(){
-  const nome=document.getElementById('nu-nome').value.trim();
-  const email=document.getElementById('nu-email').value.trim();
-  const cargo=document.getElementById('nu-cargo').value.trim();
-  if(!nome||!email){alert('Nome e e-mail são obrigatórios.');return;}
-  const perms=[...document.querySelectorAll('#perm-grid .perm-btn.perm-on')].map(b=>b.dataset.perm);
-  const idx=parseInt(document.getElementById('nu-cor').value)||0;
-  const [cor,tcor]=AVATAR_COLORS[idx%AVATAR_COLORS.length];
-  const newUser={id:Date.now(),name:nome,initials:_getInitials(nome),color:cor,tcolor:tcor,cargo:cargo||'Consultor',email,perms};
-  USERS.push(newUser);
-  if(window.fbSaveUser) window.fbSaveUser(newUser);
-  closeModal('modal-novo-usuario');renderUsers();
-}
-function deleteUser(id){
-  if(!confirm('Remover este usuário?'))return;
-  USERS=USERS.filter(u=>u.id!==id);
-  window.USERS=USERS;
-  if(window.fbDeleteUser) window.fbDeleteUser(id);
-  renderUsers();
-}
-// === INIT ===
-updateDashboard();
-renderClinicas();
-renderPipeline();
-
-const STAGE_COLORS={'Lead Novo':'#34d399','Qualificação':'#4a7fc1','Diagnóstico':'#7c5fc4','Apresentação':'#0f766e','Proposta':'#d97706','Negociação':'#e05555','Cliente Ativo':'#2563eb','Perdido':'#6b7280','Não entrar em contato':'#ef4444'};
-
-function updateDashboard(){
-  if(!document.getElementById('dash-ativos')) return;
-  const ativos=CLIENTS.filter(c=>c.stage==='Cliente Ativo').length;
-  const neg=CLIENTS.filter(c=>!['Cliente Ativo','Perdido','Não entrar em contato'].includes(c.stage)).length;
-  const block=CLIENTS.filter(c=>c.stage==='Não entrar em contato').length;
-  document.getElementById('dash-ativos').textContent=ativos;
-  document.getElementById('dash-neg').textContent=neg;
-  document.getElementById('dash-block').textContent=block;
-  document.getElementById('badge-clinicas').textContent=CLIENTS.length;
-  // pipeline bars
-  let bars='';
-  const maxN=Math.max(...STAGES.map(s=>CLIENTS.filter(c=>c.stage===s).length),1);
-  STAGES.slice(0,8).forEach(s=>{
-    const n=CLIENTS.filter(c=>c.stage===s).length; if(!n) return;
-    bars+=`<div style="display:flex;align-items:center;gap:8px;padding:4px 0;"><div style="width:8px;height:8px;border-radius:50%;background:${STAGE_COLORS[s]};flex-shrink:0;"></div><span style="font-size:11px;color:#7a9cc0;flex:1;">${s}</span><div style="width:80px;height:4px;background:#0a0f1e;border-radius:2px;"><div style="width:${Math.round(n/maxN*100)}%;height:4px;background:${STAGE_COLORS[s]};border-radius:2px;"></div></div><span style="font-size:11px;font-weight:600;color:#e2e8f0;width:16px;text-align:right;">${n}</span></div>`;
-  });
-  document.getElementById('dash-pipeline-bars').innerHTML=bars||'<div style="font-size:12px;color:#4a7fc1;padding:10px 0;">Nenhum lead no pipeline ainda.</div>';
-  // recentes
-  let rec='';
-  CLIENTS.slice(-5).reverse().forEach(c=>{
-    const sc=c.stage==='Cliente Ativo'?'pill-green':c.stage==='Não entrar em contato'?'pill-red':'pill-blue';
-    rec+=`<div style="display:flex;align-items:center;gap:8px;padding:6px 0;border-bottom:0.5px solid #0d1f38;cursor:pointer;" onclick="openClient(${c.id})"><div class="avatar" style="background:${c.color};color:${c.tcolor};">${c.initials}</div><div style="flex:1;"><div style="font-size:12px;font-weight:600;">${c.name}</div><div style="font-size:10px;color:#4a7fc1;">${c.city||'—'}</div></div><span class="pill ${sc}" style="font-size:10px;">${c.stage}</span></div>`;
-  });
-  document.getElementById('dash-recent').innerHTML=rec||'<div style="font-size:12px;color:#4a7fc1;padding:10px 0;">Nenhuma clínica cadastrada ainda.</div>';
-  // IA
-  let ia='';
-  const risco=CLIENTS.filter(c=>c.score&&c.score<40);
-  const bloq=CLIENTS.filter(c=>c.stage==='Não entrar em contato');
-  if(risco.length) ia+=`<div class="ia-box"><div class="ia-label" style="color:#f87171;"><i class="ti ti-alert-circle" style="font-size:12px;"></i> Score crítico</div><div class="ia-text">${risco.map(c=>c.name).join(', ')} com score abaixo de 40. Intervenção imediata necessária.</div></div>`;
-  if(bloq.length) ia+=`<div class="ia-box" style="border-color:#ef4444;"><div class="ia-label" style="color:#f87171;"><i class="ti ti-ban" style="font-size:12px;"></i> Não entrar em contato</div><div class="ia-text">${bloq.map(c=>c.name).join(', ')} — contato comercial bloqueado.</div></div>`;
-  if(!ia) ia='<div style="font-size:12px;color:#4a7fc1;padding:8px 0;">Nenhum alerta no momento. Cadastre clínicas para ativar a IA Consultora.</div>';
-  document.getElementById('dash-ia').innerHTML=ia;
-}
-
-function goPage(name){
-  document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
-  event.currentTarget.classList.add('active');
-  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
-  document.getElementById('page-'+name).classList.add('active');
-  const titles={dashboard:'Dashboard <span>— visão geral</span>',clinicas:'Clínicas <span>— lista completa</span>',pipeline:'Pipeline <span>— comercial</span>',followups:'Follow-ups <span>— tarefas</span>',propostas:'Propostas <span>— em aberto</span>',diagnosticos:'Diagnósticos <span>— base de dados</span>',financeiro:'Financeiro <span>— contratos</span>',relatorios:'Relatórios <span>— performance</span>',config:'Configurações',usuarios:'Usuários <span>— controle de acesso</span>'};
-  document.getElementById('topbar-title').innerHTML=titles[name]||name;
-  if(name==='clinicas') renderClinicas();
-  if(name==='pipeline') renderPipeline();
-  if(name==='dashboard') updateDashboard();
-  if(name==='usuarios') renderUsers();
-}
-
-function renderClinicas(filter='',statusFilter=''){
-  let rows='';
-  CLIENTS.filter(c=>{
-    const q=(filter||'').toLowerCase();
-    const matchName=c.name.toLowerCase().includes(q)||(c.city||'').toLowerCase().includes(q);
-    const matchStatus=!statusFilter||c.stage===statusFilter;
-    return matchName&&matchStatus;
-  }).forEach(c=>{
-    const scoreHtml=c.score?`<span class="pill ${c.scorePill}">${c.score}</span>`:`<span style="font-size:11px;color:#4a7fc1;">—</span>`;
-    const pgto=c.payment==='Atrasado'?`<span class="pill pill-red">Atrasado</span>`:c.payment==='Em dia'?`<span class="pill pill-green">Em dia</span>`:`<span style="color:#4a7fc1;">—</span>`;
-    const stagePill=c.stage==='Cliente Ativo'?'pill-green':c.stage==='Não entrar em contato'?'pill-red':c.stage==='Perdido'?'pill-purple':'pill-blue';
-    rows+=`<tr onclick="openClient(${c.id})">
-      <td><div style="display:flex;align-items:center;gap:8px;"><div class="avatar" style="background:${c.color};color:${c.tcolor};">${c.initials}</div><div><div style="font-size:12px;font-weight:600;">${c.name}</div></div></div></td>
-      <td style="font-size:11px;color:#4a7fc1;">${c.city||'—'}</td>
-      <td><span class="pill ${stagePill}">${c.stage}</span></td>
-      <td>${scoreHtml}</td>
-      <td style="font-size:11px;">${c.plan||'—'}</td>
-      <td style="font-size:11px;font-weight:600;">${c.value||'—'}</td>
-      <td>${pgto}</td>
-      <td style="font-size:11px;color:#4a7fc1;">${c.consultant||'—'}</td>
-      <td style="font-size:11px;color:#93c5fd;max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${c.nextAction||'—'}</td>
-    </tr>`;
-  });
-  document.getElementById('clinicas-body').innerHTML=rows||'<tr><td colspan="9" style="text-align:center;color:#4a7fc1;padding:40px;">Nenhuma clínica cadastrada. Clique em "+ Nova clínica" para começar.</td></tr>';
-}
-
-function filterClinicas(v){renderClinicas(v,document.querySelector('#page-clinicas select').value);}
-function filterByStatus(v){renderClinicas(document.querySelector('#page-clinicas input').value,v);}
-
-function renderPipeline(){
-  const board=document.getElementById('pipeline-board');
-  board.innerHTML='';
-  STAGES.forEach(stage=>{
-    const isBlocked=stage==='Não entrar em contato';
-    const clients=CLIENTS.filter(c=>c.stage===stage);
-
-    const col=document.createElement('div');
-    col.className='pipeline-col';
-
-    const header=document.createElement('div');
-    header.className='pipeline-col-header'+(isBlocked?' col-blocked':'');
-    header.innerHTML=(isBlocked?'<span style="display:flex;align-items:center;gap:4px;"><i class="ti ti-ban" style="font-size:11px;"></i> Não entrar em contato</span>':'<span>'+stage+'</span>')+
-      '<span class="pipeline-count'+(isBlocked?' cnt-blocked':'')+'">'+clients.length+'</span>';
-    col.appendChild(header);
-
-    const drop=document.createElement('div');
-    drop.className='pipeline-drop'+(isBlocked?' drop-blocked':'');
-    drop.dataset.stage=stage;
-
-    drop.addEventListener('dragover',e=>{e.preventDefault();drop.classList.add('drag-over');});
-    drop.addEventListener('dragleave',()=>drop.classList.remove('drag-over'));
-    drop.addEventListener('drop',e=>{
-      e.preventDefault();drop.classList.remove('drag-over');
-      if(_dragId===null) return;
-      const c=CLIENTS.find(x=>x.id===_dragId);
-      if(!c||c.stage===stage) return;
-      if(isBlocked){
-        if(!confirm('Mover "'+c.name+'" para "Não entrar em contato"?\n\nEste lead ficará BLOQUEADO. Nenhuma ação comercial será permitida.')) return;
-      }
-      c.stage=stage;
-      renderPipeline();
-    });
-
-    clients.forEach(c=>{
-      const card=document.createElement('div');
-      card.className='pipeline-card'+(isBlocked?' card-blocked':'');
-      card.draggable=true;
-      card.innerHTML=
-        '<div style="display:flex;align-items:center;gap:7px;margin-bottom:5px;">'+
-          '<div class="avatar" style="background:'+c.color+';color:'+c.tcolor+';width:26px;height:26px;font-size:10px;">'+c.initials+'</div>'+
-          '<div class="pc-name">'+c.name+'</div>'+
-        '</div>'+
-        '<div class="pc-city">'+c.city+'</div>'+
-        (c.score?'<div style="margin-top:6px;"><span class="pill '+c.scorePill+'" style="font-size:10px;">Score '+c.score+'</span></div>':'')+
-        (isBlocked?'<div style="font-size:10px;color:#f87171;margin-top:6px;display:flex;align-items:center;gap:3px;"><i class="ti ti-ban"></i> Contato bloqueado</div>':
-          '<div class="pc-val">'+(c.value||'')+'</div>');
-      card.addEventListener('dragstart',()=>{_dragId=c.id;card.classList.add('dragging');});
-      card.addEventListener('dragend',()=>{_dragId=null;card.classList.remove('dragging');});
-      card.addEventListener('click',()=>openClient(c.id));
-      drop.appendChild(card);
-    });
-
-    if(!clients.length){
-      const empty=document.createElement('div');
-      empty.style.cssText='font-size:11px;color:#2a4a6b;padding:10px;text-align:center;';
-      empty.textContent='—';
-      drop.appendChild(empty);
+/* ============================================================
+   STORAGE
+   ============================================================ */
+async function startRealtimeSync(){
+  if(!firebaseReady){
+    setSyncStatus('Firebase não configurado — preencha firebaseConfig no código.');
+    render();
+    return;
+  }
+  setSyncStatus('Conectando...');
+  docRef.onSnapshot(snap=>{
+    if(snap.exists()){
+      const data = snap.data() || {};
+      state.leads = data.leads || [];
+      state.clinics = data.clinics || [];
+      state.team = data.team || [];
+      state.financeGeral = data.financeGeral || [];
+    } else {
+      state.leads = []; state.clinics = []; state.team = []; state.financeGeral = [];
     }
-
-    col.appendChild(drop);
-    board.appendChild(col);
+    setSyncStatus('Sincronizado às ' + new Date().toLocaleTimeString('pt-BR'));
+    // Evita perder o que está sendo digitado se um modal estiver aberto
+    if(!currentModalLead && !formModalConfig){
+      render();
+    }
+  }, err=>{
+    console.error(err);
+    setSyncStatus('Erro de conexão com o banco de dados');
   });
 }
 
-// === CLIENT DETAIL ===
-let currentClient=null;
-function openClient(id){
-  const c=CLIENTS.find(x=>x.id===id);
-  if(!c) return;
-  currentClient=c;
-  document.getElementById('dp-avatar').style.background=c.color;
-  document.getElementById('dp-avatar').style.color=c.tcolor;
-  document.getElementById('dp-avatar').textContent=c.initials;
-  document.getElementById('dp-name').textContent=c.name;
-  const stageColor=c.stage==='Não entrar em contato'?'#ef4444':c.scoreColor||'#4a7fc1';
-  document.getElementById('dp-city').innerHTML=`<i class="ti ti-map-pin" style="font-size:11px;"></i> ${c.city} &nbsp;|&nbsp; <span style="color:${stageColor};">${c.stage||c.status}</span>`;
-  document.getElementById('dp-score-pill').textContent=c.score?`Score ${c.score}`:'Sem score';
-  document.getElementById('dp-score-pill').className='pill '+c.scorePill;
-  document.getElementById('dp-score-big').textContent=c.score||'—';
-  document.getElementById('dp-score-big').style.color=c.scoreColor;
-  // banner bloqueado
-  const banner=document.getElementById('dp-blocked-banner');
-  if(banner) banner.style.display=c.stage==='Não entrar em contato'?'flex':'none';
-  switchDpTab('resumo');
-  document.getElementById('overlay').classList.add('open');
+async function saveData(){
+  if(!firebaseReady){
+    setSyncStatus('Firebase não configurado — os dados não serão salvos.');
+    return;
+  }
+  try{
+    await docRef.set(state);
+    setSyncStatus('Salvo às ' + new Date().toLocaleTimeString('pt-BR'));
+  }catch(e){
+    console.error(e);
+    setSyncStatus('Erro ao salvar — verifique sua conexão');
+  }
+}
+function setSyncStatus(msg){
+  const el = document.getElementById('sync-status');
+  if(el) el.textContent = msg;
 }
 
-function closeClient(){document.getElementById('overlay').classList.remove('open');}
-function closeOverlayIfBg(e){if(e.target===document.getElementById('overlay')) closeClient();}
+/* ============================================================
+   RENDER PRINCIPAL
+   ============================================================ */
+function render(){
+  document.querySelectorAll('.nav-item').forEach(b=>b.classList.toggle('active', b.dataset.page===currentPage));
+  const titles = {pipeline:'Pipeline de Leads', agenda:'Agenda', clientes:'Clientes Fechados', clinicas:'Base de Clínicas', financeiro:'Financeiro', equipe:'Equipe Eleva'};
+  document.getElementById('page-title').textContent = titles[currentPage];
+  renderTopbarActions();
+  switch(currentPage){
+    case 'pipeline': renderPipeline(); break;
+    case 'agenda': renderAgenda(); break;
+    case 'clientes': renderClientes(); break;
+    case 'clinicas': renderClinicas(); break;
+    case 'financeiro': renderFinanceiro(); break;
+    case 'equipe': renderEquipe(); break;
+  }
+}
 
-function switchDpTab(name){
-  document.querySelectorAll('.dp-tab').forEach((t,i)=>{
-    const tabs=['resumo','diagnostico','score','perdas','ia','plano','timeline','saude','financeiro'];
-    t.classList.toggle('active',tabs[i]===name);
+function renderTopbarActions(){
+  const el = document.getElementById('topbar-actions');
+  if(currentPage==='pipeline'){
+    el.innerHTML = `
+      <input type="text" class="search-input" id="pipeline-search" placeholder="Buscar por dentista, clínica ou cidade..." value="${escapeHTML(pipelineSearch)}">
+      <button class="btn btn-primary" id="new-lead-btn">+ Novo Lead</button>
+    `;
+    document.getElementById('pipeline-search').addEventListener('input', e=>{ pipelineSearch = e.target.value; renderPipeline(); });
+    document.getElementById('new-lead-btn').addEventListener('click', createNewLead);
+  } else if(currentPage==='clinicas'){
+    el.innerHTML = `<button class="btn btn-primary" id="new-clinic-btn">+ Nova Clínica</button>`;
+    document.getElementById('new-clinic-btn').addEventListener('click', ()=>openClinicForm(null));
+  } else if(currentPage==='equipe'){
+    el.innerHTML = `<button class="btn btn-primary" id="new-team-btn">+ Novo Membro</button>`;
+    document.getElementById('new-team-btn').addEventListener('click', ()=>openTeamForm(null));
+  } else if(currentPage==='financeiro' && financeUnlocked){
+    el.innerHTML = `<button class="btn btn-primary" id="new-finance-btn">+ Nova Conta</button>`;
+    document.getElementById('new-finance-btn').addEventListener('click', ()=>openFinanceGeralForm(null));
+  } else {
+    el.innerHTML = '';
+  }
+}
+
+/* ============================================================
+   PÁGINA: PIPELINE (KANBAN)
+   ============================================================ */
+function renderPipeline(){
+  const content = document.getElementById('page-content');
+
+  let html = '<div class="roteiro-bar">';
+  STAGES.forEach((s,i)=>{
+    html += `
+      <div class="roteiro-step">
+        <div class="roteiro-dot" style="background:${s.color}"></div>
+        <div class="roteiro-label">${s.label}</div>
+        <div class="roteiro-desc">${s.desc}</div>
+      </div>`;
+    if(i < STAGES.length-1) html += '<div class="roteiro-line"></div>';
   });
-  document.querySelectorAll('.dp-content').forEach(c=>c.classList.remove('active'));
-  document.getElementById('dpc-'+name).classList.add('active');
+  html += '</div>';
+
+  html += '<div class="kanban">';
+  STAGES.forEach(stage=>{
+    const leads = state.leads.filter(l=>l.stage===stage.key && matchesSearch(l,pipelineSearch));
+    html += `
+      <div class="kanban-col">
+        <div class="kanban-col-header" style="border-color:${stage.color}">
+          <span>${stage.label}</span><span class="count">${leads.length}</span>
+        </div>
+        <div class="kanban-col-body" data-stage="${stage.key}">
+          ${leads.map(leadCardHTML).join('') || '<div class="empty-col">Nenhum lead aqui</div>'}
+        </div>
+      </div>`;
+  });
+  html += '</div>';
+
+  content.innerHTML = html;
+  attachKanbanEvents();
 }
 
-function openNewClient(){
-  // abre modal de nova clínica em branco
-  document.getElementById('nc-nome').value='';
-  document.getElementById('nc-cidade').value='';
-  document.getElementById('nc-tel').value='';
-  document.getElementById('nc-consultor').value='';
-  document.getElementById('nc-stage').value='Lead Novo';
-  document.getElementById('modal-nova-clinica').style.display='flex';
+function leadCardHTML(lead){
+  const invest = Number(lead.investimentoMkt)||0;
+  return `
+    <div class="lead-card" draggable="true" data-id="${lead.id}">
+      <div class="lead-clinic">${escapeHTML(lead.clinica || 'Sem clínica informada')}</div>
+      <div class="lead-name">${escapeHTML(lead.dentista || 'Sem nome')}</div>
+      <div class="lead-meta">
+        ${lead.cidade ? `<span>${escapeHTML(lead.cidade)}</span>` : ''}
+        ${lead.origem ? `<span class="dot">•</span><span>${escapeHTML(lead.origem)}</span>` : ''}
+      </div>
+      ${invest>0 ? `<div class="lead-footer"><span class="badge badge-invest">${formatCurrency(invest)}/mês em mkt</span></div>` : ''}
+    </div>`;
 }
-function closeModal(id){document.getElementById(id).style.display='none';}
-function createClinica(){
-  const nome=document.getElementById('nc-nome').value.trim();
-  if(!nome){alert('Informe o nome da clínica ou doutor(a).');return;}
-  const [cor,tcor]=AVATAR_COLORS[_colorIdx%AVATAR_COLORS.length]; _colorIdx++;
-  const c={
-    id:++_nextId, initials:_getInitials(nome), color:cor, tcolor:tcor,
-    name:nome, city:document.getElementById('nc-cidade').value.trim()||'—',
-    status:'Lead Novo', stage:document.getElementById('nc-stage').value,
-    plan:'—', value:'—', payment:'—',
-    consultant:document.getElementById('nc-consultor').value.trim()||'—',
-    nextAction:'Preencher diagnóstico',
-    score:null, scoreColor:'#4a7fc1', scorePill:'pill-blue',
-    tel:document.getElementById('nc-tel').value.trim(),
-    diagData:{}, timeline:[], saude:{}
+
+function attachKanbanEvents(){
+  document.querySelectorAll('.lead-card').forEach(card=>{
+    let dragging = false;
+    card.addEventListener('dragstart', e=>{
+      dragging = true;
+      e.dataTransfer.setData('text/plain', card.dataset.id);
+      e.dataTransfer.effectAllowed = 'move';
+    });
+    card.addEventListener('dragend', ()=>{ dragging = false; });
+    card.addEventListener('click', ()=>{ if(!dragging) openLeadModal(card.dataset.id); });
+  });
+  document.querySelectorAll('.kanban-col-body').forEach(col=>{
+    col.addEventListener('dragover', e=>{ e.preventDefault(); col.classList.add('drag-over'); });
+    col.addEventListener('dragleave', ()=>{ col.classList.remove('drag-over'); });
+    col.addEventListener('drop', e=>{
+      e.preventDefault();
+      col.classList.remove('drag-over');
+      const id = e.dataTransfer.getData('text/plain');
+      const lead = state.leads.find(l=>l.id===id);
+      if(lead){
+        const novaEtapa = col.dataset.stage;
+        const mudou = lead.stage !== novaEtapa;
+        lead.stage = novaEtapa;
+        if(mudou) lead.stageChangedAt = new Date().toISOString();
+        if(novaEtapa==='fechado' && !lead.dataFechamento) lead.dataFechamento = new Date().toISOString();
+        if(novaEtapa!=='fechado') lead.dataFechamento = '';
+        saveData();
+        renderPipeline();
+        if(mudou && novaEtapa==='agendado' && !lead.reuniaoData){
+          modalHintMessage = 'Esse lead foi movido para "Lead Agendado". Defina a data e horário da reunião na aba Geral.';
+          openLeadModal(lead.id);
+        }
+      }
+    });
+  });
+}
+
+/* ============================================================
+   PÁGINA: CLIENTES FECHADOS
+   ============================================================ */
+function renderClientes(){
+  const content = document.getElementById('page-content');
+  const clientes = state.leads.filter(l=>l.stage==='fechado');
+  if(clientes.length===0){
+    content.innerHTML = `<div class="empty-state"><h3>Nenhum cliente fechado ainda</h3><p>Quando um lead avançar para "Cliente Fechado" no pipeline, ele aparece aqui.</p></div>`;
+    return;
+  }
+  content.innerHTML = `<div class="card-grid">${clientes.map(c=>`
+    <div class="client-card" data-id="${c.id}">
+      <div class="top-row">
+        <div>
+          <div class="clinic-name">${escapeHTML(c.clinica || 'Sem clínica')}</div>
+          <div class="dentist-name">${escapeHTML(c.dentista || '')}${c.cidade ? ' · '+escapeHTML(c.cidade) : ''}</div>
+        </div>
+        ${c.plano ? `<span class="badge badge-invest">${escapeHTML(c.plano)}</span>` : ''}
+      </div>
+      <div class="stats">
+        <div>
+          <div class="stat-label">Mensalidade Eleva</div>
+          <div class="stat-value">${formatCurrency(c.valorMensalidade)}</div>
+        </div>
+        <div>
+          <div class="stat-label">Invest. em mkt</div>
+          <div class="stat-value">${formatCurrency(c.investimentoMkt)}</div>
+        </div>
+        <div>
+          <div class="stat-label">Cliente desde</div>
+          <div class="stat-value" style="font-size:13px">${formatDate(c.dataFechamento)}</div>
+        </div>
+      </div>
+    </div>`).join('')}</div>`;
+
+  document.querySelectorAll('.client-card').forEach(card=>{
+    card.addEventListener('click', ()=>openLeadModal(card.dataset.id));
+  });
+}
+
+/* ============================================================
+   PÁGINA: AGENDA
+   ============================================================ */
+function meetingTimestamp(lead){
+  if(!lead.reuniaoData) return null;
+  return new Date(lead.reuniaoData + 'T' + (lead.reuniaoHora || '00:00')).getTime();
+}
+
+function renderAgenda(){
+  const content = document.getElementById('page-content');
+  const now = Date.now();
+  const comReuniao = state.leads
+    .filter(l=>l.reuniaoData && l.stage!=='fechado' && l.stage!=='morto')
+    .sort((a,b)=>(meetingTimestamp(a)||0)-(meetingTimestamp(b)||0));
+
+  const atrasadas = comReuniao.filter(l=>meetingTimestamp(l) < now);
+  const proximas = comReuniao.filter(l=>meetingTimestamp(l) >= now);
+
+  function meetingRow(lead, atrasada){
+    return `
+      <div class="agenda-item ${atrasada?'agenda-atrasada':''}" data-id="${lead.id}">
+        <div class="agenda-date">
+          <div class="agenda-day">${new Date(lead.reuniaoData+'T00:00').toLocaleDateString('pt-BR',{day:'2-digit',month:'2-digit'})}</div>
+          <div class="agenda-time">${escapeHTML(lead.reuniaoHora || '--:--')}</div>
+        </div>
+        <div class="agenda-info">
+          <div class="agenda-clinic">${escapeHTML(lead.clinica || 'Sem clínica')}</div>
+          <div class="agenda-dentist">${escapeHTML(lead.dentista || 'Sem nome')}${lead.reuniaoObs ? ' · '+escapeHTML(lead.reuniaoObs) : ''}</div>
+        </div>
+        <div class="agenda-tag">${atrasada ? 'Reunião vencida' : 'Lead Agendado'}</div>
+      </div>`;
+  }
+
+  let html = '';
+
+  html += `<div class="section-title" style="margin-top:0">Reuniões em atraso</div>`;
+  html += atrasadas.length
+    ? `<div class="table-wrap" style="margin-bottom:8px">${atrasadas.map(l=>meetingRow(l,true)).join('')}</div>`
+    : `<div class="empty-state" style="padding:20px"><h3>Nenhuma reunião em atraso</h3></div>`;
+
+  html += `<div class="section-title">Próximas reuniões</div>`;
+  html += proximas.length
+    ? `<div class="table-wrap" style="margin-bottom:8px">${proximas.map(l=>meetingRow(l,false)).join('')}</div>`
+    : `<div class="empty-state" style="padding:20px"><h3>Nenhuma reunião agendada</h3><p>Defina uma data de reunião na aba "Geral" de qualquer lead para que ele apareça aqui e seja movido para Lead Agendado.</p></div>`;
+
+  content.innerHTML = html;
+
+  document.querySelectorAll('.agenda-item').forEach(item=>{
+    item.addEventListener('click', ()=>openLeadModal(item.dataset.id));
+  });
+}
+/* ============================================================
+   MODAL DE LEAD / CLIENTE
+   ============================================================ */
+function createNewLead(){
+  const now = new Date().toISOString();
+  currentModalLead = {
+    id: uid('lead'), dentista:'', telefone:'', email:'', clinica:'', cidade:'', instagram:'',
+    origem:'', stage:'frio', observacoes:'', investimentoMkt:0, canalMkt:'', agenciaAtual:'',
+    numCadeiras:'', dataCriacao:now, dataFechamento:'', plano:'', valorMensalidade:0,
+    reuniaoData:'', reuniaoHora:'', reuniaoObs:'', stageChangedAt:now,
+    financeiro:[]
   };
-  CLIENTS.push(c);
-  closeModal('modal-nova-clinica');
-  updateDashboard();
-  renderPipeline();
-  renderClinicas();
-  openClient(c.id);
+  isNewLead = true;
+  modalActiveTab = 'geral';
+  modalFinanceUnlocked = false;
+  modalFinanceError = '';
+  modalOriginalStage = currentModalLead.stage;
+  if(!modalHintMessage) modalHintMessage = '';
+  renderModal();
 }
 
-function addObsDp(){
-  let inp=document.getElementById('nova-obs-dp');
-  if(!inp||!inp.value.trim()) return;
-  let hoje=new Date();
-  let data=hoje.getDate()+' '+['jan','fev','mar','abr','mai','jun','jul','ago','set','out','nov','dez'][hoje.getMonth()]+' '+hoje.getFullYear();
-  let tl=document.querySelector('#dpc-timeline');
-  let divider=tl.querySelector('.divider');
-  let novo=document.createElement('div');
-  novo.className='tl-item';
-  novo.innerHTML=`<div class="tl-dot" style="background:#2563eb;"></div><div class="tl-date">${data}</div><div><div class="tl-text">${inp.value}</div><div class="tl-user">João Vitor</div></div>`;
-  tl.insertBefore(novo,divider);
-  inp.value='';
+function openLeadModal(id){
+  const lead = state.leads.find(l=>l.id===id);
+  if(!lead) return;
+  currentModalLead = JSON.parse(JSON.stringify(lead));
+  currentModalLead.financeiro = currentModalLead.financeiro || [];
+  currentModalLead.reuniaoData = currentModalLead.reuniaoData || '';
+  currentModalLead.reuniaoHora = currentModalLead.reuniaoHora || '';
+  currentModalLead.reuniaoObs = currentModalLead.reuniaoObs || '';
+  currentModalLead.stageChangedAt = currentModalLead.stageChangedAt || currentModalLead.dataCriacao;
+  isNewLead = false;
+  modalActiveTab = 'geral';
+  modalFinanceUnlocked = false;
+  modalFinanceError = '';
+  modalOriginalStage = currentModalLead.stage;
+  renderModal();
 }
 
-function copyPrompt(txt){
-  navigator.clipboard.writeText(txt).then(()=>alert('Prompt copiado! Cole no Claude para analisar.')).catch(()=>alert('Prompt: '+txt));
+function closeModal(){
+  currentModalLead = null;
+  modalHintMessage = '';
+  document.getElementById('modal-root').innerHTML = '';
 }
 
-function toggleCbG(row){row.querySelector('.cb').classList.toggle('on');}
-
-function saveProfile(){
-  const nome=document.getElementById('cfg-nome')?.value||'Admin';
-  document.querySelector('.user-name').textContent=nome;
-  const initials=_getInitials(nome);
-  document.querySelector('.user-av').textContent=initials;
-  alert('Perfil salvo!');
+function renderModal(){
+  const root = document.getElementById('modal-root');
+  if(!currentModalLead){ root.innerHTML = ''; return; }
+  const lead = currentModalLead;
+  root.innerHTML = `
+    <div class="modal-overlay" id="modal-overlay">
+      <div class="modal">
+        <div class="modal-header">
+          <div>
+            <div class="modal-title">${escapeHTML(lead.dentista || 'Novo lead')}</div>
+            <div class="modal-subtitle">${escapeHTML(lead.clinica || 'Sem clínica informada')}</div>
+          </div>
+          <button class="modal-close" id="modal-close">×</button>
+        </div>
+        <div class="modal-tabs">
+          <button class="tab ${modalActiveTab==='geral'?'active':''}" data-tab="geral">Geral</button>
+          <button class="tab ${modalActiveTab==='clinica'?'active':''}" data-tab="clinica">Clínica &amp; Marketing</button>
+          <button class="tab ${modalActiveTab==='financeiro'?'active':''}" data-tab="financeiro">🔒 Financeiro</button>
+        </div>
+        <div class="modal-body" id="modal-body">
+          ${modalHintMessage ? `<div class="hint-banner">💡 ${escapeHTML(modalHintMessage)}</div>` : ''}
+          ${modalActiveTab==='geral' ? renderModalGeral(lead) : ''}
+          ${modalActiveTab==='clinica' ? renderModalClinica(lead) : ''}
+          ${modalActiveTab==='financeiro' ? renderModalFinanceiro(lead) : ''}
+        </div>
+        <div class="modal-footer">
+          ${isNewLead ? '<span></span>' : `<button class="btn btn-danger" id="delete-lead-btn">Excluir lead</button>`}
+          <button class="btn btn-primary" id="save-lead-btn">Salvar alterações</button>
+        </div>
+      </div>
+    </div>`;
+  attachModalEvents();
 }
 
-// === SAÚDE ===
-function updateSaude(){
-  const keys=['fin','part','impl','res'];
-  const vals=keys.map(k=>{
-    const v=Math.min(100,Math.max(0,parseInt(document.getElementById('saude-'+k+'-inp')?.value)||0));
-    const bar=document.getElementById('hb-'+k);const lbl=document.getElementById('hbv-'+k);
-    const col=v>=70?'#34d399':v>=40?'#fbbf24':'#f87171';
-    if(bar){bar.style.width=v+'%';bar.style.background=v?col:'#1e3a5f';}
-    if(lbl){lbl.textContent=v;lbl.style.color=v?col:'#4a7fc1';}
-    return v;
+function renderModalGeral(lead){
+  return `
+    <div class="field-row">
+      <div class="field"><label>Nome do dentista</label><input id="f-dentista" value="${escapeHTML(lead.dentista)}"></div>
+      <div class="field"><label>Telefone / WhatsApp</label><input id="f-telefone" value="${escapeHTML(lead.telefone)}"></div>
+    </div>
+    <div class="field-row">
+      <div class="field"><label>E-mail</label><input id="f-email" value="${escapeHTML(lead.email)}"></div>
+      <div class="field"><label>Origem do lead</label><input id="f-origem" placeholder="Indicação, Instagram, Google..." value="${escapeHTML(lead.origem)}"></div>
+    </div>
+    <div class="field-row">
+      <div class="field">
+        <label>Etapa no pipeline</label>
+        <select id="f-stage">
+          ${ALL_STAGES.map(s=>`<option value="${s.key}" ${lead.stage===s.key?'selected':''}>${s.label}</option>`).join('')}
+        </select>
+      </div>
+      <div class="field"><label>Lead criado em</label><input value="${formatDate(lead.dataCriacao)}" disabled></div>
+    </div>
+    <div class="field">
+      <label>Observações / histórico de interações</label>
+      <textarea id="f-observacoes" placeholder="Anote o que foi falado, próximos passos, etc.">${escapeHTML(lead.observacoes)}</textarea>
+    </div>
+    <div class="section-title" style="margin-top:6px">Reunião / Agenda</div>
+    <div class="field-hint" style="margin-bottom:10px">Ao definir uma data de reunião, este lead vai automaticamente para a etapa "Lead Agendado" — não importa em qual etapa ele estava.</div>
+    <div class="field-row">
+      <div class="field"><label>Data da reunião</label><input id="f-reuniaodata" type="date" value="${escapeHTML(lead.reuniaoData)}"></div>
+      <div class="field"><label>Horário</label><input id="f-reuniaohora" type="time" value="${escapeHTML(lead.reuniaoHora)}"></div>
+    </div>
+    <div class="field"><label>Observações da reunião</label><input id="f-reuniaoobs" placeholder="Link da call, pauta, etc." value="${escapeHTML(lead.reuniaoObs)}"></div>
+  `;
+}
+
+function renderModalClinica(lead){
+  return `
+    <div class="field-row">
+      <div class="field"><label>Nome da clínica</label><input id="f-clinica" value="${escapeHTML(lead.clinica)}"></div>
+      <div class="field"><label>Cidade</label><input id="f-cidade" value="${escapeHTML(lead.cidade)}"></div>
+    </div>
+    <div class="field-row">
+      <div class="field"><label>Instagram</label><input id="f-instagram" placeholder="@perfil" value="${escapeHTML(lead.instagram)}"></div>
+      <div class="field"><label>Nº de cadeiras / dentistas</label><input id="f-numcadeiras" value="${escapeHTML(lead.numCadeiras)}"></div>
+    </div>
+    <div class="section-title" style="margin-top:6px">Marketing atual</div>
+    <div class="field-row">
+      <div class="field"><label>Investimento atual em mkt (R$/mês)</label><input id="f-investimento" type="number" step="0.01" value="${lead.investimentoMkt||0}"></div>
+      <div class="field"><label>Canal onde investe hoje</label><input id="f-canalmkt" placeholder="Meta Ads, Google, indicação..." value="${escapeHTML(lead.canalMkt)}"></div>
+    </div>
+    <div class="field"><label>Agência / time atual responsável pelo mkt</label><input id="f-agencia" value="${escapeHTML(lead.agenciaAtual)}"></div>
+    <div class="section-title" style="margin-top:6px">Contrato Eleva</div>
+    <div class="field-row">
+      <div class="field"><label>Plano / produto contratado</label><input id="f-plano" placeholder="Essencial, Profissional, Premium..." value="${escapeHTML(lead.plano)}"></div>
+      <div class="field"><label>Mensalidade Eleva (R$)</label><input id="f-valormensalidade" type="number" step="0.01" value="${lead.valorMensalidade||0}"></div>
+    </div>
+    ${lead.stage==='fechado' ? `<div class="field"><label>Cliente fechado em</label><input value="${formatDate(lead.dataFechamento)}" disabled></div>` : ''}
+  `;
+}
+
+function renderModalFinanceiro(lead){
+  if(!modalFinanceUnlocked){
+    return `
+      <div class="password-gate">
+        <div class="lock-icon">🔒</div>
+        <p>Esta área contém informações financeiras do cliente. Digite a senha para continuar.</p>
+        <input type="password" id="modal-finance-password" placeholder="Senha">
+        <button class="btn btn-primary" id="modal-finance-unlock">Entrar</button>
+        <div class="error-text">${escapeHTML(modalFinanceError)}</div>
+      </div>`;
+  }
+  const entries = lead.financeiro || [];
+  const aReceber = entries.filter(e=>e.tipo==='receber' && e.status!=='pago').reduce((s,e)=>s+Number(e.valor||0),0);
+  const aPagar = entries.filter(e=>e.tipo==='pagar' && e.status!=='pago').reduce((s,e)=>s+Number(e.valor||0),0);
+  let html = `
+    <div class="summary-row">
+      <div class="summary-card"><div class="label">A receber (pendente)</div><div class="value positive">${formatCurrency(aReceber)}</div></div>
+      <div class="summary-card"><div class="label">A pagar (pendente)</div><div class="value negative">${formatCurrency(aPagar)}</div></div>
+    </div>`;
+  if(entries.length===0){
+    html += `<div class="empty-state" style="padding:24px"><h3>Nenhum lançamento</h3><p>Adicione contas a pagar ou a receber relacionadas a este cliente.</p></div>`;
+  } else {
+    html += `<div class="table-wrap"><table class="data-table"><thead><tr>
+      <th>Descrição</th><th>Tipo</th><th>Valor</th><th>Vencimento</th><th>Status</th><th></th>
+    </tr></thead><tbody>`;
+    entries.forEach(e=>{
+      html += `<tr>
+        <td>${escapeHTML(e.descricao)}</td>
+        <td>${e.tipo==='receber'?'A receber':'A pagar'}</td>
+        <td>${formatCurrency(e.valor)}</td>
+        <td>${formatDate(e.vencimento)}</td>
+        <td><span class="status-pill status-${e.status}">${e.status==='pago'?'Pago':e.status==='atrasado'?'Atrasado':'Pendente'}</span></td>
+        <td>
+          ${e.status!=='pago' ? `<button class="btn btn-small btn-secondary mark-paid-btn" data-id="${e.id}">Marcar pago</button>` : ''}
+          <button class="btn btn-small btn-danger del-finance-entry-btn" data-id="${e.id}" data-key="${pendingDeleteKey==='entry_'+e.id ? 'confirm' : ''}">${pendingDeleteKey==='entry_'+e.id ? 'Confirmar?' : 'Excluir'}</button>
+        </td>
+      </tr>`;
+    });
+    html += `</tbody></table></div>`;
+  }
+  html += `
+    <div class="section-title">Novo lançamento</div>
+    <div class="add-finance-form">
+      <div class="field"><label>Descrição</label><input id="nf-descricao" placeholder="Ex: Mensalidade junho"></div>
+      <div class="field field-small"><label>Tipo</label>
+        <select id="nf-tipo"><option value="receber">A receber</option><option value="pagar">A pagar</option></select>
+      </div>
+      <div class="field field-small"><label>Valor (R$)</label><input id="nf-valor" type="number" step="0.01"></div>
+      <div class="field field-small"><label>Vencimento</label><input id="nf-vencimento" type="date" value="${todayISO()}"></div>
+      <button class="btn btn-primary" id="add-finance-entry-btn">Adicionar</button>
+    </div>`;
+  return html;
+}
+
+/* captura os campos da aba ativa para o objeto em edição */
+function captureModalForm(){
+  const lead = currentModalLead;
+  if(!lead) return;
+  if(modalActiveTab==='geral'){
+    lead.dentista = val('#f-dentista');
+    lead.telefone = val('#f-telefone');
+    lead.email = val('#f-email');
+    lead.origem = val('#f-origem');
+    lead.stage = val('#f-stage');
+    lead.observacoes = val('#f-observacoes');
+    lead.reuniaoData = val('#f-reuniaodata');
+    lead.reuniaoHora = val('#f-reuniaohora');
+    lead.reuniaoObs = val('#f-reuniaoobs');
+  } else if(modalActiveTab==='clinica'){
+    lead.clinica = val('#f-clinica');
+    lead.cidade = val('#f-cidade');
+    lead.instagram = val('#f-instagram');
+    lead.numCadeiras = val('#f-numcadeiras');
+    lead.investimentoMkt = numVal('#f-investimento');
+    lead.canalMkt = val('#f-canalmkt');
+    lead.agenciaAtual = val('#f-agencia');
+    lead.plano = val('#f-plano');
+    lead.valorMensalidade = numVal('#f-valormensalidade');
+  }
+}
+
+function persistLead(){
+  const lead = currentModalLead;
+  const idx = state.leads.findIndex(l=>l.id===lead.id);
+  if(idx>=0) state.leads[idx] = lead;
+  else state.leads.push(lead);
+  saveData();
+}
+
+function attachModalEvents(){
+  document.getElementById('modal-close').addEventListener('click', ()=>{ closeModal(); render(); });
+  document.getElementById('modal-overlay').addEventListener('click', e=>{
+    if(e.target.id==='modal-overlay'){ closeModal(); render(); }
   });
-  const avg=Math.round(vals.reduce((a,b)=>a+b,0)/4);
-  const sg=document.getElementById('saude-geral');
-  if(sg){sg.textContent=avg+'%';sg.style.color=avg>=70?'#34d399':avg>=40?'#fbbf24':'#f87171';}
-}
-function saveSaude(){
-  if(!currentClient)return;
-  currentClient.saude={fin:parseInt(document.getElementById('saude-fin-inp').value)||0,part:parseInt(document.getElementById('saude-part-inp').value)||0,impl:parseInt(document.getElementById('saude-impl-inp').value)||0,res:parseInt(document.getElementById('saude-res-inp').value)||0};
-  if(window.fbSaveClient) window.fbSaveClient(currentClient);
-  alert('Saúde salva!');
+
+  document.querySelectorAll('.modal-tabs .tab').forEach(t=>{
+    t.addEventListener('click', ()=>{
+      captureModalForm();
+      modalActiveTab = t.dataset.tab;
+      modalFinanceError = '';
+      renderModal();
+    });
+  });
+
+  document.getElementById('save-lead-btn').addEventListener('click', ()=>{
+    captureModalForm();
+    const lead = currentModalLead;
+    if(lead.reuniaoData){
+      lead.stage = 'agendado';
+    }
+    if(lead.stage==='fechado' && !lead.dataFechamento){
+      lead.dataFechamento = new Date().toISOString();
+    }
+    if(lead.stage!=='fechado'){
+      lead.dataFechamento = '';
+    }
+    if(lead.stage !== modalOriginalStage){
+      lead.stageChangedAt = new Date().toISOString();
+    }
+    persistLead();
+    closeModal();
+    render();
+  });
+
+  const delBtn = document.getElementById('delete-lead-btn');
+  if(delBtn){
+    if(pendingDeleteKey==='lead_'+currentModalLead.id){
+      delBtn.textContent = 'Confirmar exclusão?';
+      delBtn.classList.add('confirm');
+    }
+    delBtn.addEventListener('click', ()=>{
+      const key = 'lead_'+currentModalLead.id;
+      if(pendingDeleteKey===key){
+        state.leads = state.leads.filter(l=>l.id!==currentModalLead.id);
+        pendingDeleteKey = null;
+        saveData();
+        closeModal();
+        render();
+      } else {
+        pendingDeleteKey = key;
+        renderModal();
+      }
+    });
+  }
+
+  // Financeiro tab
+  const unlockBtn = document.getElementById('modal-finance-unlock');
+  if(unlockBtn){
+    unlockBtn.addEventListener('click', ()=>{
+      const pwd = val('#modal-finance-password');
+      if(pwd===FINANCE_PASSWORD){
+        modalFinanceUnlocked = true;
+        modalFinanceError = '';
+      } else {
+        modalFinanceError = 'Senha incorreta.';
+      }
+      renderModal();
+    });
+    const pwdInput = document.getElementById('modal-finance-password');
+    pwdInput.addEventListener('keydown', e=>{ if(e.key==='Enter') unlockBtn.click(); });
+  }
+
+  const addFinanceBtn = document.getElementById('add-finance-entry-btn');
+  if(addFinanceBtn){
+    addFinanceBtn.addEventListener('click', ()=>{
+      const descricao = val('#nf-descricao').trim();
+      const valor = numVal('#nf-valor');
+      if(!descricao || !valor){ return; }
+      currentModalLead.financeiro = currentModalLead.financeiro || [];
+      currentModalLead.financeiro.push({
+        id: uid('fin'), descricao, tipo: val('#nf-tipo'), valor,
+        vencimento: val('#nf-vencimento'), status: 'pendente'
+      });
+      persistLead();
+      renderModal();
+    });
+  }
+
+  document.querySelectorAll('.mark-paid-btn').forEach(b=>{
+    b.addEventListener('click', ()=>{
+      const entry = (currentModalLead.financeiro||[]).find(e=>e.id===b.dataset.id);
+      if(entry){ entry.status='pago'; persistLead(); renderModal(); }
+    });
+  });
+
+  document.querySelectorAll('.del-finance-entry-btn').forEach(b=>{
+    b.addEventListener('click', ()=>{
+      const key = 'entry_'+b.dataset.id;
+      if(pendingDeleteKey===key){
+        currentModalLead.financeiro = (currentModalLead.financeiro||[]).filter(e=>e.id!==b.dataset.id);
+        pendingDeleteKey = null;
+        persistLead();
+      } else {
+        pendingDeleteKey = key;
+      }
+      renderModal();
+    });
+  });
 }
 
-// === FINANCEIRO DO CLIENTE ===
-function saveFinanceiro(){
-  if(!currentClient)return;
-  const plano=document.getElementById('fin-plano').value;
-  const valor=document.getElementById('fin-valor').value;
-  const dia=document.getElementById('fin-dia').value;
-  const status=document.getElementById('fin-status').value;
-  const obs=document.getElementById('fin-obs').value;
-  if(plano)currentClient.plan=plano;
-  if(valor){currentClient.value=_fmtMoeda(valor);currentClient.valor=valor;}
-  if(dia)currentClient.vencimento='Dia '+dia;
-  if(status)currentClient.payment=status;
-  if(obs)currentClient.obsFinanceiro=obs;
-  if(window.fbSaveClient) window.fbSaveClient(currentClient);
-  updateDashboard();renderClinicas();
-  alert('Contrato salvo!');
+/* ============================================================
+   PÁGINA: BASE DE CLÍNICAS
+   ============================================================ */
+function renderClinicas(){
+  const content = document.getElementById('page-content');
+  if(state.clinics.length===0){
+    content.innerHTML = `<div class="empty-state"><h3>Nenhuma clínica cadastrada</h3><p>Use o botão "+ Nova Clínica" para começar a montar a base.</p></div>`;
+    return;
+  }
+  content.innerHTML = `<div class="table-wrap"><table class="data-table"><thead><tr>
+    <th>Clínica</th><th>Cidade</th><th>Responsável</th><th>Telefone</th><th>Instagram</th><th>Status</th><th></th>
+  </tr></thead><tbody>
+    ${state.clinics.map(c=>`
+      <tr>
+        <td><strong>${escapeHTML(c.nome)}</strong></td>
+        <td>${escapeHTML(c.cidade)}</td>
+        <td>${escapeHTML(c.dentistaResponsavel)}</td>
+        <td>${escapeHTML(c.telefone)}</td>
+        <td>${escapeHTML(c.instagram)}</td>
+        <td><span class="status-pill status-${c.status}">${CLINIC_STATUS.find(s=>s.key===c.status)?.label || c.status}</span></td>
+        <td><button class="btn btn-small btn-secondary edit-clinic-btn" data-id="${c.id}">Editar</button></td>
+      </tr>`).join('')}
+  </tbody></table></div>`;
+
+  document.querySelectorAll('.edit-clinic-btn').forEach(b=>b.addEventListener('click', ()=>openClinicForm(b.dataset.id)));
 }
 
-// === LOAD PAINEL CLIENTE ===
-function _loadClientPanel(c){
-  // timeline
-  const tl=document.getElementById('dp-timeline-entries');
-  if(tl){const items=c.timeline||[];tl.innerHTML=items.length?items.map(t=>`<div class="tl-item"><div class="tl-dot" style="background:#2563eb;"></div><div class="tl-date">${t.date}</div><div><div class="tl-text">${t.text}</div><div class="tl-user">${t.user}</div></div></div>`).join(''):'<div style="font-size:12px;color:#4a7fc1;padding:8px 0;">Nenhuma observação ainda.</div>';}
-  // saúde
-  const s=c.saude||{};
-  ['fin','part','impl','res'].forEach(k=>{const inp=document.getElementById('saude-'+k+'-inp');if(inp)inp.value=s[k]||0;});
-  updateSaude();
-  // financeiro
-  const fp=document.getElementById('fin-plano');const fv=document.getElementById('fin-valor');const fd=document.getElementById('fin-dia');const fs=document.getElementById('fin-status');const fo=document.getElementById('fin-obs');
-  if(fp)fp.value=c.plan&&['Eleva Start','Eleva Pro','Eleva Scale'].includes(c.plan)?c.plan:'';
-  if(fv)fv.value=c.valor||'';
-  if(fd)fd.value=c.vencimento?c.vencimento.replace('Dia ',''):'';
-  if(fs)fs.value=c.payment&&['Em dia','Em aberto','Atrasado'].includes(c.payment)?c.payment:'';
-  if(fo)fo.value=c.obsFinanceiro||'';
+function openClinicForm(id){
+  const clinic = id ? state.clinics.find(c=>c.id===id) : {
+    id: uid('clinic'), nome:'', cidade:'', endereco:'', telefone:'', instagram:'',
+    dentistaResponsavel:'', numCadeiras:'', status:'prospect', observacoes:''
+  };
+  openFormModal({
+    title: id ? 'Editar clínica' : 'Nova clínica',
+    data: clinic,
+    fields: [
+      {key:'nome', label:'Nome da clínica', type:'text'},
+      {key:'dentistaResponsavel', label:'Dentista responsável', type:'text'},
+      {key:'cidade', label:'Cidade', type:'text'},
+      {key:'endereco', label:'Endereço', type:'text'},
+      {key:'telefone', label:'Telefone', type:'text'},
+      {key:'instagram', label:'Instagram', type:'text'},
+      {key:'numCadeiras', label:'Nº de cadeiras / dentistas', type:'text'},
+      {key:'status', label:'Status', type:'select', options: CLINIC_STATUS.map(s=>({value:s.key,label:s.label}))},
+      {key:'observacoes', label:'Observações', type:'textarea'},
+    ],
+    onSave: data=>{
+      const idx = state.clinics.findIndex(c=>c.id===data.id);
+      if(idx>=0) state.clinics[idx]=data; else state.clinics.push(data);
+      saveData(); render();
+    },
+    onDelete: id ? ()=>{
+      state.clinics = state.clinics.filter(c=>c.id!==id);
+      saveData(); render();
+    } : null
+  });
 }
 
-// === INIT ===
-// Firebase carrega os dados e chama updateDashboard/renderClinicas/renderPipeline
-// Se Firebase não estiver disponível, roda local
-if(!window.fbInit){
-  updateDashboard();
-  renderClinicas();
-  renderPipeline();
+/* ============================================================
+   PÁGINA: FINANCEIRO (GERAL)
+   ============================================================ */
+function renderFinanceiro(){
+  const content = document.getElementById('page-content');
+  if(!financeUnlocked){
+    content.innerHTML = `
+      <div class="password-gate" style="max-width:380px;margin:60px auto;">
+        <div class="lock-icon">🔒</div>
+        <p>A área financeira é restrita. Digite a senha de acesso para continuar.</p>
+        <input type="password" id="finance-page-password" placeholder="Senha">
+        <button class="btn btn-primary" id="finance-page-unlock">Entrar</button>
+        <div class="error-text">${escapeHTML(financeError)}</div>
+      </div>`;
+    document.getElementById('finance-page-unlock').addEventListener('click', ()=>{
+      const pwd = val('#finance-page-password');
+      if(pwd===FINANCE_PASSWORD){ financeUnlocked = true; financeError=''; render(); }
+      else { financeError = 'Senha incorreta.'; renderFinanceiro(); }
+    });
+    document.getElementById('finance-page-password').addEventListener('keydown', e=>{
+      if(e.key==='Enter') document.getElementById('finance-page-unlock').click();
+    });
+    return;
+  }
+
+  const clientes = state.leads.filter(l=>l.stage==='fechado');
+  const mrr = clientes.reduce((s,c)=>s+Number(c.valorMensalidade||0),0);
+
+  let totalReceberClientes = 0, totalPagarClientes = 0;
+  state.leads.forEach(l=>{
+    (l.financeiro||[]).forEach(e=>{
+      if(e.status==='pago') return;
+      if(e.tipo==='receber') totalReceberClientes += Number(e.valor||0);
+      else totalPagarClientes += Number(e.valor||0);
+    });
+  });
+  let totalReceberGeral = 0, totalPagarGeral = 0;
+  state.financeGeral.forEach(e=>{
+    if(e.status==='pago') return;
+    if(e.tipo==='receber') totalReceberGeral += Number(e.valor||0);
+    else totalPagarGeral += Number(e.valor||0);
+  });
+
+  let html = `<div class="summary-row">
+    <div class="summary-card"><div class="label">MRR (clientes fechados)</div><div class="value">${formatCurrency(mrr)}</div></div>
+    <div class="summary-card"><div class="label">A receber (clientes)</div><div class="value positive">${formatCurrency(totalReceberClientes)}</div></div>
+    <div class="summary-card"><div class="label">A pagar (clientes)</div><div class="value negative">${formatCurrency(totalPagarClientes)}</div></div>
+    <div class="summary-card"><div class="label">A receber (geral)</div><div class="value positive">${formatCurrency(totalReceberGeral)}</div></div>
+    <div class="summary-card"><div class="label">A pagar (geral)</div><div class="value negative">${formatCurrency(totalPagarGeral)}</div></div>
+  </div>`;
+
+  html += `<div class="section-title">Contas gerais (a pagar / a receber)</div>`;
+  if(state.financeGeral.length===0){
+    html += `<div class="empty-state" style="padding:24px"><h3>Nenhum lançamento geral</h3><p>Use "+ Nova Conta" para registrar contas da operação Eleva.</p></div>`;
+  } else {
+    html += `<div class="table-wrap"><table class="data-table"><thead><tr>
+      <th>Descrição</th><th>Categoria</th><th>Tipo</th><th>Valor</th><th>Vencimento</th><th>Status</th><th></th>
+    </tr></thead><tbody>`;
+    state.financeGeral.forEach(e=>{
+      html += `<tr>
+        <td>${escapeHTML(e.descricao)}</td>
+        <td>${escapeHTML(e.categoria||'-')}</td>
+        <td>${e.tipo==='receber'?'A receber':'A pagar'}</td>
+        <td>${formatCurrency(e.valor)}</td>
+        <td>${formatDate(e.vencimento)}</td>
+        <td><span class="status-pill status-${e.status}">${e.status==='pago'?'Pago':e.status==='atrasado'?'Atrasado':'Pendente'}</span></td>
+        <td>
+          ${e.status!=='pago' ? `<button class="btn btn-small btn-secondary mark-paid-geral-btn" data-id="${e.id}">Marcar pago</button>` : ''}
+          <button class="btn btn-small btn-secondary edit-finance-geral-btn" data-id="${e.id}">Editar</button>
+        </td>
+      </tr>`;
+    });
+    html += `</tbody></table></div>`;
+  }
+
+  html += `<div class="section-title">Mensalidades de clientes (MRR)</div>`;
+  if(clientes.length===0){
+    html += `<div class="empty-state" style="padding:24px"><h3>Sem clientes fechados</h3><p>O MRR aparece aqui quando houver clientes fechados com mensalidade definida.</p></div>`;
+  } else {
+    html += `<div class="table-wrap"><table class="data-table"><thead><tr>
+      <th>Clínica</th><th>Plano</th><th>Mensalidade</th><th>Cliente desde</th>
+    </tr></thead><tbody>`;
+    clientes.forEach(c=>{
+      html += `<tr>
+        <td><strong>${escapeHTML(c.clinica||'-')}</strong></td>
+        <td>${escapeHTML(c.plano||'-')}</td>
+        <td>${formatCurrency(c.valorMensalidade)}</td>
+        <td>${formatDate(c.dataFechamento)}</td>
+      </tr>`;
+    });
+    html += `</tbody></table></div>`;
+  }
+
+  content.innerHTML = html;
+
+  document.querySelectorAll('.mark-paid-geral-btn').forEach(b=>{
+    b.addEventListener('click', ()=>{
+      const e = state.financeGeral.find(x=>x.id===b.dataset.id);
+      if(e){ e.status='pago'; saveData(); renderFinanceiro(); }
+    });
+  });
+  document.querySelectorAll('.edit-finance-geral-btn').forEach(b=>{
+    b.addEventListener('click', ()=>openFinanceGeralForm(b.dataset.id));
+  });
 }
+
+function openFinanceGeralForm(id){
+  const entry = id ? state.financeGeral.find(e=>e.id===id) : {
+    id: uid('fin'), descricao:'', categoria:'', tipo:'pagar', valor:0, vencimento:todayISO(), status:'pendente'
+  };
+  openFormModal({
+    title: id ? 'Editar lançamento' : 'Novo lançamento financeiro',
+    data: entry,
+    fields: [
+      {key:'descricao', label:'Descrição', type:'text'},
+      {key:'categoria', label:'Categoria', type:'text', placeholder:'Ex: Tráfego pago, Folha, Ferramentas...'},
+      {key:'tipo', label:'Tipo', type:'select', options:[{value:'receber',label:'A receber'},{value:'pagar',label:'A pagar'}]},
+      {key:'valor', label:'Valor (R$)', type:'number'},
+      {key:'vencimento', label:'Vencimento', type:'date'},
+      {key:'status', label:'Status', type:'select', options:[{value:'pendente',label:'Pendente'},{value:'pago',label:'Pago'},{value:'atrasado',label:'Atrasado'}]},
+    ],
+    onSave: data=>{
+      data.valor = Number(data.valor)||0;
+      const idx = state.financeGeral.findIndex(e=>e.id===data.id);
+      if(idx>=0) state.financeGeral[idx]=data; else state.financeGeral.push(data);
+      saveData(); render();
+    },
+    onDelete: id ? ()=>{
+      state.financeGeral = state.financeGeral.filter(e=>e.id!==id);
+      saveData(); render();
+    } : null
+  });
+}
+
+/* ============================================================
+   PÁGINA: EQUIPE
+   ============================================================ */
+function renderEquipe(){
+  const content = document.getElementById('page-content');
+  if(state.team.length===0){
+    content.innerHTML = `<div class="empty-state"><h3>Nenhum membro cadastrado</h3><p>Use "+ Novo Membro" para montar o time da Eleva.</p></div>`;
+    return;
+  }
+  content.innerHTML = `<div class="card-grid">${state.team.map(m=>`
+    <div class="team-card">
+      <div class="avatar">${escapeHTML((m.nome||'?').slice(0,1).toUpperCase())}</div>
+      <div class="name">${escapeHTML(m.nome)}</div>
+      <div class="role">${escapeHTML(m.cargo)}</div>
+      <div class="meta-line">${escapeHTML(m.email||'')}</div>
+      <div class="meta-line">${escapeHTML(m.telefone||'')}</div>
+      <div class="actions">
+        <button class="btn btn-small btn-secondary edit-team-btn" data-id="${m.id}">Editar</button>
+      </div>
+    </div>`).join('')}</div>`;
+
+  document.querySelectorAll('.edit-team-btn').forEach(b=>b.addEventListener('click', ()=>openTeamForm(b.dataset.id)));
+}
+
+function openTeamForm(id){
+  const member = id ? state.team.find(m=>m.id===id) : {
+    id: uid('team'), nome:'', cargo:CARGOS[0], email:'', telefone:''
+  };
+  openFormModal({
+    title: id ? 'Editar membro' : 'Novo membro da equipe',
+    data: member,
+    fields: [
+      {key:'nome', label:'Nome', type:'text'},
+      {key:'cargo', label:'Função', type:'select', options: CARGOS.map(c=>({value:c,label:c}))},
+      {key:'email', label:'E-mail', type:'text'},
+      {key:'telefone', label:'Telefone', type:'text'},
+    ],
+    onSave: data=>{
+      const idx = state.team.findIndex(m=>m.id===data.id);
+      if(idx>=0) state.team[idx]=data; else state.team.push(data);
+      saveData(); render();
+    },
+    onDelete: id ? ()=>{
+      state.team = state.team.filter(m=>m.id!==id);
+      saveData(); render();
+    } : null
+  });
+}
+
+/* ============================================================
+   MODAL GENÉRICO DE FORMULÁRIO (Clínicas, Equipe, Financeiro Geral)
+   ============================================================ */
+function openFormModal(config){
+  formModalConfig = {...config, data: {...config.data}};
+  pendingDeleteKey = null;
+  renderFormModal();
+}
+
+function renderField(field, value){
+  const id = 'ff-'+field.key;
+  if(field.type==='select'){
+    return `<div class="field"><label>${field.label}</label><select id="${id}">
+      ${field.options.map(o=>`<option value="${escapeHTML(o.value)}" ${value===o.value?'selected':''}>${escapeHTML(o.label)}</option>`).join('')}
+    </select></div>`;
+  }
+  if(field.type==='textarea'){
+    return `<div class="field"><label>${field.label}</label><textarea id="${id}">${escapeHTML(value)}</textarea></div>`;
+  }
+  if(field.type==='number'){
+    return `<div class="field"><label>${field.label}</label><input id="${id}" type="number" step="0.01" value="${value||0}"></div>`;
+  }
+  if(field.type==='date'){
+    return `<div class="field"><label>${field.label}</label><input id="${id}" type="date" value="${escapeHTML(value)}"></div>`;
+  }
+  return `<div class="field"><label>${field.label}</label><input id="${id}" type="text" placeholder="${escapeHTML(field.placeholder||'')}" value="${escapeHTML(value)}"></div>`;
+}
+
+function renderFormModal(){
+  const root = document.getElementById('form-modal-root');
+  if(!formModalConfig){ root.innerHTML=''; return; }
+  const {title, fields, data, onDelete} = formModalConfig;
+  root.innerHTML = `
+    <div class="modal-overlay" id="form-modal-overlay">
+      <div class="modal modal-small">
+        <div class="modal-header">
+          <div class="modal-title">${title}</div>
+          <button class="modal-close" id="form-modal-close">×</button>
+        </div>
+        <div class="modal-body">
+          ${fields.map(f=>renderField(f, data[f.key])).join('')}
+        </div>
+        <div class="modal-footer">
+          ${onDelete ? `<button class="btn btn-danger" id="form-delete-btn">${pendingDeleteKey==='form'?'Confirmar exclusão?':'Excluir'}</button>` : '<span></span>'}
+          <button class="btn btn-primary" id="form-save-btn">Salvar</button>
+        </div>
+      </div>
+    </div>`;
+
+  const close = ()=>{ formModalConfig=null; pendingDeleteKey=null; root.innerHTML=''; };
+  document.getElementById('form-modal-close').addEventListener('click', close);
+  document.getElementById('form-modal-overlay').addEventListener('click', e=>{
+    if(e.target.id==='form-modal-overlay') close();
+  });
+  document.getElementById('form-save-btn').addEventListener('click', ()=>{
+    const result = {...data};
+    fields.forEach(f=>{ result[f.key] = val('#ff-'+f.key); });
+    formModalConfig.onSave(result);
+    close();
+  });
+  const delBtn = document.getElementById('form-delete-btn');
+  if(delBtn){
+    delBtn.addEventListener('click', ()=>{
+      if(pendingDeleteKey==='form'){
+        formModalConfig.onDelete();
+        close();
+      } else {
+        pendingDeleteKey = 'form';
+        renderFormModal();
+      }
+    });
+  }
+}
+
+/* ============================================================
+   NAVEGAÇÃO E INICIALIZAÇÃO
+   ============================================================ */
+document.querySelectorAll('.nav-item').forEach(b=>{
+  b.addEventListener('click', ()=>{
+    currentPage = b.dataset.page;
+    render();
+  });
+});
+document.getElementById('export-btn').addEventListener('click', ()=>{
+  const blob = new Blob([JSON.stringify(state, null, 2)], {type:'application/json'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = 'eleva-crm-backup-' + todayISO() + '.json';
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+});
+
+document.getElementById('import-btn').addEventListener('click', ()=>{
+  document.getElementById('import-file-input').click();
+});
+document.getElementById('import-file-input').addEventListener('change', e=>{
+  const file = e.target.files[0];
+  if(!file) return;
+  const reader = new FileReader();
+  reader.onload = ev=>{
+    try{
+      const parsed = JSON.parse(ev.target.result);
+      state.leads = parsed.leads || [];
+      state.clinics = parsed.clinics || [];
+      state.team = parsed.team || [];
+      state.financeGeral = parsed.financeGeral || [];
+      saveData();
+      render();
+    }catch(err){
+      setSyncStatus('Arquivo inválido');
+    }
+  };
+  reader.readAsText(file);
+  e.target.value = '';
+});
+
+render();
+startRealtimeSync();
 </script>
 </body>
 </html>
