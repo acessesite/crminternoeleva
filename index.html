@@ -400,7 +400,7 @@ try{
 }catch(e){
   console.error('Erro ao iniciar o Firebase:', e);
 }
-let state = { leads: [], clinics: [], team: [], financeGeral: [], tasks: [] };
+let state = { leads: [], clinics: [], team: [], financeGeral: [], tasks: [], compromissos: [] };
 
 const STAGES = [
   {key:'frio', label:'Lead Frio', desc:'Leads que chegaram para a gente, ainda sem nenhum contato.', color:'#94A3B8'},
@@ -525,8 +525,9 @@ async function startRealtimeSync(){
       state.team = data.team || [];
       state.financeGeral = data.financeGeral || [];
       state.tasks = data.tasks || [];
+      state.compromissos = data.compromissos || [];
     } else {
-      state.leads = []; state.clinics = []; state.team = []; state.financeGeral = []; state.tasks = [];
+      state.leads = []; state.clinics = []; state.team = []; state.financeGeral = []; state.tasks = []; state.compromissos = [];
     }
     setSyncStatus('Sincronizado às ' + new Date().toLocaleTimeString('pt-BR'));
     // Evita perder o que está sendo digitado se um modal estiver aberto
@@ -606,6 +607,9 @@ function renderTopbarActions(){
   } else if(currentPage==='clinicas'){
     el.innerHTML = `<button class="btn btn-primary" id="new-clinic-btn">+ Nova Clínica</button>`;
     document.getElementById('new-clinic-btn').addEventListener('click', ()=>openClinicForm(null));
+  } else if(currentPage==='agenda'){
+    el.innerHTML = `<button class="btn btn-primary" id="new-compromisso-btn">+ Novo Compromisso</button>`;
+    document.getElementById('new-compromisso-btn').addEventListener('click', ()=>openCompromissoForm(null));
   } else if(currentPage==='tarefas'){
     if(getCurrentUser()){
       el.innerHTML = `<button class="btn btn-primary" id="new-task-btn">+ Nova Tarefa</button>`;
@@ -760,47 +764,106 @@ function meetingTimestamp(lead){
   return new Date(lead.reuniaoData + 'T' + (lead.reuniaoHora || '00:00')).getTime();
 }
 
+function compromissoTimestamp(c){
+  if(!c.data) return null;
+  return new Date(c.data + 'T' + (c.hora || '00:00')).getTime();
+}
+
 function renderAgenda(){
   const content = document.getElementById('page-content');
   const now = Date.now();
-  const comReuniao = state.leads
+
+  const eventosLead = state.leads
     .filter(l=>l.reuniaoData && l.stage!=='fechado' && l.stage!=='morto')
-    .sort((a,b)=>(meetingTimestamp(a)||0)-(meetingTimestamp(b)||0));
+    .map(l=>({
+      tipo: 'lead',
+      id: l.id,
+      ts: meetingTimestamp(l),
+      data: l.reuniaoData,
+      hora: l.reuniaoHora || '',
+      titulo: l.clinica || 'Sem clínica',
+      subtitulo: (l.dentista || 'Sem nome') + (l.reuniaoObs ? ' · '+l.reuniaoObs : ''),
+      tag: 'Lead Agendado'
+    }));
 
-  const atrasadas = comReuniao.filter(l=>meetingTimestamp(l) < now);
-  const proximas = comReuniao.filter(l=>meetingTimestamp(l) >= now);
+  const eventosCompromisso = (state.compromissos || []).map(c=>({
+    tipo: 'compromisso',
+    id: c.id,
+    ts: compromissoTimestamp(c),
+    data: c.data,
+    hora: c.hora || '',
+    titulo: c.titulo || 'Compromisso',
+    subtitulo: c.descricao || '',
+    tag: 'Compromisso'
+  }));
 
-  function meetingRow(lead, atrasada){
+  const todos = [...eventosLead, ...eventosCompromisso]
+    .filter(e=>e.ts!==null)
+    .sort((a,b)=>a.ts-b.ts);
+
+  const atrasadas = todos.filter(e=>e.ts < now);
+  const proximas = todos.filter(e=>e.ts >= now);
+
+  function eventRow(ev, atrasada){
     return `
-      <div class="agenda-item ${atrasada?'agenda-atrasada':''}" data-id="${lead.id}">
+      <div class="agenda-item ${atrasada?'agenda-atrasada':''}" data-tipo="${ev.tipo}" data-id="${ev.id}">
         <div class="agenda-date">
-          <div class="agenda-day">${new Date(lead.reuniaoData+'T00:00').toLocaleDateString('pt-BR',{day:'2-digit',month:'2-digit'})}</div>
-          <div class="agenda-time">${escapeHTML(lead.reuniaoHora || '--:--')}</div>
+          <div class="agenda-day">${new Date(ev.data+'T00:00').toLocaleDateString('pt-BR',{day:'2-digit',month:'2-digit'})}</div>
+          <div class="agenda-time">${escapeHTML(ev.hora || '--:--')}</div>
         </div>
         <div class="agenda-info">
-          <div class="agenda-clinic">${escapeHTML(lead.clinica || 'Sem clínica')}</div>
-          <div class="agenda-dentist">${escapeHTML(lead.dentista || 'Sem nome')}${lead.reuniaoObs ? ' · '+escapeHTML(lead.reuniaoObs) : ''}</div>
+          <div class="agenda-clinic">${escapeHTML(ev.titulo)}</div>
+          ${ev.subtitulo ? `<div class="agenda-dentist">${escapeHTML(ev.subtitulo)}</div>` : ''}
         </div>
-        <div class="agenda-tag">${atrasada ? 'Reunião vencida' : 'Lead Agendado'}</div>
+        <div class="agenda-tag">${atrasada ? 'Vencido' : ev.tag}</div>
       </div>`;
   }
 
   let html = '';
 
-  html += `<div class="section-title" style="margin-top:0">Reuniões em atraso</div>`;
+  html += `<div class="section-title" style="margin-top:0">Em atraso</div>`;
   html += atrasadas.length
-    ? `<div class="table-wrap" style="margin-bottom:8px">${atrasadas.map(l=>meetingRow(l,true)).join('')}</div>`
-    : `<div class="empty-state" style="padding:20px"><h3>Nenhuma reunião em atraso</h3></div>`;
+    ? `<div class="table-wrap" style="margin-bottom:8px">${atrasadas.map(e=>eventRow(e,true)).join('')}</div>`
+    : `<div class="empty-state" style="padding:20px"><h3>Nada em atraso</h3></div>`;
 
-  html += `<div class="section-title">Próximas reuniões</div>`;
+  html += `<div class="section-title">Próximos</div>`;
   html += proximas.length
-    ? `<div class="table-wrap" style="margin-bottom:8px">${proximas.map(l=>meetingRow(l,false)).join('')}</div>`
-    : `<div class="empty-state" style="padding:20px"><h3>Nenhuma reunião agendada</h3><p>Defina uma data de reunião na aba "Geral" de qualquer lead para que ele apareça aqui e seja movido para Lead Agendado.</p></div>`;
+    ? `<div class="table-wrap" style="margin-bottom:8px">${proximas.map(e=>eventRow(e,false)).join('')}</div>`
+    : `<div class="empty-state" style="padding:20px"><h3>Nada agendado</h3><p>Use "+ Novo Compromisso" para marcar algo manualmente, ou defina uma data de reunião na aba "Geral" de um lead.</p></div>`;
 
   content.innerHTML = html;
 
   document.querySelectorAll('.agenda-item').forEach(item=>{
-    item.addEventListener('click', ()=>openLeadModal(item.dataset.id));
+    item.addEventListener('click', ()=>{
+      if(item.dataset.tipo==='lead') openLeadModal(item.dataset.id);
+      else openCompromissoForm(item.dataset.id);
+    });
+  });
+}
+
+function openCompromissoForm(id){
+  const compromisso = id ? state.compromissos.find(c=>c.id===id) : {
+    id: uid('comp'), titulo:'', descricao:'', data: todayISO(), hora:''
+  };
+  openFormModal({
+    title: id ? 'Editar compromisso' : 'Novo compromisso',
+    data: compromisso,
+    fields: [
+      {key:'titulo', label:'Título', type:'text', placeholder:'Ex: Reunião interna, visita à clínica...'},
+      {key:'data', label:'Data', type:'date'},
+      {key:'hora', label:'Horário', type:'time'},
+      {key:'descricao', label:'Observações', type:'textarea', placeholder:'Local, link da call, pauta...'},
+    ],
+    onSave: data=>{
+      state.compromissos = state.compromissos || [];
+      const idx = state.compromissos.findIndex(c=>c.id===data.id);
+      if(idx>=0) state.compromissos[idx]=data; else state.compromissos.push(data);
+      saveData(); render();
+    },
+    onDelete: id ? ()=>{
+      state.compromissos = (state.compromissos||[]).filter(c=>c.id!==id);
+      saveData(); render();
+    } : null
   });
 }
 /* ============================================================
@@ -1776,6 +1839,9 @@ function renderField(field, value){
   if(field.type==='date'){
     return `<div class="field"><label>${field.label}</label><input id="${id}" type="date" value="${escapeHTML(value)}"></div>`;
   }
+  if(field.type==='time'){
+    return `<div class="field"><label>${field.label}</label><input id="${id}" type="time" value="${escapeHTML(value)}"></div>`;
+  }
   return `<div class="field"><label>${field.label}</label><input id="${id}" type="text" placeholder="${escapeHTML(field.placeholder||'')}" value="${escapeHTML(value)}"></div>`;
 }
 
@@ -1861,6 +1927,7 @@ document.getElementById('import-file-input').addEventListener('change', e=>{
       state.team = parsed.team || [];
       state.financeGeral = parsed.financeGeral || [];
       state.tasks = parsed.tasks || [];
+      state.compromissos = parsed.compromissos || [];
       saveData();
       render();
     }catch(err){
