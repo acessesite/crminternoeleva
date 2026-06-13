@@ -78,6 +78,35 @@ input,select,textarea{font-family:inherit;font-size:14px;}
 #sync-status{display:block;font-size:11px;color:var(--sidebar-text);text-align:center;}
 .sidebar-note{font-size:11px;color:var(--sidebar-text);text-align:center;margin-top:6px;line-height:1.5;opacity:.8;}
 
+#user-switcher{margin-bottom:10px;}
+#user-switcher label{display:block;font-size:10.5px;text-transform:uppercase;letter-spacing:.5px;color:var(--sidebar-text);font-weight:700;margin-bottom:5px;}
+#user-switcher select{
+  width:100%;padding:8px 9px;border-radius:8px;border:1px solid rgba(255,255,255,.12);
+  background:var(--sidebar-soft);color:#fff;font-size:12.5px;font-weight:600;
+}
+#user-switcher select:focus{outline:2px solid var(--accent);}
+
+/* ===== PROGRESS BAR ===== */
+.progress-track{background:var(--surface-alt);border-radius:20px;height:8px;overflow:hidden;}
+.progress-fill{height:100%;background:var(--accent);border-radius:20px;transition:width .2s;}
+.progress-fill.risk{background:var(--warn);}
+.progress-fill.done{background:var(--success);}
+.progress-label{font-size:11.5px;color:var(--text-muted);font-weight:700;margin-top:6px;display:flex;justify-content:space-between;}
+
+/* ===== BADGES (prioridade / tags extras) ===== */
+.badge-prioridade-baixa{background:var(--surface-alt);color:var(--text-muted);}
+.badge-prioridade-media{background:var(--warn-soft);color:#9c6b1c;}
+.badge-prioridade-alta{background:var(--danger-soft);color:var(--danger);}
+.status-andamento{background:var(--accent-soft);color:var(--accent-dark);}
+.status-concluida{background:var(--success-soft);color:var(--success);}
+.status-risco{background:var(--warn-soft);color:#9c6b1c;}
+.status-cancelado{background:var(--danger-soft);color:var(--danger);}
+.checklist-row{display:flex;align-items:center;gap:10px;padding:9px 0;border-bottom:1px solid var(--border);font-weight:600;font-size:13.5px;cursor:pointer;}
+.checklist-row:last-of-type{border-bottom:none;}
+.checklist-row input{width:18px;height:18px;flex-shrink:0;}
+.checklist-row.done{color:var(--text-muted);text-decoration:line-through;}
+.dashboard-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:14px;}
+
 .main{flex:1;min-width:0;padding:28px 36px 60px;}
 .topbar{display:flex;align-items:center;justify-content:space-between;gap:16px;margin-bottom:22px;flex-wrap:wrap;}
 .topbar h1{font-family:var(--font-display);font-size:24px;font-weight:800;margin:0;}
@@ -280,6 +309,10 @@ table.data-table tr:hover td{background:var(--surface-alt);}
       <div class="logo-text">ELEVA<span>Growth Ops</span></div>
     </div>
     <nav class="nav">
+      <button class="nav-item" data-page="dashboard">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="8" height="9" rx="1.5"/><rect x="13" y="3" width="8" height="5" rx="1.5"/><rect x="13" y="10" width="8" height="11" rx="1.5"/><rect x="3" y="14" width="8" height="7" rx="1.5"/></svg>
+        Dashboard
+      </button>
       <button class="nav-item" data-page="pipeline">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="5" height="16" rx="1.5"/><rect x="10" y="4" width="5" height="10" rx="1.5"/><rect x="17" y="4" width="5" height="13" rx="1.5"/></svg>
         Pipeline
@@ -288,9 +321,17 @@ table.data-table tr:hover td{background:var(--surface-alt);}
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="17" rx="2"/><path d="M3 9h18M8 2v4M16 2v4"/></svg>
         Agenda
       </button>
+      <button class="nav-item" data-page="tarefas">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M8 12l2.5 2.5L16 9"/></svg>
+        Tarefas
+      </button>
       <button class="nav-item" data-page="clientes">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2l2.7 5.8 6.3.9-4.6 4.4 1.1 6.2L12 16.2 6.5 19.3l1.1-6.2L3 8.7l6.3-.9z"/></svg>
         Clientes
+      </button>
+      <button class="nav-item" data-page="operacoes">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 3"/></svg>
+        Operações
       </button>
       <button class="nav-item" data-page="clinicas">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 21V7l8-4 8 4v14"/><path d="M9 21v-6h6v6"/><path d="M9 11h.01M15 11h.01M9 7h.01M15 7h.01"/></svg>
@@ -306,6 +347,7 @@ table.data-table tr:hover td{background:var(--surface-alt);}
       </button>
     </nav>
     <div class="sidebar-footer">
+      <div id="user-switcher"></div>
       <button id="export-btn">⬇ Exportar dados</button>
       <button id="import-btn">⬆ Importar dados</button>
       <input type="file" id="import-file-input" accept="application/json" style="display:none">
@@ -358,7 +400,7 @@ try{
 }catch(e){
   console.error('Erro ao iniciar o Firebase:', e);
 }
-let state = { leads: [], clinics: [], team: [], financeGeral: [] };
+let state = { leads: [], clinics: [], team: [], financeGeral: [], tasks: [] };
 
 const STAGES = [
   {key:'frio', label:'Lead Frio', desc:'Leads que chegaram para a gente, ainda sem nenhum contato.', color:'#94A3B8'},
@@ -380,8 +422,47 @@ const CLINIC_STATUS = [
   {key:'sem_interesse', label:'Sem interesse'},
 ];
 
-let currentPage = 'pipeline';
+const ONBOARDING_STEPS = [
+  {key:'contrato', label:'Contrato assinado'},
+  {key:'kickoff', label:'Kickoff realizado'},
+  {key:'auditoria', label:'Auditoria concluída'},
+  {key:'crm', label:'Implantação CRM'},
+  {key:'treinamento', label:'Treinamento CRC'},
+  {key:'comercial', label:'Estruturação Comercial'},
+  {key:'dashboardimpl', label:'Dashboard implantado'},
+  {key:'resultados', label:'Reunião de resultados'},
+];
+
+const TASK_STATUS = [
+  {key:'pendente', label:'Pendente'},
+  {key:'andamento', label:'Em andamento'},
+  {key:'concluida', label:'Concluída'},
+];
+const TASK_PRIORIDADE = [
+  {key:'baixa', label:'Baixa'},
+  {key:'media', label:'Média'},
+  {key:'alta', label:'Alta'},
+];
+
+let currentPage = 'dashboard';
 let pipelineSearch = '';
+
+/* ============================================================
+   USUÁRIO ATUAL (para restringir a visibilidade das tarefas)
+   ============================================================ */
+let currentUserId = localStorage.getItem('eleva_current_user_id') || '';
+function getCurrentUser(){
+  return state.team.find(m=>m.id===currentUserId) || null;
+}
+function isCEO(){
+  const u = getCurrentUser();
+  return !!u && u.cargo === 'CEO';
+}
+function setCurrentUser(id){
+  currentUserId = id || '';
+  if(currentUserId) localStorage.setItem('eleva_current_user_id', currentUserId);
+  else localStorage.removeItem('eleva_current_user_id');
+}
 
 let currentModalLead = null;
 let isNewLead = false;
@@ -443,8 +524,9 @@ async function startRealtimeSync(){
       state.clinics = data.clinics || [];
       state.team = data.team || [];
       state.financeGeral = data.financeGeral || [];
+      state.tasks = data.tasks || [];
     } else {
-      state.leads = []; state.clinics = []; state.team = []; state.financeGeral = [];
+      state.leads = []; state.clinics = []; state.team = []; state.financeGeral = []; state.tasks = [];
     }
     setSyncStatus('Sincronizado às ' + new Date().toLocaleTimeString('pt-BR'));
     // Evita perder o que está sendo digitado se um modal estiver aberto
@@ -480,17 +562,36 @@ function setSyncStatus(msg){
    ============================================================ */
 function render(){
   document.querySelectorAll('.nav-item').forEach(b=>b.classList.toggle('active', b.dataset.page===currentPage));
-  const titles = {pipeline:'Pipeline de Leads', agenda:'Agenda', clientes:'Clientes Fechados', clinicas:'Base de Clínicas', financeiro:'Financeiro', equipe:'Equipe Eleva'};
+  const titles = {dashboard:'Dashboard', pipeline:'Pipeline de Leads', agenda:'Agenda', tarefas:'Tarefas', clientes:'Clientes Fechados', operacoes:'Operações / Implantação', clinicas:'Base de Clínicas', financeiro:'Financeiro', equipe:'Equipe Eleva'};
   document.getElementById('page-title').textContent = titles[currentPage];
+  renderUserSwitcher();
   renderTopbarActions();
   switch(currentPage){
+    case 'dashboard': renderDashboard(); break;
     case 'pipeline': renderPipeline(); break;
     case 'agenda': renderAgenda(); break;
+    case 'tarefas': renderTarefas(); break;
     case 'clientes': renderClientes(); break;
+    case 'operacoes': renderOperacoes(); break;
     case 'clinicas': renderClinicas(); break;
     case 'financeiro': renderFinanceiro(); break;
     case 'equipe': renderEquipe(); break;
   }
+}
+
+function renderUserSwitcher(){
+  const el = document.getElementById('user-switcher');
+  if(!el) return;
+  el.innerHTML = `
+    <label>Você é</label>
+    <select id="current-user-select">
+      <option value="">Selecionar...</option>
+      ${state.team.map(m=>`<option value="${m.id}" ${m.id===currentUserId?'selected':''}>${escapeHTML(m.nome)} (${escapeHTML(m.cargo)})</option>`).join('')}
+    </select>`;
+  document.getElementById('current-user-select').addEventListener('change', e=>{
+    setCurrentUser(e.target.value);
+    render();
+  });
 }
 
 function renderTopbarActions(){
@@ -505,6 +606,13 @@ function renderTopbarActions(){
   } else if(currentPage==='clinicas'){
     el.innerHTML = `<button class="btn btn-primary" id="new-clinic-btn">+ Nova Clínica</button>`;
     document.getElementById('new-clinic-btn').addEventListener('click', ()=>openClinicForm(null));
+  } else if(currentPage==='tarefas'){
+    if(getCurrentUser()){
+      el.innerHTML = `<button class="btn btn-primary" id="new-task-btn">+ Nova Tarefa</button>`;
+      document.getElementById('new-task-btn').addEventListener('click', ()=>openTaskForm(null));
+    } else {
+      el.innerHTML = '';
+    }
   } else if(currentPage==='equipe'){
     el.innerHTML = `<button class="btn btn-primary" id="new-team-btn">+ Novo Membro</button>`;
     document.getElementById('new-team-btn').addEventListener('click', ()=>openTeamForm(null));
@@ -705,6 +813,7 @@ function createNewLead(){
     origem:'', stage:'frio', observacoes:'', investimentoMkt:0, canalMkt:'', agenciaAtual:'',
     numCadeiras:'', dataCriacao:now, dataFechamento:'', plano:'', valorMensalidade:0,
     reuniaoData:'', reuniaoHora:'', reuniaoObs:'', stageChangedAt:now,
+    propostaEnviada:false, cancelado:false, emRisco:false, onboarding:{},
     financeiro:[]
   };
   isNewLead = true;
@@ -725,6 +834,10 @@ function openLeadModal(id){
   currentModalLead.reuniaoHora = currentModalLead.reuniaoHora || '';
   currentModalLead.reuniaoObs = currentModalLead.reuniaoObs || '';
   currentModalLead.stageChangedAt = currentModalLead.stageChangedAt || currentModalLead.dataCriacao;
+  currentModalLead.propostaEnviada = currentModalLead.propostaEnviada || false;
+  currentModalLead.cancelado = currentModalLead.cancelado || false;
+  currentModalLead.emRisco = currentModalLead.emRisco || false;
+  currentModalLead.onboarding = currentModalLead.onboarding || {};
   isNewLead = false;
   modalActiveTab = 'geral';
   modalFinanceUnlocked = false;
@@ -793,6 +906,11 @@ function renderModalGeral(lead){
       <div class="field"><label>Lead criado em</label><input value="${formatDate(lead.dataCriacao)}" disabled></div>
     </div>
     <div class="field">
+      <label style="display:flex;align-items:center;gap:8px;text-transform:none;font-size:13px;cursor:pointer;">
+        <input type="checkbox" id="f-propostaenviada" ${lead.propostaEnviada?'checked':''} style="width:17px;height:17px;"> Proposta enviada
+      </label>
+    </div>
+    <div class="field">
       <label>Observações / histórico de interações</label>
       <textarea id="f-observacoes" placeholder="Anote o que foi falado, próximos passos, etc.">${escapeHTML(lead.observacoes)}</textarea>
     </div>
@@ -827,7 +945,22 @@ function renderModalClinica(lead){
       <div class="field"><label>Plano / produto contratado</label><input id="f-plano" placeholder="Essencial, Profissional, Premium..." value="${escapeHTML(lead.plano)}"></div>
       <div class="field"><label>Mensalidade Eleva (R$)</label><input id="f-valormensalidade" type="number" step="0.01" value="${lead.valorMensalidade||0}"></div>
     </div>
-    ${lead.stage==='fechado' ? `<div class="field"><label>Cliente fechado em</label><input value="${formatDate(lead.dataFechamento)}" disabled></div>` : ''}
+    ${lead.stage==='fechado' ? `
+      <div class="field"><label>Cliente fechado em</label><input value="${formatDate(lead.dataFechamento)}" disabled></div>
+      <div class="field-row">
+        <div class="field">
+          <label style="display:flex;align-items:center;gap:8px;text-transform:none;font-size:13px;cursor:pointer;">
+            <input type="checkbox" id="f-emrisco" ${lead.emRisco?'checked':''} style="width:17px;height:17px;"> Cliente em risco
+          </label>
+        </div>
+        <div class="field">
+          <label style="display:flex;align-items:center;gap:8px;text-transform:none;font-size:13px;cursor:pointer;">
+            <input type="checkbox" id="f-cancelado" ${lead.cancelado?'checked':''} style="width:17px;height:17px;"> Cliente cancelado
+          </label>
+        </div>
+      </div>
+      <div class="field-hint">A checklist de implantação deste cliente fica na página "Operações".</div>
+    ` : ''}
   `;
 }
 
@@ -899,6 +1032,8 @@ function captureModalForm(){
     lead.reuniaoData = val('#f-reuniaodata');
     lead.reuniaoHora = val('#f-reuniaohora');
     lead.reuniaoObs = val('#f-reuniaoobs');
+    const propostaEl = document.querySelector('#f-propostaenviada');
+    if(propostaEl) lead.propostaEnviada = propostaEl.checked;
   } else if(modalActiveTab==='clinica'){
     lead.clinica = val('#f-clinica');
     lead.cidade = val('#f-cidade');
@@ -909,6 +1044,10 @@ function captureModalForm(){
     lead.agenciaAtual = val('#f-agencia');
     lead.plano = val('#f-plano');
     lead.valorMensalidade = numVal('#f-valormensalidade');
+    const riscoEl = document.querySelector('#f-emrisco');
+    if(riscoEl) lead.emRisco = riscoEl.checked;
+    const canceladoEl = document.querySelector('#f-cancelado');
+    if(canceladoEl) lead.cancelado = canceladoEl.checked;
   }
 }
 
@@ -1273,6 +1412,346 @@ function openTeamForm(id){
 }
 
 /* ============================================================
+   PÁGINA: TAREFAS
+   Regra de visibilidade: uma tarefa só aparece para quem a criou
+   e para o responsável por ela (ou para o CEO, que acompanha tudo).
+   ============================================================ */
+function taskVisibleTo(task, user){
+  if(!user) return false;
+  if(user.cargo === 'CEO') return true;
+  return task.criadoPorId === user.id || task.responsavelId === user.id;
+}
+
+function teamMemberName(id){
+  const m = state.team.find(t=>t.id===id);
+  return m ? m.nome : '—';
+}
+
+function renderTarefas(){
+  const content = document.getElementById('page-content');
+  const me = getCurrentUser();
+
+  if(state.team.length===0){
+    content.innerHTML = `<div class="empty-state"><h3>Cadastre a equipe primeiro</h3><p>Vá em "Equipe" e adicione os membros antes de criar tarefas.</p></div>`;
+    return;
+  }
+
+  if(!me){
+    content.innerHTML = `<div class="empty-state"><h3>Selecione quem é você</h3><p>No menu lateral, em "Você é", escolha seu nome. Assim o sistema mostra só as tarefas que você criou ou que são suas — ninguém mais vê.</p></div>`;
+    return;
+  }
+
+  const visible = state.tasks.filter(t=>taskVisibleTo(t, me));
+
+  let html = '';
+  if(me.cargo==='CEO'){
+    html += `<div class="hint-banner">💡 Como CEO, você vê todas as tarefas da equipe. Os demais membros só veem tarefas que criaram ou das quais são responsáveis.</div>`;
+  } else {
+    html += `<div class="hint-banner">💡 Aqui aparecem só as tarefas que você criou ou para as quais você é o responsável.</div>`;
+  }
+
+  if(visible.length===0){
+    html += `<div class="empty-state"><h3>Nenhuma tarefa por aqui</h3><p>Use "+ Nova Tarefa" para criar a primeira.</p></div>`;
+    content.innerHTML = html;
+    return;
+  }
+
+  const ordemStatus = {pendente:0, andamento:1, concluida:2};
+  const sorted = [...visible].sort((a,b)=>{
+    if(ordemStatus[a.status] !== ordemStatus[b.status]) return ordemStatus[a.status]-ordemStatus[b.status];
+    return (a.prazo||'9999-99-99').localeCompare(b.prazo||'9999-99-99');
+  });
+
+  const now = todayISO();
+  html += `<div class="table-wrap"><table class="data-table"><thead><tr>
+    <th>Tarefa</th><th>Vinculado a</th><th>Responsável</th><th>Criado por</th><th>Prazo</th><th>Prioridade</th><th>Status</th><th></th>
+  </tr></thead><tbody>`;
+  sorted.forEach(t=>{
+    const lead = t.leadId ? state.leads.find(l=>l.id===t.leadId) : null;
+    const atrasada = t.prazo && t.status!=='concluida' && t.prazo < now;
+    const prio = TASK_PRIORIDADE.find(p=>p.key===t.prioridade) || TASK_PRIORIDADE[1];
+    const stat = TASK_STATUS.find(s=>s.key===t.status) || TASK_STATUS[0];
+    html += `<tr>
+      <td>
+        <strong>${escapeHTML(t.titulo)}</strong>
+        ${t.descricao ? `<div style="color:var(--text-muted);font-size:12px;margin-top:2px">${escapeHTML(t.descricao)}</div>` : ''}
+      </td>
+      <td>${lead ? escapeHTML(lead.clinica || lead.dentista || '-') : '-'}</td>
+      <td>${escapeHTML(teamMemberName(t.responsavelId))}</td>
+      <td>${escapeHTML(teamMemberName(t.criadoPorId))}</td>
+      <td style="${atrasada?'color:var(--danger);font-weight:700':''}">${formatDate(t.prazo)}</td>
+      <td><span class="badge badge-prioridade-${prio.key}">${prio.label}</span></td>
+      <td><span class="status-pill status-${stat.key}">${stat.label}</span></td>
+      <td style="white-space:nowrap">
+        ${t.status!=='concluida' ? `<button class="btn btn-small btn-secondary mark-task-done-btn" data-id="${t.id}">Concluir</button>` : ''}
+        <button class="btn btn-small btn-secondary edit-task-btn" data-id="${t.id}">Editar</button>
+      </td>
+    </tr>`;
+  });
+  html += `</tbody></table></div>`;
+
+  content.innerHTML = html;
+
+  document.querySelectorAll('.mark-task-done-btn').forEach(b=>{
+    b.addEventListener('click', ()=>{
+      const t = state.tasks.find(x=>x.id===b.dataset.id);
+      if(t){ t.status='concluida'; saveData(); renderTarefas(); }
+    });
+  });
+  document.querySelectorAll('.edit-task-btn').forEach(b=>{
+    b.addEventListener('click', ()=>openTaskForm(b.dataset.id));
+  });
+}
+
+function openTaskForm(id){
+  const me = getCurrentUser();
+  if(!me) return;
+  const task = id ? state.tasks.find(t=>t.id===id) : {
+    id: uid('task'), titulo:'', descricao:'', responsavelId: me.id, leadId:'',
+    prazo: todayISO(), prioridade:'media', status:'pendente',
+    criadoPorId: me.id, createdAt: new Date().toISOString()
+  };
+  const leadOptions = [{value:'', label:'Nenhum (tarefa geral)'}].concat(
+    state.leads.map(l=>({value:l.id, label:(l.clinica || l.dentista || 'Lead sem nome')}))
+  );
+  openFormModal({
+    title: id ? 'Editar tarefa' : 'Nova tarefa',
+    data: task,
+    fields: [
+      {key:'titulo', label:'Título da tarefa', type:'text', placeholder:'Ex: Ligar para Dr. João'},
+      {key:'descricao', label:'Descrição', type:'textarea', placeholder:'Detalhes do que precisa ser feito...'},
+      {key:'responsavelId', label:'Responsável', type:'select', options: state.team.map(m=>({value:m.id, label:m.nome+' ('+m.cargo+')'}))},
+      {key:'leadId', label:'Vincular a um lead/cliente (opcional)', type:'select', options: leadOptions},
+      {key:'prazo', label:'Prazo', type:'date'},
+      {key:'prioridade', label:'Prioridade', type:'select', options: TASK_PRIORIDADE.map(p=>({value:p.key,label:p.label}))},
+      {key:'status', label:'Status', type:'select', options: TASK_STATUS.map(s=>({value:s.key,label:s.label}))},
+    ],
+    onSave: data=>{
+      data.criadoPorId = task.criadoPorId;
+      const idx = state.tasks.findIndex(t=>t.id===data.id);
+      if(idx>=0) state.tasks[idx]=data; else state.tasks.push(data);
+      saveData(); render();
+    },
+    onDelete: id ? ()=>{
+      state.tasks = state.tasks.filter(t=>t.id!==id);
+      saveData(); render();
+    } : null
+  });
+}
+
+/* ============================================================
+   PÁGINA: OPERAÇÕES / IMPLANTAÇÃO
+   Checklist de onboarding para cada cliente fechado.
+   ============================================================ */
+let onboardingModalLead = null;
+
+function onboardingProgress(lead){
+  const ob = lead.onboarding || {};
+  const done = ONBOARDING_STEPS.filter(s=>ob[s.key]).length;
+  return Math.round((done / ONBOARDING_STEPS.length) * 100);
+}
+
+function renderOperacoes(){
+  const content = document.getElementById('page-content');
+  const clientes = state.leads.filter(l=>l.stage==='fechado');
+  if(clientes.length===0){
+    content.innerHTML = `<div class="empty-state"><h3>Nenhum cliente em implantação</h3><p>Quando um lead for fechado no pipeline, ele aparece aqui com a checklist de implantação.</p></div>`;
+    return;
+  }
+  content.innerHTML = `<div class="card-grid">${clientes.map(c=>{
+    const pct = onboardingProgress(c);
+    const fillClass = c.cancelado ? '' : (c.emRisco ? 'risk' : (pct===100 ? 'done' : ''));
+    let tag = '';
+    if(c.cancelado) tag = `<span class="status-pill status-cancelado">Cancelado</span>`;
+    else if(c.emRisco) tag = `<span class="status-pill status-risco">Em risco</span>`;
+    else if(pct===100) tag = `<span class="status-pill status-pago">Ativo</span>`;
+    else tag = `<span class="status-pill status-pendente">Em implantação</span>`;
+    return `
+    <div class="client-card" data-id="${c.id}">
+      <div class="top-row">
+        <div>
+          <div class="clinic-name">${escapeHTML(c.clinica || 'Sem clínica')}</div>
+          <div class="dentist-name">${escapeHTML(c.dentista || '')}${c.cidade ? ' · '+escapeHTML(c.cidade) : ''}</div>
+        </div>
+        ${tag}
+      </div>
+      <div style="margin-top:14px">
+        <div class="progress-track"><div class="progress-fill ${fillClass}" style="width:${pct}%"></div></div>
+        <div class="progress-label"><span>${pct}% concluído</span><span>${ONBOARDING_STEPS.filter(s=>(c.onboarding||{})[s.key]).length}/${ONBOARDING_STEPS.length} etapas</span></div>
+      </div>
+    </div>`;
+  }).join('')}</div>`;
+
+  document.querySelectorAll('.client-card').forEach(card=>{
+    card.addEventListener('click', ()=>openOnboardingModal(card.dataset.id));
+  });
+}
+
+function openOnboardingModal(id){
+  const lead = state.leads.find(l=>l.id===id);
+  if(!lead) return;
+  lead.onboarding = lead.onboarding || {};
+  onboardingModalLead = lead;
+  renderOnboardingModal();
+}
+
+function closeOnboardingModal(){
+  onboardingModalLead = null;
+  document.getElementById('modal-root').innerHTML = '';
+}
+
+function renderOnboardingModal(){
+  const root = document.getElementById('modal-root');
+  const lead = onboardingModalLead;
+  if(!lead){ root.innerHTML=''; return; }
+  const ob = lead.onboarding || {};
+  const pct = onboardingProgress(lead);
+  root.innerHTML = `
+    <div class="modal-overlay" id="onb-overlay">
+      <div class="modal modal-small">
+        <div class="modal-header">
+          <div>
+            <div class="modal-title">${escapeHTML(lead.clinica || 'Cliente')}</div>
+            <div class="modal-subtitle">Checklist de implantação · ${pct}% concluído</div>
+          </div>
+          <button class="modal-close" id="onb-close">×</button>
+        </div>
+        <div class="modal-body">
+          <div class="progress-track" style="margin-bottom:16px"><div class="progress-fill ${pct===100?'done':''}" style="width:${pct}%"></div></div>
+          ${ONBOARDING_STEPS.map(s=>`
+            <label class="checklist-row ${ob[s.key]?'done':''}">
+              <input type="checkbox" data-step="${s.key}" ${ob[s.key]?'checked':''}> ${s.label}
+            </label>`).join('')}
+          <div class="section-title">Status do cliente</div>
+          <div class="field-row">
+            <div class="field">
+              <label style="display:flex;align-items:center;gap:8px;text-transform:none;font-size:13px;cursor:pointer;">
+                <input type="checkbox" id="onb-emrisco" ${lead.emRisco?'checked':''} style="width:17px;height:17px;"> Em risco
+              </label>
+            </div>
+            <div class="field">
+              <label style="display:flex;align-items:center;gap:8px;text-transform:none;font-size:13px;cursor:pointer;">
+                <input type="checkbox" id="onb-cancelado" ${lead.cancelado?'checked':''} style="width:17px;height:17px;"> Cancelado
+              </label>
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <span></span>
+          <button class="btn btn-primary" id="onb-save">Salvar</button>
+        </div>
+      </div>
+    </div>`;
+
+  document.getElementById('onb-close').addEventListener('click', ()=>{ closeOnboardingModal(); render(); });
+  document.getElementById('onb-overlay').addEventListener('click', e=>{
+    if(e.target.id==='onb-overlay'){ closeOnboardingModal(); render(); }
+  });
+  document.querySelectorAll('#onb-overlay [data-step]').forEach(cb=>{
+    cb.addEventListener('change', ()=>{
+      lead.onboarding = lead.onboarding || {};
+      lead.onboarding[cb.dataset.step] = cb.checked;
+      renderOnboardingModal();
+    });
+  });
+  document.getElementById('onb-save').addEventListener('click', ()=>{
+    lead.emRisco = document.getElementById('onb-emrisco').checked;
+    lead.cancelado = document.getElementById('onb-cancelado').checked;
+    const idx = state.leads.findIndex(l=>l.id===lead.id);
+    if(idx>=0) state.leads[idx] = lead;
+    saveData();
+    closeOnboardingModal();
+    render();
+  });
+}
+
+/* ============================================================
+   PÁGINA: DASHBOARD
+   ============================================================ */
+function renderDashboard(){
+  const content = document.getElementById('page-content');
+
+  // ---- Comercial ----
+  const leadsGerados = state.leads.length;
+  const reunioesAgendadas = state.leads.filter(l=>!!l.reuniaoData).length;
+  const diagnosticosRealizados = state.leads.filter(l=>['followup','morto','fechado'].includes(l.stage)).length;
+  const propostasEnviadas = state.leads.filter(l=>l.propostaEnviada).length;
+  const contratosFechados = state.leads.filter(l=>l.stage==='fechado').length;
+
+  // ---- Financeiro ----
+  const fechados = state.leads.filter(l=>l.stage==='fechado');
+  const clientesAtivos = fechados.filter(l=>!l.cancelado);
+  const clientesCancelados = fechados.filter(l=>l.cancelado);
+  const mrr = clientesAtivos.reduce((s,c)=>s+Number(c.valorMensalidade||0),0);
+  const ticketMedio = clientesAtivos.length ? mrr / clientesAtivos.length : 0;
+  let inadimplencia = 0;
+  state.leads.forEach(l=>{
+    (l.financeiro||[]).forEach(e=>{ if(e.tipo==='receber' && e.status==='atrasado') inadimplencia += Number(e.valor||0); });
+  });
+  state.financeGeral.forEach(e=>{ if(e.tipo==='receber' && e.status==='atrasado') inadimplencia += Number(e.valor||0); });
+
+  // ---- Operação ----
+  const naoCancelados = fechados.filter(l=>!l.cancelado);
+  const clinicasAtivas = naoCancelados.filter(l=>onboardingProgress(l)===100 && !l.emRisco);
+  const clinicasImplantacao = naoCancelados.filter(l=>onboardingProgress(l)<100);
+  const clinicasPendencias = clinicasImplantacao.length;
+  const clinicasRisco = naoCancelados.filter(l=>l.emRisco);
+
+  let html = '';
+
+  const me = getCurrentUser();
+  if(me){
+    const minhasTarefas = state.tasks.filter(t=>t.responsavelId===me.id && t.status!=='concluida');
+    if(minhasTarefas.length>0){
+      html += `<div class="hint-banner">💡 Você tem <strong>${minhasTarefas.length}</strong> tarefa(s) pendente(s) atribuída(s) a você. <a href="#" id="dash-go-tasks" style="color:var(--accent-dark);font-weight:800;">Ver tarefas</a></div>`;
+    }
+  } else {
+    html += `<div class="hint-banner">💡 Selecione "Você é" no menu lateral para ver suas tarefas pessoais e liberar a página de Tarefas.</div>`;
+  }
+
+  html += `<div class="section-title" style="margin-top:0">Comercial</div>`;
+  html += `<div class="dashboard-grid">
+    <div class="summary-card"><div class="label">Leads gerados</div><div class="value">${leadsGerados}</div></div>
+    <div class="summary-card"><div class="label">Reuniões agendadas</div><div class="value">${reunioesAgendadas}</div></div>
+    <div class="summary-card"><div class="label">Diagnósticos realizados</div><div class="value">${diagnosticosRealizados}</div></div>
+    <div class="summary-card"><div class="label">Propostas enviadas</div><div class="value">${propostasEnviadas}</div></div>
+    <div class="summary-card"><div class="label">Contratos fechados</div><div class="value positive">${contratosFechados}</div></div>
+  </div>`;
+
+  html += `<div class="section-title">Financeiro</div>`;
+  html += `<div class="dashboard-grid">
+    <div class="summary-card"><div class="label">MRR</div><div class="value">${formatCurrency(mrr)}</div></div>
+    <div class="summary-card"><div class="label">Clientes ativos</div><div class="value positive">${clientesAtivos.length}</div></div>
+    <div class="summary-card"><div class="label">Clientes cancelados</div><div class="value negative">${clientesCancelados.length}</div></div>
+    <div class="summary-card"><div class="label">Inadimplência</div><div class="value negative">${formatCurrency(inadimplencia)}</div></div>
+    <div class="summary-card"><div class="label">Ticket médio</div><div class="value">${formatCurrency(ticketMedio)}</div></div>
+  </div>`;
+
+  html += `<div class="section-title">Operação</div>`;
+  html += `<div class="dashboard-grid">
+    <div class="summary-card"><div class="label">Clínicas em implantação</div><div class="value">${clinicasImplantacao.length}</div></div>
+    <div class="summary-card"><div class="label">Clínicas ativas</div><div class="value positive">${clinicasAtivas.length}</div></div>
+    <div class="summary-card"><div class="label">Clínicas com pendências</div><div class="value">${clinicasPendencias}</div></div>
+    <div class="summary-card"><div class="label">Clínicas em risco</div><div class="value negative">${clinicasRisco.length}</div></div>
+  </div>`;
+
+  if(state.financeGeral.length===0 && state.leads.every(l=>!(l.financeiro||[]).length)){
+    html += `<div class="field-hint" style="margin-top:18px">Os dados de inadimplência consideram lançamentos marcados como "Atrasado" no Financeiro (geral e por cliente).</div>`;
+  }
+
+  content.innerHTML = html;
+
+  const goTasks = document.getElementById('dash-go-tasks');
+  if(goTasks){
+    goTasks.addEventListener('click', e=>{
+      e.preventDefault();
+      currentPage = 'tarefas';
+      render();
+    });
+  }
+}
+
+/* ============================================================
    MODAL GENÉRICO DE FORMULÁRIO (Clínicas, Equipe, Financeiro Geral)
    ============================================================ */
 function openFormModal(config){
@@ -1381,6 +1860,7 @@ document.getElementById('import-file-input').addEventListener('change', e=>{
       state.clinics = parsed.clinics || [];
       state.team = parsed.team || [];
       state.financeGeral = parsed.financeGeral || [];
+      state.tasks = parsed.tasks || [];
       saveData();
       render();
     }catch(err){
