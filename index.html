@@ -8,7 +8,6 @@
 <link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-auth-compat.js"></script>
 <style>
 :root{
   --bg:#F2F5F8;
@@ -451,9 +450,9 @@ let dataLoadedOnce = false;
 try{
   firebase.initializeApp(firebaseConfig);
   db = firebase.firestore();
+  try{ db.settings({ experimentalAutoDetectLongPolling: true }); }catch(_){}
   docRef = db.collection('eleva_crm').doc('dados');
   firebaseReady = true;
-  try{ auth = firebase.auth(); authReady = true; }catch(ae){ console.error('Auth indisponível:', ae); }
 }catch(e){
   console.error('Erro ao iniciar o Firebase:', e);
 }
@@ -608,7 +607,11 @@ async function startRealtimeSync(){
     return;
   }
   setSyncStatus('Conectando...');
+  let loadTimer = setTimeout(()=>{
+    if(!dataLoadedOnce) renderGateError('Está demorando para conectar ao banco de dados. Se você publicou as regras do Firestore agora há pouco, aguarde 1 minuto e recarregue. Também pode ser a sua conexão de internet.');
+  }, 12000);
   docRef.onSnapshot(snap=>{
+    clearTimeout(loadTimer);
     if(snap.exists()){
       const data = snap.data() || {};
       state.leads = data.leads || [];
@@ -625,14 +628,22 @@ async function startRealtimeSync(){
     dataLoadedOnce = true;
     // Evita perder o que está sendo digitado se um modal estiver aberto
     if(currentModalLead || formModalConfig) return;
-    if(authReady && !crmAuthed){
+    if(!crmAuthed){
       if(firstLoad) gateRender();
     } else {
       render();
     }
   }, err=>{
+    clearTimeout(loadTimer);
     console.error(err);
     setSyncStatus('Erro de conexão com o banco de dados');
+    if(!dataLoadedOnce){
+      let msg = 'Não foi possível ler o banco de dados.';
+      if(err && err.code==='permission-denied'){
+        msg = 'As regras do Firestore bloquearam o acesso. Como o login do Firebase foi removido, as regras precisam liberar acesso: allow read, write: if true;';
+      }
+      renderGateError(msg);
+    }
   });
 }
 
@@ -2161,47 +2172,12 @@ document.getElementById('import-file-input').addEventListener('change', e=>{
 });
 
 /* ============================================================
-   AUTENTICAÇÃO (login real)
+   AUTENTICAÇÃO (somente login do usuário do CRM)
    ============================================================ */
-function renderAuthScreen(msg, emailPrefill){
-  const root = document.getElementById('auth-root');
-  root.innerHTML = `
-    <div class="auth-screen">
-      <div class="auth-card">
-        <div class="auth-logo">
-          <div class="logo-mark">F</div>
-          <div class="auth-brand">FALCON <span>COMPANY</span></div>
-        </div>
-        <div class="auth-title">Acessar o CRM</div>
-        <div class="field"><label>E-mail</label><input id="auth-email" type="email" placeholder="voce@falconcompany.com" value="${escapeHTML(emailPrefill||'')}"></div>
-        <div class="field"><label>Senha</label><input id="auth-password" type="password" placeholder="Sua senha"></div>
-        <button class="btn btn-primary" id="auth-login-btn">Entrar</button>
-        <div class="error-text" style="text-align:center;min-height:18px">${msg?escapeHTML(msg):''}</div>
-      </div>
-    </div>`;
-  const doLogin = ()=>{
-    const email = val('#auth-email').trim();
-    const pwd = val('#auth-password');
-    if(!email || !pwd){ renderAuthScreen('Preencha e-mail e senha.', email); return; }
-    document.getElementById('auth-login-btn').textContent = 'Entrando...';
-    auth.signInWithEmailAndPassword(email, pwd).catch(err=>{
-      let m = 'Não foi possível entrar.';
-      const code = err && err.code;
-      if(code==='auth/invalid-credential' || code==='auth/wrong-password' || code==='auth/user-not-found') m = 'E-mail ou senha incorretos.';
-      else if(code==='auth/invalid-email') m = 'E-mail inválido.';
-      else if(code==='auth/too-many-requests') m = 'Muitas tentativas. Aguarde alguns instantes.';
-      else if(code==='auth/operation-not-allowed') m = 'Ative "E-mail/senha" em Authentication > Sign-in method no Firebase.';
-      else if(err && err.message) m = err.message;
-      renderAuthScreen(m, email);
-    });
-  };
-  document.getElementById('auth-login-btn').addEventListener('click', doLogin);
-  document.getElementById('auth-password').addEventListener('keydown', e=>{ if(e.key==='Enter') doLogin(); });
-}
 function showOverlay(){ document.querySelector('.app').style.display='none'; document.getElementById('auth-root').style.display='flex'; }
 function hideOverlay(){ document.querySelector('.app').style.display=''; document.getElementById('auth-root').style.display='none'; }
 
-function crmLogout(){ crmAuthed=false; setCurrentUser(''); if(authReady){ gateRender(); } else { render(); } }
+function crmLogout(){ crmAuthed=false; setCurrentUser(''); gateRender(); }
 
 function renderCrmLoading(){
   document.getElementById('auth-root').innerHTML = `
@@ -2210,6 +2186,18 @@ function renderCrmLoading(){
       <div class="auth-title">Carregando...</div>
       <p style="text-align:center;color:var(--text-muted);font-size:13px">Conectando ao banco de dados.</p>
     </div></div>`;
+}
+
+function renderGateError(msg){
+  showOverlay();
+  document.getElementById('auth-root').innerHTML = `
+    <div class="auth-screen"><div class="auth-card">
+      <div class="auth-logo"><div class="logo-mark">F</div><div class="auth-brand">FALCON <span>COMPANY</span></div></div>
+      <div class="auth-title">Quase lá</div>
+      <p style="text-align:center;color:var(--text-muted);font-size:13px;margin-bottom:16px">${escapeHTML(msg)}</p>
+      <button class="btn btn-primary" id="gate-reload">Recarregar</button>
+    </div></div>`;
+  document.getElementById('gate-reload').addEventListener('click', ()=>location.reload());
 }
 
 function renderCrmGate(selectedId, msg){
@@ -2221,10 +2209,8 @@ function renderCrmGate(selectedId, msg){
         <div class="auth-title">Primeiro acesso</div>
         <p style="text-align:center;color:var(--text-muted);font-size:13px;margin-bottom:16px">Ainda não há usuários cadastrados. Entre para criar a equipe na página "Equipe" e definir a senha de cada usuário.</p>
         <button class="btn btn-primary" id="crm-enter-empty">Entrar para configurar</button>
-        <div style="text-align:center;margin-top:10px"><a href="#" id="crm-logout-fb" style="font-size:12px;color:var(--text-muted)">Sair do login</a></div>
       </div></div>`;
     document.getElementById('crm-enter-empty').addEventListener('click', ()=>{ crmAuthed=true; setCurrentUser(''); gateRender(); });
-    const lo0=document.getElementById('crm-logout-fb'); if(lo0) lo0.addEventListener('click', e=>{ e.preventDefault(); if(auth) auth.signOut(); });
     return;
   }
   const sel = selectedId!==undefined ? selectedId : (currentUserId||'');
@@ -2241,7 +2227,6 @@ function renderCrmGate(selectedId, msg){
       <div class="field"><label>Senha do usuário</label><input id="crm-user-pwd" type="password" placeholder="Senha do seu usuário no CRM"></div>
       <button class="btn btn-primary" id="crm-enter-btn">Entrar</button>
       <div class="error-text" style="text-align:center;min-height:18px">${msg?escapeHTML(msg):''}</div>
-      <div style="text-align:center;margin-top:8px"><a href="#" id="crm-logout-fb" style="font-size:12px;color:var(--text-muted)">Sair do login (Firebase)</a></div>
     </div></div>`;
   const enter = ()=>{
     const id = val('#crm-user-select');
@@ -2256,11 +2241,9 @@ function renderCrmGate(selectedId, msg){
   };
   document.getElementById('crm-enter-btn').addEventListener('click', enter);
   document.getElementById('crm-user-pwd').addEventListener('keydown', e=>{ if(e.key==='Enter') enter(); });
-  const lo=document.getElementById('crm-logout-fb'); if(lo) lo.addEventListener('click', e=>{ e.preventDefault(); if(auth) auth.signOut(); });
 }
 
 function gateRender(){
-  if(authReady && !fbUser){ showOverlay(); renderAuthScreen(''); return; }
   if(!crmAuthed){
     showOverlay();
     if(!dataLoadedOnce) renderCrmLoading();
@@ -2272,22 +2255,12 @@ function gateRender(){
 }
 
 const logoutBtn = document.getElementById('logout-btn');
-if(logoutBtn) logoutBtn.addEventListener('click', ()=>{ crmAuthed=false; if(auth) auth.signOut(); });
+if(logoutBtn) logoutBtn.addEventListener('click', crmLogout);
 
-if(authReady){
-  showOverlay();
-  renderAuthScreen('');
-  auth.onAuthStateChanged(user=>{
-    fbUser = user;
-    if(!user){ crmAuthed = false; }
-    if(user && !syncStarted){ startRealtimeSync(); syncStarted = true; }
-    gateRender();
-  });
-} else {
-  // Firebase Auth indisponível — modo aberto. Configure o Auth para proteger os dados.
-  render();
-  startRealtimeSync();
-}
+// Acesso somente pelo usuário do CRM (sem login do Firebase).
+showOverlay();
+renderCrmLoading();
+if(!syncStarted){ startRealtimeSync(); syncStarted = true; }
 </script>
 </body>
 </html>
