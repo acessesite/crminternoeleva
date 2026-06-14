@@ -3,23 +3,24 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Eleva · CRM</title>
+<title>Falcon Company · CRM</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-auth-compat.js"></script>
 <style>
 :root{
   --bg:#F2F5F8;
   --surface:#FFFFFF;
   --surface-alt:#EAF0F5;
-  --sidebar:#0F1A30;
-  --sidebar-soft:#1B2A47;
+  --sidebar:#020617;
+  --sidebar-soft:#0E1D3A;
   --sidebar-text:#A9B6CC;
   --sidebar-text-active:#FFFFFF;
-  --accent:#19B6A4;
-  --accent-dark:#119488;
-  --accent-soft:#E3F7F4;
+  --accent:#0EA5FF;
+  --accent-dark:#2563EB;
+  --accent-soft:#E4F1FD;
   --gold:#F0AC4D;
   --text:#1C2433;
   --text-muted:#76839A;
@@ -92,6 +93,53 @@ input,select,textarea{font-family:inherit;font-size:14px;}
 .progress-fill.risk{background:var(--warn);}
 .progress-fill.done{background:var(--success);}
 .progress-label{font-size:11.5px;color:var(--text-muted);font-weight:700;margin-top:6px;display:flex;justify-content:space-between;}
+
+/* ===== JORNADA DO CLIENTE ===== */
+.card-jornada{margin-top:14px;padding-top:12px;border-top:1px dashed var(--border);cursor:pointer;}
+.card-jornada:hover .jornada-pill{filter:brightness(.96);}
+.card-jornada-top{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:8px;}
+.jornada-pill{display:inline-flex;align-items:center;gap:6px;padding:4px 10px;border-radius:20px;font-size:11.5px;font-weight:700;}
+.jornada-pill .dot{width:7px;height:7px;border-radius:50%;flex-shrink:0;}
+.card-jornada-meta{font-size:11px;color:var(--text-muted);font-weight:700;white-space:nowrap;}
+.jornada-bar{display:flex;gap:3px;}
+.jseg{flex:1;height:6px;border-radius:4px;}
+.jornada-stepper{display:flex;gap:6px;margin-bottom:14px;}
+.jornada-seg{flex:1;height:34px;border-radius:8px;border:1px solid var(--border);background:var(--surface);color:var(--text-muted);font-family:var(--font-display);font-weight:800;font-size:13px;display:flex;align-items:center;justify-content:center;transition:.15s;}
+.jornada-seg:hover{border-color:var(--c);color:var(--c);}
+.jornada-seg.past{background:var(--c);color:#fff;border-color:var(--c);opacity:.5;}
+.jornada-seg.current{background:var(--c);color:#fff;border-color:var(--c);box-shadow:0 5px 14px -5px var(--c);}
+.jornada-current-pill{display:inline-flex;align-items:center;gap:8px;padding:7px 14px;border-radius:24px;font-size:13px;font-weight:700;background:var(--surface-alt);margin-bottom:16px;}
+.jornada-current-pill .dot{width:9px;height:9px;border-radius:50%;background:var(--c);}
+.jornada-fase{border:1px solid var(--border);border-left:4px solid var(--c);border-radius:10px;padding:14px 16px;margin-bottom:12px;background:var(--surface);}
+.jornada-fase.atual{box-shadow:0 0 0 1px var(--c) inset, 0 4px 16px rgba(20,30,60,.06);}
+.jornada-fase-head{display:flex;align-items:center;justify-content:space-between;}
+.jornada-fase-title{font-family:var(--font-display);font-weight:700;font-size:14px;display:flex;align-items:center;gap:8px;}
+.jornada-fase-title .dot{width:9px;height:9px;border-radius:50%;}
+.jornada-fase-prog{font-size:12px;font-weight:800;color:var(--text-muted);}
+.jornada-fase-obj{font-size:12px;color:var(--text-muted);margin:4px 0 6px;}
+.jornada-atual-badge{margin-top:10px;font-size:12px;font-weight:800;color:var(--c);}
+
+/* filtro por fase (Clientes) */
+.jornada-filter{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:18px;}
+.jfilter{display:inline-flex;align-items:center;gap:7px;padding:7px 13px;border-radius:22px;border:1px solid var(--border);background:var(--surface);color:var(--text);font-size:12.5px;font-weight:700;transition:.15s;}
+.jfilter:hover{border-color:var(--c,var(--accent));}
+.jfilter.on{background:var(--c,var(--accent));color:#fff;border-color:var(--c,var(--accent));}
+.jfilter.on .jfilter-n{background:rgba(255,255,255,.25);color:#fff;}
+.jfilter-dot{width:8px;height:8px;border-radius:50%;}
+.jfilter.on .jfilter-dot{background:#fff!important;}
+.jfilter-n{background:var(--surface-alt);color:var(--text-muted);border-radius:20px;padding:1px 8px;font-size:11px;}
+
+/* tela de login */
+.auth-screen{position:fixed;inset:0;background:radial-gradient(900px 600px at 80% -10%,rgba(14,165,255,.18),transparent 60%),var(--sidebar);display:flex;align-items:center;justify-content:center;padding:20px;z-index:2000;}
+.auth-card{background:var(--surface);border-radius:var(--radius-lg);padding:30px 28px;width:100%;max-width:370px;box-shadow:0 24px 70px rgba(0,0,0,.4);}
+.auth-logo{display:flex;align-items:center;gap:11px;justify-content:center;margin-bottom:20px;}
+.auth-brand{font-family:var(--font-display);font-weight:800;letter-spacing:2px;font-size:17px;color:var(--text);}
+.auth-brand span{font-weight:500;color:var(--accent-dark);}
+.auth-title{font-family:var(--font-display);font-weight:800;font-size:17px;text-align:center;margin-bottom:18px;}
+.auth-card .btn-primary{width:100%;justify-content:center;padding:11px;margin-top:4px;}
+.current-user-box{background:var(--sidebar-soft);border-radius:8px;padding:8px 11px;}
+.cu-name{color:#fff;font-weight:700;font-size:13px;line-height:1.2;}
+.cu-role{color:var(--accent);font-size:11px;font-weight:700;margin-top:2px;}
 
 /* ===== BADGES (prioridade / tags extras) ===== */
 .badge-prioridade-baixa{background:var(--surface-alt);color:var(--text-muted);}
@@ -260,7 +308,7 @@ table.data-table tr:hover td{background:var(--surface-alt);}
 .modal-subtitle{font-size:12.5px;color:var(--text-muted);margin-top:3px;}
 .modal-close{background:none;border:none;font-size:24px;line-height:1;color:var(--text-muted);padding:0 4px;}
 .modal-close:hover{color:var(--text);}
-.modal-tabs{display:flex;border-bottom:1px solid var(--border);padding:0 22px;gap:6px;}
+.modal-tabs{display:flex;border-bottom:1px solid var(--border);padding:0 22px;gap:6px;overflow-x:auto;}
 .tab{background:none;border:none;padding:12px 4px;margin-right:18px;font-size:13px;font-weight:700;color:var(--text-muted);
   border-bottom:2px solid transparent;}
 .tab.active{color:var(--accent-dark);border-color:var(--accent);}
@@ -305,8 +353,8 @@ table.data-table tr:hover td{background:var(--surface-alt);}
 <div class="app">
   <aside class="sidebar">
     <div class="logo">
-      <div class="logo-mark">E</div>
-      <div class="logo-text">ELEVA<span>Growth Ops</span></div>
+      <div class="logo-mark">F</div>
+      <div class="logo-text">FALCON<span>Company · Growth Ops</span></div>
     </div>
     <nav class="nav">
       <button class="nav-item" data-page="dashboard">
@@ -351,6 +399,7 @@ table.data-table tr:hover td{background:var(--surface-alt);}
       <button id="export-btn">⬇ Exportar dados</button>
       <button id="import-btn">⬆ Importar dados</button>
       <input type="file" id="import-file-input" accept="application/json" style="display:none">
+      <button id="logout-btn" style="background:transparent;border:1px solid rgba(255,255,255,.14)">⎋ Sair</button>
       <span id="sync-status">Carregando...</span>
       <div class="sidebar-note">Dados sincronizados em tempo real para toda a equipe via banco de dados na nuvem. Use "Exportar" para backups.</div>
     </div>
@@ -365,6 +414,7 @@ table.data-table tr:hover td{background:var(--surface-alt);}
 </div>
 <div id="modal-root"></div>
 <div id="form-modal-root"></div>
+<div id="auth-root" style="display:none"></div>
 
 <script>
 /* ============================================================
@@ -391,12 +441,19 @@ const firebaseConfig = {
 let db = null;
 let docRef = null;
 let firebaseReady = false;
+let auth = null;
+let authReady = false;
+let syncStarted = false;
+let fbUser = null;
+let crmAuthed = false;
+let dataLoadedOnce = false;
 
 try{
   firebase.initializeApp(firebaseConfig);
   db = firebase.firestore();
   docRef = db.collection('eleva_crm').doc('dados');
   firebaseReady = true;
+  try{ auth = firebase.auth(); authReady = true; }catch(ae){ console.error('Auth indisponível:', ae); }
 }catch(e){
   console.error('Erro ao iniciar o Firebase:', e);
 }
@@ -405,7 +462,7 @@ let state = { leads: [], clinics: [], team: [], financeGeral: [], tasks: [], com
 const STAGES = [
   {key:'frio', label:'Lead Frio', desc:'Leads que chegaram para a gente, ainda sem nenhum contato.', color:'#94A3B8'},
   {key:'tratado', label:'Lead Tratado', desc:'Já chamamos o lead pela primeira vez.', color:'#5B9BD5'},
-  {key:'agendado', label:'Lead Agendado', desc:'Reunião marcada para fechar em call.', color:'#19B6A4'},
+  {key:'agendado', label:'Lead Agendado', desc:'Reunião marcada para fechar em call.', color:'#0EA5FF'},
   {key:'followup', label:'Em Follow Up', desc:'Sumiu após a reunião ou parou de responder mensagens.', color:'#E0A23B'},
   {key:'morto', label:'Lead Morto', desc:'Não quer absolutamente nada. Não chamar de novo.', color:'#C2554A'},
 ];
@@ -433,6 +490,39 @@ const ONBOARDING_STEPS = [
   {key:'resultados', label:'Reunião de resultados'},
 ];
 
+/* ============================================================
+   JORNADA DO CLIENTE — 7 fases (cada cliente fica em uma fase)
+   ============================================================ */
+const JORNADA_FASES = [
+  {key:'venda', label:'Venda Fechada', color:'#2563EB', objetivo:'Transformar um cliente vendido em um cliente implantado.',
+    itens:['Contrato assinado','Pagamento confirmado','Grupo WhatsApp criado','Cliente cadastrado no CRM','Pasta da clínica criada','Kickoff agendado']},
+  {key:'kickoff', label:'Kickoff', color:'#0EA5FF', objetivo:'Entender a operação atual.',
+    itens:['Estrutura levantada','Marketing levantado','Comercial levantado','Indicadores levantados','Sistemas levantados','Documento Diagnóstico Inicial']},
+  {key:'diagnostico', label:'Diagnóstico Profundo', color:'#38BDF8', objetivo:'Encontrar os gargalos.',
+    itens:['CRM analisado','WhatsApp analisado','Agenda analisada','Funil e fluxos analisados','Scripts analisados','Indicadores analisados','Relatório de Gargalos']},
+  {key:'estruturacao', label:'Estruturação', color:'#6366F1', objetivo:'Criar a máquina comercial.',
+    itens:['Estágios do CRM criados','Dashboard criado','CRC definida (função/rotina/KPIs)','Scripts criados']},
+  {key:'treinamento', label:'Treinamento', color:'#A855F7', objetivo:'Fazer a equipe executar.',
+    itens:['Treinamento CRC','Treinamento Recepção','Treinamento Comercial','Simulações realizadas']},
+  {key:'operacao', label:'Operação Assistida', color:'#E0A23B', objetivo:'Garantir a execução.',
+    itens:['Acompanhamento diário ativo','Scripts corrigidos','Fluxos corrigidos','Processos corrigidos']},
+  {key:'mensalidade', label:'Início da Mensalidade', color:'#2FAE63', objetivo:'Performance contínua.',
+    itens:['Rotina mensal ativa','Indicadores obrigatórios definidos','Auditoria mensal','Reunião estratégica mensal']},
+];
+function jornadaFaseInfo(key){ return JORNADA_FASES.find(f=>f.key===key) || JORNADA_FASES[0]; }
+function jornadaFaseIndex(lead){ const i = JORNADA_FASES.findIndex(f=>f.key===(lead.jornadaFase||'venda')); return i<0?0:i; }
+function jornadaFaseProgress(lead, faseKey){
+  const marc = (lead.jornada||{})[faseKey] || {};
+  const fase = jornadaFaseInfo(faseKey);
+  const done = fase.itens.filter((_,i)=>marc[i]).length;
+  return {done, total:fase.itens.length};
+}
+function jornadaTotal(lead){
+  let done=0, total=0;
+  JORNADA_FASES.forEach(f=>{ const p=jornadaFaseProgress(lead,f.key); done+=p.done; total+=p.total; });
+  return {done, total, pct: total ? Math.round(done/total*100) : 0};
+}
+
 const TASK_STATUS = [
   {key:'pendente', label:'Pendente'},
   {key:'andamento', label:'Em andamento'},
@@ -446,6 +536,7 @@ const TASK_PRIORIDADE = [
 
 let currentPage = 'dashboard';
 let pipelineSearch = '';
+let clientesFaseFilter = '';
 
 /* ============================================================
    USUÁRIO ATUAL (para restringir a visibilidade das tarefas)
@@ -530,8 +621,13 @@ async function startRealtimeSync(){
       state.leads = []; state.clinics = []; state.team = []; state.financeGeral = []; state.tasks = []; state.compromissos = [];
     }
     setSyncStatus('Sincronizado às ' + new Date().toLocaleTimeString('pt-BR'));
+    const firstLoad = !dataLoadedOnce;
+    dataLoadedOnce = true;
     // Evita perder o que está sendo digitado se um modal estiver aberto
-    if(!currentModalLead && !formModalConfig){
+    if(currentModalLead || formModalConfig) return;
+    if(authReady && !crmAuthed){
+      if(firstLoad) gateRender();
+    } else {
       render();
     }
   }, err=>{
@@ -563,7 +659,7 @@ function setSyncStatus(msg){
    ============================================================ */
 function render(){
   document.querySelectorAll('.nav-item').forEach(b=>b.classList.toggle('active', b.dataset.page===currentPage));
-  const titles = {dashboard:'Dashboard', pipeline:'Pipeline de Leads', agenda:'Agenda', tarefas:'Tarefas', clientes:'Clientes Fechados', operacoes:'Operações / Implantação', clinicas:'Base de Clínicas', financeiro:'Financeiro', equipe:'Equipe Eleva'};
+  const titles = {dashboard:'Dashboard', pipeline:'Pipeline de Leads', agenda:'Agenda', tarefas:'Tarefas', clientes:'Clientes Fechados', operacoes:'Operações / Implantação', clinicas:'Base de Clínicas', financeiro:'Financeiro', equipe:'Equipe Falcon'};
   document.getElementById('page-title').textContent = titles[currentPage];
   renderUserSwitcher();
   renderTopbarActions();
@@ -583,16 +679,26 @@ function render(){
 function renderUserSwitcher(){
   const el = document.getElementById('user-switcher');
   if(!el) return;
-  el.innerHTML = `
-    <label>Você é</label>
-    <select id="current-user-select">
-      <option value="">Selecionar...</option>
-      ${state.team.map(m=>`<option value="${m.id}" ${m.id===currentUserId?'selected':''}>${escapeHTML(m.nome)} (${escapeHTML(m.cargo)})</option>`).join('')}
-    </select>`;
-  document.getElementById('current-user-select').addEventListener('change', e=>{
-    setCurrentUser(e.target.value);
-    render();
-  });
+  const u = getCurrentUser();
+  if(u && crmAuthed){
+    el.innerHTML = `
+      <label>Conectado como</label>
+      <div class="current-user-box">
+        <div class="cu-name">${escapeHTML(u.nome)}</div>
+        <div class="cu-role">${escapeHTML(u.cargo)}</div>
+      </div>
+      <button id="crm-switch-user" style="margin-top:6px">Trocar usuário</button>`;
+    document.getElementById('crm-switch-user').addEventListener('click', crmLogout);
+  } else {
+    el.innerHTML = `
+      <label>Você é</label>
+      <select id="current-user-select">
+        <option value="">Selecionar...</option>
+        ${state.team.map(m=>`<option value="${m.id}" ${m.id===currentUserId?'selected':''}>${escapeHTML(m.nome)} (${escapeHTML(m.cargo)})</option>`).join('')}
+      </select>`;
+    const s = document.getElementById('current-user-select');
+    if(s) s.addEventListener('change', e=>{ setCurrentUser(e.target.value); render(); });
+  }
 }
 
 function renderTopbarActions(){
@@ -726,7 +832,40 @@ function renderClientes(){
     content.innerHTML = `<div class="empty-state"><h3>Nenhum cliente fechado ainda</h3><p>Quando um lead avançar para "Cliente Fechado" no pipeline, ele aparece aqui.</p></div>`;
     return;
   }
-  content.innerHTML = `<div class="card-grid">${clientes.map(c=>`
+  const filtrados = clientesFaseFilter ? clientes.filter(c=>(c.jornadaFase||'venda')===clientesFaseFilter) : clientes;
+
+  let filterBar = `<div class="jornada-filter">
+    <button class="jfilter ${clientesFaseFilter===''?'on':''}" data-fase="">Todas <span class="jfilter-n">${clientes.length}</span></button>
+    ${JORNADA_FASES.map(f=>{
+      const n = clientes.filter(c=>(c.jornadaFase||'venda')===f.key).length;
+      return `<button class="jfilter ${clientesFaseFilter===f.key?'on':''}" data-fase="${f.key}" style="--c:${f.color}"><span class="jfilter-dot" style="background:${f.color}"></span>${escapeHTML(f.label)} <span class="jfilter-n">${n}</span></button>`;
+    }).join('')}
+  </div>`;
+
+  const grid = filtrados.length
+    ? `<div class="card-grid">${filtrados.map(clienteCardHTML).join('')}</div>`
+    : `<div class="empty-state" style="padding:30px"><h3>Nenhum cliente nesta fase</h3><p>Troque o filtro acima para ver outros clientes.</p></div>`;
+
+  content.innerHTML = filterBar + grid;
+
+  document.querySelectorAll('.jfilter').forEach(b=>{
+    b.addEventListener('click', ()=>{ clientesFaseFilter = b.dataset.fase; renderClientes(); });
+  });
+  document.querySelectorAll('.client-card .card-jornada').forEach(el=>{
+    el.addEventListener('click', e=>{ e.stopPropagation(); openLeadModal(el.dataset.id, 'jornada'); });
+  });
+  document.querySelectorAll('.client-card').forEach(card=>{
+    card.addEventListener('click', ()=>openLeadModal(card.dataset.id));
+  });
+}
+
+function clienteCardHTML(c){
+  const fi = jornadaFaseIndex(c);
+  const fa = JORNADA_FASES[fi];
+  const pr = jornadaFaseProgress(c, fa.key);
+  let segs = '';
+  JORNADA_FASES.forEach((f,i)=>{ segs += `<span class="jseg" style="background:${i<=fi?f.color:'var(--surface-alt)'}"></span>`; });
+  return `
     <div class="client-card" data-id="${c.id}">
       <div class="top-row">
         <div>
@@ -735,9 +874,16 @@ function renderClientes(){
         </div>
         ${c.plano ? `<span class="badge badge-invest">${escapeHTML(c.plano)}</span>` : ''}
       </div>
+      <div class="card-jornada" data-id="${c.id}" title="Abrir a Jornada do cliente">
+        <div class="card-jornada-top">
+          <span class="jornada-pill" style="background:${fa.color}22;color:${fa.color}"><span class="dot" style="background:${fa.color}"></span>${escapeHTML(fa.label)}</span>
+          <span class="card-jornada-meta">Fase ${fi+1}/7 · ${pr.done}/${pr.total}</span>
+        </div>
+        <div class="jornada-bar">${segs}</div>
+      </div>
       <div class="stats">
         <div>
-          <div class="stat-label">Mensalidade Eleva</div>
+          <div class="stat-label">Mensalidade Falcon</div>
           <div class="stat-value">${formatCurrency(c.valorMensalidade)}</div>
         </div>
         <div>
@@ -749,11 +895,7 @@ function renderClientes(){
           <div class="stat-value" style="font-size:13px">${formatDate(c.dataFechamento)}</div>
         </div>
       </div>
-    </div>`).join('')}</div>`;
-
-  document.querySelectorAll('.client-card').forEach(card=>{
-    card.addEventListener('click', ()=>openLeadModal(card.dataset.id));
-  });
+    </div>`;
 }
 
 /* ============================================================
@@ -877,6 +1019,7 @@ function createNewLead(){
     numCadeiras:'', dataCriacao:now, dataFechamento:'', plano:'', valorMensalidade:0,
     reuniaoData:'', reuniaoHora:'', reuniaoObs:'', stageChangedAt:now,
     propostaEnviada:false, cancelado:false, emRisco:false, onboarding:{},
+    jornadaFase:'venda', jornada:{},
     financeiro:[]
   };
   isNewLead = true;
@@ -888,7 +1031,7 @@ function createNewLead(){
   renderModal();
 }
 
-function openLeadModal(id){
+function openLeadModal(id, tab){
   const lead = state.leads.find(l=>l.id===id);
   if(!lead) return;
   currentModalLead = JSON.parse(JSON.stringify(lead));
@@ -901,8 +1044,10 @@ function openLeadModal(id){
   currentModalLead.cancelado = currentModalLead.cancelado || false;
   currentModalLead.emRisco = currentModalLead.emRisco || false;
   currentModalLead.onboarding = currentModalLead.onboarding || {};
+  currentModalLead.jornadaFase = currentModalLead.jornadaFase || 'venda';
+  currentModalLead.jornada = currentModalLead.jornada || {};
   isNewLead = false;
-  modalActiveTab = 'geral';
+  modalActiveTab = tab || 'geral';
   modalFinanceUnlocked = false;
   modalFinanceError = '';
   modalOriginalStage = currentModalLead.stage;
@@ -932,12 +1077,14 @@ function renderModal(){
         <div class="modal-tabs">
           <button class="tab ${modalActiveTab==='geral'?'active':''}" data-tab="geral">Geral</button>
           <button class="tab ${modalActiveTab==='clinica'?'active':''}" data-tab="clinica">Clínica &amp; Marketing</button>
+          <button class="tab ${modalActiveTab==='jornada'?'active':''}" data-tab="jornada">🚀 Jornada</button>
           <button class="tab ${modalActiveTab==='financeiro'?'active':''}" data-tab="financeiro">🔒 Financeiro</button>
         </div>
         <div class="modal-body" id="modal-body">
           ${modalHintMessage ? `<div class="hint-banner">💡 ${escapeHTML(modalHintMessage)}</div>` : ''}
           ${modalActiveTab==='geral' ? renderModalGeral(lead) : ''}
           ${modalActiveTab==='clinica' ? renderModalClinica(lead) : ''}
+          ${modalActiveTab==='jornada' ? renderModalJornada(lead) : ''}
           ${modalActiveTab==='financeiro' ? renderModalFinanceiro(lead) : ''}
         </div>
         <div class="modal-footer">
@@ -1003,10 +1150,10 @@ function renderModalClinica(lead){
       <div class="field"><label>Canal onde investe hoje</label><input id="f-canalmkt" placeholder="Meta Ads, Google, indicação..." value="${escapeHTML(lead.canalMkt)}"></div>
     </div>
     <div class="field"><label>Agência / time atual responsável pelo mkt</label><input id="f-agencia" value="${escapeHTML(lead.agenciaAtual)}"></div>
-    <div class="section-title" style="margin-top:6px">Contrato Eleva</div>
+    <div class="section-title" style="margin-top:6px">Contrato Falcon</div>
     <div class="field-row">
       <div class="field"><label>Plano / produto contratado</label><input id="f-plano" placeholder="Essencial, Profissional, Premium..." value="${escapeHTML(lead.plano)}"></div>
-      <div class="field"><label>Mensalidade Eleva (R$)</label><input id="f-valormensalidade" type="number" step="0.01" value="${lead.valorMensalidade||0}"></div>
+      <div class="field"><label>Mensalidade Falcon (R$)</label><input id="f-valormensalidade" type="number" step="0.01" value="${lead.valorMensalidade||0}"></div>
     </div>
     ${lead.stage==='fechado' ? `
       <div class="field"><label>Cliente fechado em</label><input value="${formatDate(lead.dataFechamento)}" disabled></div>
@@ -1022,9 +1169,48 @@ function renderModalClinica(lead){
           </label>
         </div>
       </div>
-      <div class="field-hint">A checklist de implantação deste cliente fica na página "Operações".</div>
+      <div class="field-hint">O acompanhamento de implantação (7 fases) deste cliente fica na aba 🚀 Jornada.</div>
     ` : ''}
   `;
+}
+
+function renderModalJornada(lead){
+  const faseAtualIdx = jornadaFaseIndex(lead);
+  const fAtual = JORNADA_FASES[faseAtualIdx];
+
+  let stepper = '<div class="jornada-stepper">';
+  JORNADA_FASES.forEach((f,i)=>{
+    const cls = i<faseAtualIdx ? 'past' : (i===faseAtualIdx ? 'current' : 'future');
+    stepper += `<button type="button" class="jornada-seg ${cls}" data-fase="${f.key}" style="--c:${f.color}" title="${escapeHTML(f.label)}">${i+1}</button>`;
+  });
+  stepper += '</div>';
+
+  let html = `
+    <div class="field-hint" style="margin-bottom:10px">Clique numa fase para defini-la como a <strong>fase atual</strong> deste cliente e marque os itens conforme avança. Cada cliente fica na sua própria fase.</div>
+    ${stepper}
+    <div class="jornada-current-pill" style="--c:${fAtual.color}">
+      <span class="dot"></span> Fase ${faseAtualIdx+1} de 7 · <strong>${escapeHTML(fAtual.label)}</strong>
+    </div>`;
+
+  JORNADA_FASES.forEach((f,i)=>{
+    const prog = jornadaFaseProgress(lead, f.key);
+    const marc = (lead.jornada||{})[f.key] || {};
+    const isAtual = i===faseAtualIdx;
+    html += `
+      <div class="jornada-fase ${isAtual?'atual':''}" style="--c:${f.color}">
+        <div class="jornada-fase-head">
+          <div class="jornada-fase-title"><span class="dot"></span> ${i+1}. ${escapeHTML(f.label)}</div>
+          <div class="jornada-fase-prog">${prog.done}/${prog.total}</div>
+        </div>
+        <div class="jornada-fase-obj">${escapeHTML(f.objetivo)}</div>
+        ${f.itens.map((it,idx)=>`
+          <label class="checklist-row ${marc[idx]?'done':''}">
+            <input type="checkbox" class="jornada-check" data-fase="${f.key}" data-idx="${idx}" ${marc[idx]?'checked':''}> ${escapeHTML(it)}
+          </label>`).join('')}
+        ${isAtual ? `<div class="jornada-atual-badge">✓ Fase atual deste cliente</div>` : `<button type="button" class="btn btn-small btn-secondary jornada-set-atual" data-fase="${f.key}" style="margin-top:10px">Definir como fase atual</button>`}
+      </div>`;
+  });
+  return html;
 }
 
 function renderModalFinanceiro(lead){
@@ -1140,7 +1326,7 @@ function attachModalEvents(){
   document.getElementById('save-lead-btn').addEventListener('click', ()=>{
     captureModalForm();
     const lead = currentModalLead;
-    if(lead.reuniaoData){
+    if(lead.reuniaoData && lead.stage!=='fechado'){
       lead.stage = 'agendado';
     }
     if(lead.stage==='fechado' && !lead.dataFechamento){
@@ -1228,6 +1414,24 @@ function attachModalEvents(){
       } else {
         pendingDeleteKey = key;
       }
+      renderModal();
+    });
+  });
+  // Jornada do cliente
+  document.querySelectorAll('.jornada-seg, .jornada-set-atual').forEach(b=>{
+    b.addEventListener('click', ()=>{
+      currentModalLead.jornadaFase = b.dataset.fase;
+      persistLead();
+      renderModal();
+    });
+  });
+  document.querySelectorAll('.jornada-check').forEach(cb=>{
+    cb.addEventListener('change', ()=>{
+      const fase = cb.dataset.fase, idx = cb.dataset.idx;
+      currentModalLead.jornada = currentModalLead.jornada || {};
+      currentModalLead.jornada[fase] = currentModalLead.jornada[fase] || {};
+      currentModalLead.jornada[fase][idx] = cb.checked;
+      persistLead();
       renderModal();
     });
   });
@@ -1344,7 +1548,7 @@ function renderFinanceiro(){
 
   html += `<div class="section-title">Contas gerais (a pagar / a receber)</div>`;
   if(state.financeGeral.length===0){
-    html += `<div class="empty-state" style="padding:24px"><h3>Nenhum lançamento geral</h3><p>Use "+ Nova Conta" para registrar contas da operação Eleva.</p></div>`;
+    html += `<div class="empty-state" style="padding:24px"><h3>Nenhum lançamento geral</h3><p>Use "+ Nova Conta" para registrar contas da operação Falcon.</p></div>`;
   } else {
     html += `<div class="table-wrap"><table class="data-table"><thead><tr>
       <th>Descrição</th><th>Categoria</th><th>Tipo</th><th>Valor</th><th>Vencimento</th><th>Status</th><th></th>
@@ -1431,7 +1635,7 @@ function openFinanceGeralForm(id){
 function renderEquipe(){
   const content = document.getElementById('page-content');
   if(state.team.length===0){
-    content.innerHTML = `<div class="empty-state"><h3>Nenhum membro cadastrado</h3><p>Use "+ Novo Membro" para montar o time da Eleva.</p></div>`;
+    content.innerHTML = `<div class="empty-state"><h3>Nenhum membro cadastrado</h3><p>Use "+ Novo Membro" para montar o time da Falcon.</p></div>`;
     return;
   }
   content.innerHTML = `<div class="card-grid">${state.team.map(m=>`
@@ -1451,7 +1655,7 @@ function renderEquipe(){
 
 function openTeamForm(id){
   const member = id ? state.team.find(m=>m.id===id) : {
-    id: uid('team'), nome:'', cargo:CARGOS[0], email:'', telefone:''
+    id: uid('team'), nome:'', cargo:CARGOS[0], email:'', telefone:'', senha:''
   };
   openFormModal({
     title: id ? 'Editar membro' : 'Novo membro da equipe',
@@ -1461,6 +1665,7 @@ function openTeamForm(id){
       {key:'cargo', label:'Função', type:'select', options: CARGOS.map(c=>({value:c,label:c}))},
       {key:'email', label:'E-mail', type:'text'},
       {key:'telefone', label:'Telefone', type:'text'},
+      {key:'senha', label:'Senha de acesso ao CRM', type:'text', placeholder:'Defina a senha de login deste usuário'},
     ],
     onSave: data=>{
       const idx = state.team.findIndex(m=>m.id===data.id);
@@ -1618,19 +1823,22 @@ function renderOperacoes(){
   const content = document.getElementById('page-content');
   const clientes = state.leads.filter(l=>l.stage==='fechado');
   if(clientes.length===0){
-    content.innerHTML = `<div class="empty-state"><h3>Nenhum cliente em implantação</h3><p>Quando um lead for fechado no pipeline, ele aparece aqui com a checklist de implantação.</p></div>`;
+    content.innerHTML = `<div class="empty-state"><h3>Nenhum cliente em implantação</h3><p>Quando um lead for fechado no pipeline, ele aparece aqui com a jornada de implantação (7 fases).</p></div>`;
     return;
   }
   content.innerHTML = `<div class="card-grid">${clientes.map(c=>{
-    const pct = onboardingProgress(c);
+    const jt = jornadaTotal(c);
+    const pct = jt.pct;
+    const fiOp = jornadaFaseIndex(c);
+    const faOp = JORNADA_FASES[fiOp];
     const fillClass = c.cancelado ? '' : (c.emRisco ? 'risk' : (pct===100 ? 'done' : ''));
     let tag = '';
     if(c.cancelado) tag = `<span class="status-pill status-cancelado">Cancelado</span>`;
     else if(c.emRisco) tag = `<span class="status-pill status-risco">Em risco</span>`;
-    else if(pct===100) tag = `<span class="status-pill status-pago">Ativo</span>`;
+    else if(pct===100) tag = `<span class="status-pill status-pago">Implantado</span>`;
     else tag = `<span class="status-pill status-pendente">Em implantação</span>`;
     return `
-    <div class="client-card" data-id="${c.id}">
+    <div class="client-card" data-id="${c.id}" title="Abrir a Jornada do cliente">
       <div class="top-row">
         <div>
           <div class="clinic-name">${escapeHTML(c.clinica || 'Sem clínica')}</div>
@@ -1638,15 +1846,18 @@ function renderOperacoes(){
         </div>
         ${tag}
       </div>
+      <div class="card-jornada" style="cursor:pointer">
+        <span class="jornada-pill" style="background:${faOp.color}22;color:${faOp.color}"><span class="dot" style="background:${faOp.color}"></span>Fase ${fiOp+1}/7 · ${escapeHTML(faOp.label)}</span>
+      </div>
       <div style="margin-top:14px">
         <div class="progress-track"><div class="progress-fill ${fillClass}" style="width:${pct}%"></div></div>
-        <div class="progress-label"><span>${pct}% concluído</span><span>${ONBOARDING_STEPS.filter(s=>(c.onboarding||{})[s.key]).length}/${ONBOARDING_STEPS.length} etapas</span></div>
+        <div class="progress-label"><span>${pct}% da jornada</span><span>${jt.done}/${jt.total} itens</span></div>
       </div>
     </div>`;
   }).join('')}</div>`;
 
   document.querySelectorAll('.client-card').forEach(card=>{
-    card.addEventListener('click', ()=>openOnboardingModal(card.dataset.id));
+    card.addEventListener('click', ()=>openLeadModal(card.dataset.id, 'jornada'));
   });
 }
 
@@ -1755,8 +1966,8 @@ function renderDashboard(){
 
   // ---- Operação ----
   const naoCancelados = fechados.filter(l=>!l.cancelado);
-  const clinicasAtivas = naoCancelados.filter(l=>onboardingProgress(l)===100 && !l.emRisco);
-  const clinicasImplantacao = naoCancelados.filter(l=>onboardingProgress(l)<100);
+  const clinicasAtivas = naoCancelados.filter(l=>jornadaTotal(l).pct===100 && !l.emRisco);
+  const clinicasImplantacao = naoCancelados.filter(l=>jornadaTotal(l).pct<100);
   const clinicasPendencias = clinicasImplantacao.length;
   const clinicasRisco = naoCancelados.filter(l=>l.emRisco);
 
@@ -1798,6 +2009,13 @@ function renderDashboard(){
     <div class="summary-card"><div class="label">Clínicas em risco</div><div class="value negative">${clinicasRisco.length}</div></div>
   </div>`;
 
+  html += `<div class="section-title">Jornada dos clientes</div>`;
+  html += `<div class="dashboard-grid">` + JORNADA_FASES.map(f=>{
+    const n = naoCancelados.filter(l=>(l.jornadaFase||'venda')===f.key).length;
+    return `<div class="summary-card" style="border-left:4px solid ${f.color};cursor:pointer" data-jfase="${f.key}"><div class="label">${escapeHTML(f.label)}</div><div class="value">${n}</div></div>`;
+  }).join('') + `</div>`;
+  html += `<div class="field-hint" style="margin-top:8px">Clique numa fase para ver esses clientes filtrados na página Clientes.</div>`;
+
   if(state.financeGeral.length===0 && state.leads.every(l=>!(l.financeiro||[]).length)){
     html += `<div class="field-hint" style="margin-top:18px">Os dados de inadimplência consideram lançamentos marcados como "Atrasado" no Financeiro (geral e por cliente).</div>`;
   }
@@ -1812,6 +2030,10 @@ function renderDashboard(){
       render();
     });
   }
+
+  document.querySelectorAll('[data-jfase]').forEach(el=>{
+    el.addEventListener('click', ()=>{ clientesFaseFilter = el.dataset.jfase; currentPage = 'clientes'; render(); });
+  });
 }
 
 /* ============================================================
@@ -1905,7 +2127,7 @@ document.getElementById('export-btn').addEventListener('click', ()=>{
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
   a.href = url;
-  a.download = 'eleva-crm-backup-' + todayISO() + '.json';
+  a.download = 'falcon-crm-backup-' + todayISO() + '.json';
   document.body.appendChild(a);
   a.click();
   document.body.removeChild(a);
@@ -1938,8 +2160,134 @@ document.getElementById('import-file-input').addEventListener('change', e=>{
   e.target.value = '';
 });
 
-render();
-startRealtimeSync();
+/* ============================================================
+   AUTENTICAÇÃO (login real)
+   ============================================================ */
+function renderAuthScreen(msg, emailPrefill){
+  const root = document.getElementById('auth-root');
+  root.innerHTML = `
+    <div class="auth-screen">
+      <div class="auth-card">
+        <div class="auth-logo">
+          <div class="logo-mark">F</div>
+          <div class="auth-brand">FALCON <span>COMPANY</span></div>
+        </div>
+        <div class="auth-title">Acessar o CRM</div>
+        <div class="field"><label>E-mail</label><input id="auth-email" type="email" placeholder="voce@falconcompany.com" value="${escapeHTML(emailPrefill||'')}"></div>
+        <div class="field"><label>Senha</label><input id="auth-password" type="password" placeholder="Sua senha"></div>
+        <button class="btn btn-primary" id="auth-login-btn">Entrar</button>
+        <div class="error-text" style="text-align:center;min-height:18px">${msg?escapeHTML(msg):''}</div>
+      </div>
+    </div>`;
+  const doLogin = ()=>{
+    const email = val('#auth-email').trim();
+    const pwd = val('#auth-password');
+    if(!email || !pwd){ renderAuthScreen('Preencha e-mail e senha.', email); return; }
+    document.getElementById('auth-login-btn').textContent = 'Entrando...';
+    auth.signInWithEmailAndPassword(email, pwd).catch(err=>{
+      let m = 'Não foi possível entrar.';
+      const code = err && err.code;
+      if(code==='auth/invalid-credential' || code==='auth/wrong-password' || code==='auth/user-not-found') m = 'E-mail ou senha incorretos.';
+      else if(code==='auth/invalid-email') m = 'E-mail inválido.';
+      else if(code==='auth/too-many-requests') m = 'Muitas tentativas. Aguarde alguns instantes.';
+      else if(code==='auth/operation-not-allowed') m = 'Ative "E-mail/senha" em Authentication > Sign-in method no Firebase.';
+      else if(err && err.message) m = err.message;
+      renderAuthScreen(m, email);
+    });
+  };
+  document.getElementById('auth-login-btn').addEventListener('click', doLogin);
+  document.getElementById('auth-password').addEventListener('keydown', e=>{ if(e.key==='Enter') doLogin(); });
+}
+function showOverlay(){ document.querySelector('.app').style.display='none'; document.getElementById('auth-root').style.display='flex'; }
+function hideOverlay(){ document.querySelector('.app').style.display=''; document.getElementById('auth-root').style.display='none'; }
+
+function crmLogout(){ crmAuthed=false; setCurrentUser(''); if(authReady){ gateRender(); } else { render(); } }
+
+function renderCrmLoading(){
+  document.getElementById('auth-root').innerHTML = `
+    <div class="auth-screen"><div class="auth-card">
+      <div class="auth-logo"><div class="logo-mark">F</div><div class="auth-brand">FALCON <span>COMPANY</span></div></div>
+      <div class="auth-title">Carregando...</div>
+      <p style="text-align:center;color:var(--text-muted);font-size:13px">Conectando ao banco de dados.</p>
+    </div></div>`;
+}
+
+function renderCrmGate(selectedId, msg){
+  const root = document.getElementById('auth-root');
+  if(state.team.length===0){
+    root.innerHTML = `
+      <div class="auth-screen"><div class="auth-card">
+        <div class="auth-logo"><div class="logo-mark">F</div><div class="auth-brand">FALCON <span>COMPANY</span></div></div>
+        <div class="auth-title">Primeiro acesso</div>
+        <p style="text-align:center;color:var(--text-muted);font-size:13px;margin-bottom:16px">Ainda não há usuários cadastrados. Entre para criar a equipe na página "Equipe" e definir a senha de cada usuário.</p>
+        <button class="btn btn-primary" id="crm-enter-empty">Entrar para configurar</button>
+        <div style="text-align:center;margin-top:10px"><a href="#" id="crm-logout-fb" style="font-size:12px;color:var(--text-muted)">Sair do login</a></div>
+      </div></div>`;
+    document.getElementById('crm-enter-empty').addEventListener('click', ()=>{ crmAuthed=true; setCurrentUser(''); gateRender(); });
+    const lo0=document.getElementById('crm-logout-fb'); if(lo0) lo0.addEventListener('click', e=>{ e.preventDefault(); if(auth) auth.signOut(); });
+    return;
+  }
+  const sel = selectedId!==undefined ? selectedId : (currentUserId||'');
+  root.innerHTML = `
+    <div class="auth-screen"><div class="auth-card">
+      <div class="auth-logo"><div class="logo-mark">F</div><div class="auth-brand">FALCON <span>COMPANY</span></div></div>
+      <div class="auth-title">Quem é você?</div>
+      <div class="field"><label>Usuário</label>
+        <select id="crm-user-select">
+          <option value="">Selecionar...</option>
+          ${state.team.map(m=>`<option value="${m.id}" ${m.id===sel?'selected':''}>${escapeHTML(m.nome)} (${escapeHTML(m.cargo)})</option>`).join('')}
+        </select>
+      </div>
+      <div class="field"><label>Senha do usuário</label><input id="crm-user-pwd" type="password" placeholder="Senha do seu usuário no CRM"></div>
+      <button class="btn btn-primary" id="crm-enter-btn">Entrar</button>
+      <div class="error-text" style="text-align:center;min-height:18px">${msg?escapeHTML(msg):''}</div>
+      <div style="text-align:center;margin-top:8px"><a href="#" id="crm-logout-fb" style="font-size:12px;color:var(--text-muted)">Sair do login (Firebase)</a></div>
+    </div></div>`;
+  const enter = ()=>{
+    const id = val('#crm-user-select');
+    const pwd = val('#crm-user-pwd');
+    if(!id){ renderCrmGate(id, 'Selecione seu usuário.'); return; }
+    const m = state.team.find(x=>x.id===id);
+    if(!m){ renderCrmGate('', 'Usuário não encontrado.'); return; }
+    if(m.senha && pwd !== m.senha){ renderCrmGate(id, 'Senha incorreta.'); return; }
+    crmAuthed = true;
+    setCurrentUser(id);
+    gateRender();
+  };
+  document.getElementById('crm-enter-btn').addEventListener('click', enter);
+  document.getElementById('crm-user-pwd').addEventListener('keydown', e=>{ if(e.key==='Enter') enter(); });
+  const lo=document.getElementById('crm-logout-fb'); if(lo) lo.addEventListener('click', e=>{ e.preventDefault(); if(auth) auth.signOut(); });
+}
+
+function gateRender(){
+  if(authReady && !fbUser){ showOverlay(); renderAuthScreen(''); return; }
+  if(!crmAuthed){
+    showOverlay();
+    if(!dataLoadedOnce) renderCrmLoading();
+    else renderCrmGate();
+    return;
+  }
+  hideOverlay();
+  render();
+}
+
+const logoutBtn = document.getElementById('logout-btn');
+if(logoutBtn) logoutBtn.addEventListener('click', ()=>{ crmAuthed=false; if(auth) auth.signOut(); });
+
+if(authReady){
+  showOverlay();
+  renderAuthScreen('');
+  auth.onAuthStateChanged(user=>{
+    fbUser = user;
+    if(!user){ crmAuthed = false; }
+    if(user && !syncStarted){ startRealtimeSync(); syncStarted = true; }
+    gateRender();
+  });
+} else {
+  // Firebase Auth indisponível — modo aberto. Configure o Auth para proteger os dados.
+  render();
+  startRealtimeSync();
+}
 </script>
 </body>
 </html>
