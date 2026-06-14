@@ -9,6 +9,8 @@
 <meta http-equiv="Expires" content="0">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore-compat.js"></script>
 <style>
 :root{
   --bg:#F2F5F8;
@@ -401,7 +403,7 @@ table.data-table tr:hover td{background:var(--surface-alt);}
       <input type="file" id="import-file-input" accept="application/json" style="display:none">
       <button id="logout-btn" style="background:transparent;border:1px solid rgba(255,255,255,.14)">⎋ Sair</button>
       <span id="sync-status">Pronto</span>
-      <div class="sidebar-note">Dados salvos neste navegador (offline). Use "Exportar" para backup e "Importar" para levar a outro dispositivo.</div>
+      <div class="sidebar-note">Sincronizado com a equipe na nuvem; uma cópia fica salva neste navegador, então funciona mesmo offline. Use "Exportar" para backup.</div>
     </div>
   </aside>
   <main class="main">
@@ -418,18 +420,41 @@ table.data-table tr:hover td{background:var(--surface-alt);}
 
 <script>
 /* ============================================================
-   ESTADO E ARMAZENAMENTO (local — neste navegador)
+   ESTADO E ARMAZENAMENTO
    ============================================================
-   Os dados ficam salvos no próprio navegador (localStorage).
-   Abre na hora, funciona offline, sem servidor e sem conexão.
-   Use "Exportar" para fazer backup e "Importar" para levar a
-   outro computador ou compartilhar com a equipe.
+   O app abre instantaneamente com os dados salvos no próprio
+   navegador (localStorage) e, em paralelo e sem travar, sincroniza
+   com a nuvem (Firebase) para a equipe ver os mesmos dados.
+   Se a nuvem estiver fora do ar, o CRM continua funcionando offline.
    ============================================================ */
+const firebaseConfig = {
+  apiKey: "AIzaSyBgDPcPzQuMgC7iOUMugyjBJtwB3lH9WxM",
+  authDomain: "crminternofalcon.firebaseapp.com",
+  projectId: "crminternofalcon",
+  storageBucket: "crminternofalcon.firebasestorage.app",
+  messagingSenderId: "34755662862",
+  appId: "1:34755662862:web:92204246c42cb4212c585f"
+};
 const LS_KEY = 'falcon_crm_data_v1';
+let db = null;
+let docRef = null;
+let firebaseReady = false;
+let syncStarted = false;
+let cloudFirstLoad = true;
 let crmAuthed = false;
 let dataLoadedOnce = false;
 
 let state = { leads: [], clinics: [], team: [], financeGeral: [], tasks: [], compromissos: [] };
+
+try{
+  firebase.initializeApp(firebaseConfig);
+  db = firebase.firestore();
+  try{ db.settings({ experimentalAutoDetectLongPolling: true }); }catch(_){}
+  docRef = db.collection('falcon_crm').doc('dados');
+  firebaseReady = true;
+}catch(e){
+  console.error('Firebase indisponível — seguindo offline:', e);
+}
 
 const STAGES = [
   {key:'frio', label:'Lead Frio', desc:'Leads que chegaram para a gente, ainda sem nenhum contato.', color:'#94A3B8'},
@@ -571,7 +596,7 @@ function matchesSearch(lead,q){
 function stageInfo(key){ return ALL_STAGES.find(s=>s.key===key) || ALL_STAGES[0]; }
 
 /* ============================================================
-   STORAGE (localStorage — neste navegador)
+   STORAGE (local instantâneo + sincronização em nuvem)
    ============================================================ */
 function loadData(){
   try{
@@ -589,14 +614,48 @@ function loadData(){
     console.error('Erro ao ler dados locais:', e);
   }
 }
+function cacheLocal(){
+  try{ localStorage.setItem(LS_KEY, JSON.stringify(state)); }catch(e){ console.error(e); }
+}
+
+// Sincronização em segundo plano — NUNCA bloqueia a abertura do app.
+function startCloudSync(){
+  if(!firebaseReady){ setSyncStatus('Offline (somente neste navegador)'); return; }
+  setSyncStatus('Conectando à nuvem...');
+  docRef.onSnapshot(snap=>{
+    if(snap.exists()){
+      const d = snap.data() || {};
+      state.leads = d.leads || [];
+      state.clinics = d.clinics || [];
+      state.team = d.team || [];
+      state.financeGeral = d.financeGeral || [];
+      state.tasks = d.tasks || [];
+      state.compromissos = d.compromissos || [];
+      cacheLocal();
+    }
+    setSyncStatus('Sincronizado às ' + new Date().toLocaleTimeString('pt-BR'));
+    // Não atrapalha quem está digitando num modal
+    if(currentModalLead || formModalConfig) return;
+    if(crmAuthed){ render(); }
+    else if(cloudFirstLoad){ gateRender(); }
+    cloudFirstLoad = false;
+  }, err=>{
+    console.error(err);
+    setSyncStatus('Sem conexão com a nuvem — trabalhando offline');
+    cloudFirstLoad = false;
+  });
+}
 
 function saveData(){
-  try{
-    localStorage.setItem(LS_KEY, JSON.stringify(state));
-    setSyncStatus('Salvo neste navegador às ' + new Date().toLocaleTimeString('pt-BR'));
-  }catch(e){
-    console.error(e);
-    setSyncStatus('Erro ao salvar localmente');
+  cacheLocal();
+  const hora = new Date().toLocaleTimeString('pt-BR');
+  if(firebaseReady){
+    setSyncStatus('Salvando...');
+    docRef.set(state)
+      .then(()=> setSyncStatus('Sincronizado às ' + hora))
+      .catch(e=>{ console.error(e); setSyncStatus('Salvo neste navegador (nuvem indisponível)'); });
+  } else {
+    setSyncStatus('Salvo neste navegador às ' + hora);
   }
 }
 function setSyncStatus(msg){
@@ -2196,10 +2255,11 @@ function gateRender(){
 const logoutBtn = document.getElementById('logout-btn');
 if(logoutBtn) logoutBtn.addEventListener('click', crmLogout);
 
-// Acesso somente pelo usuário do CRM. Dados salvos neste navegador.
+// Abre na hora com os dados locais; a nuvem sincroniza em segundo plano.
 loadData();
 dataLoadedOnce = true;
 gateRender();
+if(firebaseReady && !syncStarted){ startCloudSync(); syncStarted = true; }
 </script>
 </body>
 </html>
