@@ -4,10 +4,11 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Falcon Company · CRM</title>
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+<meta http-equiv="Pragma" content="no-cache">
+<meta http-equiv="Expires" content="0">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-<script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore-compat.js"></script>
 <style>
 :root{
   --bg:#F2F5F8;
@@ -399,8 +400,8 @@ table.data-table tr:hover td{background:var(--surface-alt);}
       <button id="import-btn">⬆ Importar dados</button>
       <input type="file" id="import-file-input" accept="application/json" style="display:none">
       <button id="logout-btn" style="background:transparent;border:1px solid rgba(255,255,255,.14)">⎋ Sair</button>
-      <span id="sync-status">Carregando...</span>
-      <div class="sidebar-note">Dados sincronizados em tempo real para toda a equipe via banco de dados na nuvem. Use "Exportar" para backups.</div>
+      <span id="sync-status">Pronto</span>
+      <div class="sidebar-note">Dados salvos neste navegador (offline). Use "Exportar" para backup e "Importar" para levar a outro dispositivo.</div>
     </div>
   </aside>
   <main class="main">
@@ -417,45 +418,17 @@ table.data-table tr:hover td{background:var(--surface-alt);}
 
 <script>
 /* ============================================================
-   ESTADO E CONFIGURAÇÃO
-   ============================================================ */
-/* ============================================================
-   FIREBASE (banco de dados compartilhado em tempo real)
+   ESTADO E ARMAZENAMENTO (local — neste navegador)
    ============================================================
-   1. Crie um projeto gratuito em https://console.firebase.google.com
-   2. Ative o Firestore Database (modo produção) na região mais próxima
-   3. Cole as regras de segurança indicadas na documentação enviada
-   4. Em "Configurações do projeto > Seus apps", registre um app Web
-   5. Copie os valores abaixo, substituindo "COLE_AQUI..."
+   Os dados ficam salvos no próprio navegador (localStorage).
+   Abre na hora, funciona offline, sem servidor e sem conexão.
+   Use "Exportar" para fazer backup e "Importar" para levar a
+   outro computador ou compartilhar com a equipe.
    ============================================================ */
-const firebaseConfig = {
-  apiKey: "AIzaSyC435qtJrdnDUu2fB5EIg4OKJ5-j-87c94",
-  authDomain: "elevacrm-e57a2.firebaseapp.com",
-  projectId: "elevacrm-e57a2",
-  storageBucket: "elevacrm-e57a2.firebasestorage.app",
-  messagingSenderId: "515104714142",
-  appId: "1:515104714142:web:0d65ccc23cfb1bacc83a8f"
-};
-
-let db = null;
-let docRef = null;
-let firebaseReady = false;
-let auth = null;
-let authReady = false;
-let syncStarted = false;
-let fbUser = null;
+const LS_KEY = 'falcon_crm_data_v1';
 let crmAuthed = false;
 let dataLoadedOnce = false;
 
-try{
-  firebase.initializeApp(firebaseConfig);
-  db = firebase.firestore();
-  try{ db.settings({ experimentalAutoDetectLongPolling: true }); }catch(_){}
-  docRef = db.collection('eleva_crm').doc('dados');
-  firebaseReady = true;
-}catch(e){
-  console.error('Erro ao iniciar o Firebase:', e);
-}
 let state = { leads: [], clinics: [], team: [], financeGeral: [], tasks: [], compromissos: [] };
 
 const STAGES = [
@@ -598,66 +571,32 @@ function matchesSearch(lead,q){
 function stageInfo(key){ return ALL_STAGES.find(s=>s.key===key) || ALL_STAGES[0]; }
 
 /* ============================================================
-   STORAGE
+   STORAGE (localStorage — neste navegador)
    ============================================================ */
-async function startRealtimeSync(){
-  if(!firebaseReady){
-    setSyncStatus('Firebase não configurado — preencha firebaseConfig no código.');
-    render();
-    return;
+function loadData(){
+  try{
+    const raw = localStorage.getItem(LS_KEY);
+    if(raw){
+      const d = JSON.parse(raw) || {};
+      state.leads = d.leads || [];
+      state.clinics = d.clinics || [];
+      state.team = d.team || [];
+      state.financeGeral = d.financeGeral || [];
+      state.tasks = d.tasks || [];
+      state.compromissos = d.compromissos || [];
+    }
+  }catch(e){
+    console.error('Erro ao ler dados locais:', e);
   }
-  setSyncStatus('Conectando...');
-  let loadTimer = setTimeout(()=>{
-    if(!dataLoadedOnce) renderGateError('Está demorando para conectar ao banco de dados. Se você publicou as regras do Firestore agora há pouco, aguarde 1 minuto e recarregue. Também pode ser a sua conexão de internet.');
-  }, 12000);
-  docRef.onSnapshot(snap=>{
-    clearTimeout(loadTimer);
-    if(snap.exists()){
-      const data = snap.data() || {};
-      state.leads = data.leads || [];
-      state.clinics = data.clinics || [];
-      state.team = data.team || [];
-      state.financeGeral = data.financeGeral || [];
-      state.tasks = data.tasks || [];
-      state.compromissos = data.compromissos || [];
-    } else {
-      state.leads = []; state.clinics = []; state.team = []; state.financeGeral = []; state.tasks = []; state.compromissos = [];
-    }
-    setSyncStatus('Sincronizado às ' + new Date().toLocaleTimeString('pt-BR'));
-    const firstLoad = !dataLoadedOnce;
-    dataLoadedOnce = true;
-    // Evita perder o que está sendo digitado se um modal estiver aberto
-    if(currentModalLead || formModalConfig) return;
-    if(!crmAuthed){
-      if(firstLoad) gateRender();
-    } else {
-      render();
-    }
-  }, err=>{
-    clearTimeout(loadTimer);
-    console.error(err);
-    setSyncStatus('Erro de conexão com o banco de dados');
-    if(!dataLoadedOnce){
-      let msg = 'Não foi possível ler o banco de dados.';
-      if(err && err.code==='permission-denied'){
-        msg = 'As regras do Firestore bloquearam o acesso. Como o login do Firebase foi removido, as regras precisam liberar acesso: allow read, write: if true;';
-      }
-      renderGateError(msg);
-    }
-  });
 }
 
-async function saveData(){
-  if(!firebaseReady){
-    setSyncStatus('Firebase não configurado — os dados não serão salvos.');
-    return;
-  }
+function saveData(){
   try{
-    await docRef.set(state);
-    setSyncStatus('Salvo às ' + new Date().toLocaleTimeString('pt-BR'));
+    localStorage.setItem(LS_KEY, JSON.stringify(state));
+    setSyncStatus('Salvo neste navegador às ' + new Date().toLocaleTimeString('pt-BR'));
   }catch(e){
     console.error(e);
-    setSyncStatus('Erro ao salvar — verifique sua conexão');
+    setSyncStatus('Erro ao salvar localmente');
   }
 }
 function setSyncStatus(msg){
@@ -2257,10 +2196,10 @@ function gateRender(){
 const logoutBtn = document.getElementById('logout-btn');
 if(logoutBtn) logoutBtn.addEventListener('click', crmLogout);
 
-// Acesso somente pelo usuário do CRM (sem login do Firebase).
-showOverlay();
-renderCrmLoading();
-if(!syncStarted){ startRealtimeSync(); syncStarted = true; }
+// Acesso somente pelo usuário do CRM. Dados salvos neste navegador.
+loadData();
+dataLoadedOnce = true;
+gateRender();
 </script>
 </body>
 </html>
