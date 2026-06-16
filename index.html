@@ -398,10 +398,7 @@ table.data-table tr:hover td{background:var(--surface-alt);}
     </nav>
     <div class="sidebar-footer">
       <div id="user-switcher"></div>
-      <button id="export-btn">⬇ Exportar dados</button>
-      <button id="import-btn">⬆ Importar dados</button>
-      <input type="file" id="import-file-input" accept="application/json" style="display:none">
-      <button id="logout-btn" style="background:transparent;border:1px solid rgba(255,255,255,.14)">⎋ Sair</button>
+      <div id="mode-controls"></div>
       <span id="sync-status">Pronto</span>
       <div class="sidebar-note">Sincronizado com a equipe na nuvem; uma cópia fica salva neste navegador, então funciona mesmo offline. Use "Exportar" para backup.</div>
     </div>
@@ -428,19 +425,19 @@ table.data-table tr:hover td{background:var(--surface-alt);}
    Se a nuvem estiver fora do ar, o CRM continua funcionando offline.
    ============================================================ */
 const firebaseConfig = {
-  apiKey: "AIzaSyBgDPcPzQuMgC7iOUMugyjBJtwB3lH9WxM",
-  authDomain: "crminternofalcon.firebaseapp.com",
-  projectId: "crminternofalcon",
-  storageBucket: "crminternofalcon.firebasestorage.app",
-  messagingSenderId: "34755662862",
-  appId: "1:34755662862:web:92204246c42cb4212c585f"
+  apiKey: "AIzaSyBBXQX1LLoIFQ1YtkaOIwh93I2lYNlUteU",
+  authDomain: "crminternofalcon-a7760.firebaseapp.com",
+  projectId: "crminternofalcon-a7760",
+  storageBucket: "crminternofalcon-a7760.firebasestorage.app",
+  messagingSenderId: "524348595229",
+  appId: "1:524348595229:web:91de56b45b36ebe0eabaf4"
 };
 const LS_KEY = 'falcon_crm_data_v1';
 let db = null;
 let docRef = null;
 let firebaseReady = false;
 let syncStarted = false;
-let cloudFirstLoad = true;
+let cloudSynced = false;
 let crmAuthed = false;
 let dataLoadedOnce = false;
 
@@ -536,6 +533,17 @@ let pipelineSearch = '';
 let clientesFaseFilter = '';
 
 /* ============================================================
+   MODO DE ACESSO: Owner/CEO (vê tudo) x Colaborador (só os leads dele)
+   ============================================================ */
+let viewMode = 'owner';          // 'owner' | 'colab'
+let colabUserId = '';            // id do colaborador logado no modo colaborador
+let authed = false;              // já passou pela tela de acesso?
+const OWNER_PASSWORD = 'gerevalorparaaspessoaseparaomundo';
+const COLAB_PAGES = ['pipeline','agenda','tarefas','clinicas'];
+function isColab(){ return viewMode === 'colab'; }
+function leadVisible(l){ return viewMode === 'owner' ? true : (!!l && l.responsavelId === colabUserId); }
+
+/* ============================================================
    USUÁRIO ATUAL (para restringir a visibilidade das tarefas)
    ============================================================ */
 let currentUserId = localStorage.getItem('eleva_current_user_id') || '';
@@ -617,45 +625,73 @@ function loadData(){
 function cacheLocal(){
   try{ localStorage.setItem(LS_KEY, JSON.stringify(state)); }catch(e){ console.error(e); }
 }
+function recordCount(o){
+  o = o || {};
+  return (o.leads||[]).length + (o.clinics||[]).length + (o.team||[]).length +
+         (o.financeGeral||[]).length + (o.tasks||[]).length + (o.compromissos||[]).length;
+}
+function adoptData(d){
+  d = d || {};
+  state.leads = d.leads || [];
+  state.clinics = d.clinics || [];
+  state.team = d.team || [];
+  state.financeGeral = d.financeGeral || [];
+  state.tasks = d.tasks || [];
+  state.compromissos = d.compromissos || [];
+}
+function nowT(){ return new Date().toLocaleTimeString('pt-BR'); }
 
-// Sincronização em segundo plano — NUNCA bloqueia a abertura do app.
+// Sincronização em segundo plano — NUNCA bloqueia a abertura do app
+// e NUNCA deixa um navegador vazio apagar os dados da nuvem.
 function startCloudSync(){
   if(!firebaseReady){ setSyncStatus('Offline (somente neste navegador)'); return; }
   setSyncStatus('Conectando à nuvem...');
   docRef.onSnapshot(snap=>{
-    if(snap.exists()){
-      const d = snap.data() || {};
-      state.leads = d.leads || [];
-      state.clinics = d.clinics || [];
-      state.team = d.team || [];
-      state.financeGeral = d.financeGeral || [];
-      state.tasks = d.tasks || [];
-      state.compromissos = d.compromissos || [];
-      cacheLocal();
+    const cloud = snap.exists() ? (snap.data() || {}) : null;
+    const firstReconcile = !cloudSynced;
+    if(firstReconcile){
+      cloudSynced = true;
+      const localN = recordCount(state);
+      const cloudN = recordCount(cloud);
+      if(cloud && cloudN > 0 && cloudN >= localN){
+        // A nuvem tem mais (ou igual) dados → adota a nuvem.
+        adoptData(cloud); cacheLocal();
+      } else if(localN > 0){
+        // Tenho dados locais e a nuvem está vazia/menor → envia os meus pra nuvem.
+        cacheLocal();
+        setSyncStatus('Enviando seus dados para a nuvem...');
+        docRef.set(state)
+          .then(()=> setSyncStatus('Dados enviados para a nuvem às ' + nowT()))
+          .catch(e=>{ console.error(e); setSyncStatus('Não consegui enviar para a nuvem agora'); });
+      } else if(cloud){
+        adoptData(cloud); cacheLocal();
+      }
+    } else if(cloud){
+      // Atualizações seguintes: a nuvem é a fonte da verdade.
+      adoptData(cloud); cacheLocal();
     }
-    setSyncStatus('Sincronizado às ' + new Date().toLocaleTimeString('pt-BR'));
-    // Não atrapalha quem está digitando num modal
+    setSyncStatus('Sincronizado às ' + nowT());
     if(currentModalLead || formModalConfig) return;
-    if(crmAuthed){ render(); }
-    else if(cloudFirstLoad){ gateRender(); }
-    cloudFirstLoad = false;
+    if(authed) render();
   }, err=>{
     console.error(err);
     setSyncStatus('Sem conexão com a nuvem — trabalhando offline');
-    cloudFirstLoad = false;
   });
 }
 
 function saveData(){
   cacheLocal();
-  const hora = new Date().toLocaleTimeString('pt-BR');
-  if(firebaseReady){
+  const t = nowT();
+  if(firebaseReady && cloudSynced){
     setSyncStatus('Salvando...');
     docRef.set(state)
-      .then(()=> setSyncStatus('Sincronizado às ' + hora))
+      .then(()=> setSyncStatus('Sincronizado às ' + t))
       .catch(e=>{ console.error(e); setSyncStatus('Salvo neste navegador (nuvem indisponível)'); });
+  } else if(firebaseReady && !cloudSynced){
+    // Ainda não reconciliou com a nuvem — guarda local e sobe assim que conectar.
+    setSyncStatus('Salvo neste navegador (sincroniza ao conectar)');
   } else {
-    setSyncStatus('Salvo neste navegador às ' + hora);
+    setSyncStatus('Salvo neste navegador às ' + t);
   }
 }
 function setSyncStatus(msg){
@@ -667,10 +703,16 @@ function setSyncStatus(msg){
    RENDER PRINCIPAL
    ============================================================ */
 function render(){
-  document.querySelectorAll('.nav-item').forEach(b=>b.classList.toggle('active', b.dataset.page===currentPage));
+  if(isColab() && !COLAB_PAGES.includes(currentPage)) currentPage = 'pipeline';
+  document.querySelectorAll('.nav-item').forEach(b=>{
+    const allowed = !isColab() || COLAB_PAGES.includes(b.dataset.page);
+    b.style.display = allowed ? '' : 'none';
+    b.classList.toggle('active', b.dataset.page===currentPage);
+  });
   const titles = {dashboard:'Dashboard', pipeline:'Pipeline de Leads', agenda:'Agenda', tarefas:'Tarefas', clientes:'Clientes Fechados', operacoes:'Operações / Implantação', clinicas:'Base de Clínicas', financeiro:'Financeiro', equipe:'Equipe Falcon'};
   document.getElementById('page-title').textContent = titles[currentPage];
   renderUserSwitcher();
+  renderModeControls();
   renderTopbarActions();
   switch(currentPage){
     case 'dashboard': renderDashboard(); break;
@@ -687,27 +729,136 @@ function render(){
 
 function renderUserSwitcher(){
   const el = document.getElementById('user-switcher');
+  if(el) el.innerHTML = '';
+}
+
+/* ---- Controles na barra lateral ---- */
+function renderModeControls(){
+  const el = document.getElementById('mode-controls');
   if(!el) return;
-  const u = getCurrentUser();
-  if(u && crmAuthed){
+  if(isColab()){
+    const m = state.team.find(x=>x.id===colabUserId);
     el.innerHTML = `
-      <label>Conectado como</label>
-      <div class="current-user-box">
-        <div class="cu-name">${escapeHTML(u.nome)}</div>
-        <div class="cu-role">${escapeHTML(u.cargo)}</div>
+      <div class="current-user-box" style="margin-bottom:8px">
+        <div class="cu-name">${escapeHTML(m ? m.nome : 'Colaborador')}</div>
+        <div class="cu-role">Modo colaborador</div>
       </div>
-      <button id="crm-switch-user" style="margin-top:6px">Trocar usuário</button>`;
-    document.getElementById('crm-switch-user').addEventListener('click', crmLogout);
+      <button id="logout-btn-side" style="width:100%">⎋ Sair</button>`;
+    document.getElementById('logout-btn-side').addEventListener('click', logout);
   } else {
     el.innerHTML = `
-      <label>Você é</label>
-      <select id="current-user-select">
-        <option value="">Selecionar...</option>
-        ${state.team.map(m=>`<option value="${m.id}" ${m.id===currentUserId?'selected':''}>${escapeHTML(m.nome)} (${escapeHTML(m.cargo)})</option>`).join('')}
-      </select>`;
-    const s = document.getElementById('current-user-select');
-    if(s) s.addEventListener('change', e=>{ setCurrentUser(e.target.value); render(); });
+      <div class="current-user-box" style="margin-bottom:8px">
+        <div class="cu-name">Owner / CEO</div>
+        <div class="cu-role">Acesso total</div>
+      </div>
+      <button id="logout-btn-side" style="width:100%">⎋ Sair</button>`;
+    document.getElementById('logout-btn-side').addEventListener('click', logout);
   }
+}
+
+function logout(){
+  authed = false;
+  viewMode = 'owner';
+  colabUserId = '';
+  currentPage = 'dashboard';
+  renderAccessGate();
+}
+
+/* ---- Tela inicial: escolher Owner/CEO ou Colaborador ---- */
+function renderAccessGate(){
+  showOverlay();
+  const root = document.getElementById('auth-root');
+  root.innerHTML = `
+    <div class="auth-screen"><div class="auth-card">
+      <div class="auth-logo"><div class="logo-mark">F</div><div class="auth-brand">FALCON <span>COMPANY</span></div></div>
+      <div class="auth-title">Acessar o CRM</div>
+      <p style="text-align:center;color:var(--text-muted);font-size:13px;margin-bottom:18px">Como você quer entrar?</p>
+      <button class="btn btn-primary" id="gate-owner" style="width:100%;justify-content:center;margin-bottom:10px">Owner / CEO</button>
+      <button class="btn btn-secondary" id="gate-colab" style="width:100%;justify-content:center">Colaborador</button>
+    </div></div>`;
+  document.getElementById('gate-owner').addEventListener('click', ()=>renderOwnerLogin());
+  document.getElementById('gate-colab').addEventListener('click', ()=>showColabLogin());
+}
+
+/* ---- Login do Owner/CEO (com senha) ---- */
+function renderOwnerLogin(msg){
+  showOverlay();
+  const root = document.getElementById('auth-root');
+  root.innerHTML = `
+    <div class="auth-screen"><div class="auth-card">
+      <div class="auth-logo"><div class="logo-mark">F</div><div class="auth-brand">FALCON <span>COMPANY</span></div></div>
+      <div class="auth-title">Entrar como Owner / CEO</div>
+      <div class="field"><label>Código de acesso</label><input id="owner-pwd" type="password" placeholder="Sua senha de owner"></div>
+      <button class="btn btn-primary" id="owner-enter" style="width:100%;justify-content:center">Entrar</button>
+      <div class="error-text" style="text-align:center;min-height:18px">${msg?escapeHTML(msg):''}</div>
+      <button class="btn btn-secondary" id="owner-back" style="width:100%;justify-content:center;margin-top:6px">Voltar</button>
+    </div></div>`;
+  const enter = ()=>{
+    const pwd = val('#owner-pwd');
+    if(pwd !== OWNER_PASSWORD){ renderOwnerLogin('Código incorreto.'); return; }
+    authed = true;
+    viewMode = 'owner';
+    colabUserId = '';
+    currentUserId = localStorage.getItem('eleva_current_user_id') || '';
+    currentPage = 'dashboard';
+    hideOverlay();
+    render();
+  };
+  document.getElementById('owner-enter').addEventListener('click', enter);
+  document.getElementById('owner-pwd').addEventListener('keydown', e=>{ if(e.key==='Enter') enter(); });
+  document.getElementById('owner-back').addEventListener('click', renderAccessGate);
+}
+
+/* ---- Tela de entrada do colaborador (com senha) ---- */
+function showColabLogin(selId, msg){
+  showOverlay();
+  const root = document.getElementById('auth-root');
+  if(state.team.length===0){
+    root.innerHTML = `
+      <div class="auth-screen"><div class="auth-card">
+        <div class="auth-logo"><div class="logo-mark">F</div><div class="auth-brand">FALCON <span>COMPANY</span></div></div>
+        <div class="auth-title">Colaborador</div>
+        <p style="text-align:center;color:var(--text-muted);font-size:13px;margin-bottom:16px">Ainda não há colaboradores cadastrados. O owner precisa cadastrar a equipe (página "Equipe") e definir a senha de cada um.</p>
+        <button class="btn btn-secondary" id="colab-back" style="width:100%;justify-content:center">Voltar</button>
+      </div></div>`;
+    document.getElementById('colab-back').addEventListener('click', renderAccessGate);
+    return;
+  }
+  const sel = selId!==undefined ? selId : colabUserId;
+  root.innerHTML = `
+    <div class="auth-screen"><div class="auth-card">
+      <div class="auth-logo"><div class="logo-mark">F</div><div class="auth-brand">FALCON <span>COMPANY</span></div></div>
+      <div class="auth-title">Entrar como colaborador</div>
+      <div class="field"><label>Colaborador</label>
+        <select id="colab-select">
+          <option value="">Selecionar...</option>
+          ${state.team.map(m=>`<option value="${m.id}" ${m.id===sel?'selected':''}>${escapeHTML(m.nome)} (${escapeHTML(m.cargo)})</option>`).join('')}
+        </select>
+      </div>
+      <div class="field"><label>Senha</label><input id="colab-pwd" type="password" placeholder="Sua senha"></div>
+      <button class="btn btn-primary" id="colab-enter" style="width:100%;justify-content:center">Entrar</button>
+      <div class="error-text" style="text-align:center;min-height:18px">${msg?escapeHTML(msg):''}</div>
+      <button class="btn btn-secondary" id="colab-back" style="width:100%;justify-content:center;margin-top:6px">Voltar</button>
+    </div></div>`;
+  const enter = ()=>{
+    const id = val('#colab-select');
+    const pwd = val('#colab-pwd');
+    if(!id){ showColabLogin(id, 'Selecione o colaborador.'); return; }
+    const m = state.team.find(x=>x.id===id);
+    if(!m){ showColabLogin('', 'Colaborador não encontrado.'); return; }
+    if(!m.senha){ showColabLogin(id, 'Esse colaborador ainda não tem senha. Peça ao owner para definir na página Equipe.'); return; }
+    if(pwd !== m.senha){ showColabLogin(id, 'Senha incorreta.'); return; }
+    authed = true;
+    viewMode = 'colab';
+    colabUserId = id;
+    currentUserId = id;
+    currentPage = 'pipeline';
+    hideOverlay();
+    render();
+  };
+  document.getElementById('colab-enter').addEventListener('click', enter);
+  document.getElementById('colab-pwd').addEventListener('keydown', e=>{ if(e.key==='Enter') enter(); });
+  document.getElementById('colab-back').addEventListener('click', renderAccessGate);
 }
 
 function renderTopbarActions(){
@@ -723,10 +874,11 @@ function renderTopbarActions(){
     el.innerHTML = `<button class="btn btn-primary" id="new-clinic-btn">+ Nova Clínica</button>`;
     document.getElementById('new-clinic-btn').addEventListener('click', ()=>openClinicForm(null));
   } else if(currentPage==='agenda'){
-    el.innerHTML = `<button class="btn btn-primary" id="new-compromisso-btn">+ Novo Compromisso</button>`;
-    document.getElementById('new-compromisso-btn').addEventListener('click', ()=>openCompromissoForm(null));
+    el.innerHTML = isColab() ? '' : `<button class="btn btn-primary" id="new-compromisso-btn">+ Novo Compromisso</button>`;
+    const nc = document.getElementById('new-compromisso-btn');
+    if(nc) nc.addEventListener('click', ()=>openCompromissoForm(null));
   } else if(currentPage==='tarefas'){
-    if(getCurrentUser()){
+    if(state.team.length>0){
       el.innerHTML = `<button class="btn btn-primary" id="new-task-btn">+ Nova Tarefa</button>`;
       document.getElementById('new-task-btn').addEventListener('click', ()=>openTaskForm(null));
     } else {
@@ -763,7 +915,7 @@ function renderPipeline(){
 
   html += '<div class="kanban">';
   STAGES.forEach(stage=>{
-    const leads = state.leads.filter(l=>l.stage===stage.key && matchesSearch(l,pipelineSearch));
+    const leads = state.leads.filter(l=>l.stage===stage.key && matchesSearch(l,pipelineSearch) && leadVisible(l));
     html += `
       <div class="kanban-col">
         <div class="kanban-col-header" style="border-color:${stage.color}">
@@ -925,7 +1077,7 @@ function renderAgenda(){
   const now = Date.now();
 
   const eventosLead = state.leads
-    .filter(l=>l.reuniaoData && l.stage!=='fechado' && l.stage!=='morto')
+    .filter(l=>l.reuniaoData && l.stage!=='fechado' && l.stage!=='morto' && leadVisible(l))
     .map(l=>({
       tipo: 'lead',
       id: l.id,
@@ -937,7 +1089,7 @@ function renderAgenda(){
       tag: 'Lead Agendado'
     }));
 
-  const eventosCompromisso = (state.compromissos || []).map(c=>({
+  const eventosCompromisso = isColab() ? [] : (state.compromissos || []).map(c=>({
     tipo: 'compromisso',
     id: c.id,
     ts: compromissoTimestamp(c),
@@ -1029,6 +1181,7 @@ function createNewLead(){
     reuniaoData:'', reuniaoHora:'', reuniaoObs:'', stageChangedAt:now,
     propostaEnviada:false, cancelado:false, emRisco:false, onboarding:{},
     jornadaFase:'venda', jornada:{},
+    responsavelId: isColab() ? colabUserId : '',
     financeiro:[]
   };
   isNewLead = true;
@@ -1055,6 +1208,7 @@ function openLeadModal(id, tab){
   currentModalLead.onboarding = currentModalLead.onboarding || {};
   currentModalLead.jornadaFase = currentModalLead.jornadaFase || 'venda';
   currentModalLead.jornada = currentModalLead.jornada || {};
+  currentModalLead.responsavelId = currentModalLead.responsavelId || '';
   isNewLead = false;
   modalActiveTab = tab || 'geral';
   modalFinanceUnlocked = false;
@@ -1087,7 +1241,7 @@ function renderModal(){
           <button class="tab ${modalActiveTab==='geral'?'active':''}" data-tab="geral">Geral</button>
           <button class="tab ${modalActiveTab==='clinica'?'active':''}" data-tab="clinica">Clínica &amp; Marketing</button>
           <button class="tab ${modalActiveTab==='jornada'?'active':''}" data-tab="jornada">🚀 Jornada</button>
-          <button class="tab ${modalActiveTab==='financeiro'?'active':''}" data-tab="financeiro">🔒 Financeiro</button>
+          ${isColab() ? '' : `<button class="tab ${modalActiveTab==='financeiro'?'active':''}" data-tab="financeiro">🔒 Financeiro</button>`}
         </div>
         <div class="modal-body" id="modal-body">
           ${modalHintMessage ? `<div class="hint-banner">💡 ${escapeHTML(modalHintMessage)}</div>` : ''}
@@ -1123,6 +1277,14 @@ function renderModalGeral(lead){
         </select>
       </div>
       <div class="field"><label>Lead criado em</label><input value="${formatDate(lead.dataCriacao)}" disabled></div>
+    </div>
+    <div class="field">
+      <label>Responsável (colaborador que cuida deste lead)</label>
+      <select id="f-responsavel" ${isColab()?'disabled':''}>
+        <option value="">Sem responsável (só o owner vê)</option>
+        ${state.team.map(m=>`<option value="${m.id}" ${(lead.responsavelId||'')===m.id?'selected':''}>${escapeHTML(m.nome)} (${escapeHTML(m.cargo)})</option>`).join('')}
+      </select>
+      ${isColab()?'<div class="field-hint">No modo colaborador, novos leads ficam automaticamente com você.</div>':'<div class="field-hint">No modo colaborador, cada pessoa só vê os leads onde está como responsável.</div>'}
     </div>
     <div class="field">
       <label style="display:flex;align-items:center;gap:8px;text-transform:none;font-size:13px;cursor:pointer;">
@@ -1292,6 +1454,8 @@ function captureModalForm(){
     lead.reuniaoObs = val('#f-reuniaoobs');
     const propostaEl = document.querySelector('#f-propostaenviada');
     if(propostaEl) lead.propostaEnviada = propostaEl.checked;
+    if(isColab()){ lead.responsavelId = colabUserId; }
+    else { const respEl = document.querySelector('#f-responsavel'); if(respEl) lead.responsavelId = respEl.value; }
   } else if(modalActiveTab==='clinica'){
     lead.clinica = val('#f-clinica');
     lead.cidade = val('#f-cidade');
@@ -1706,23 +1870,19 @@ function teamMemberName(id){
 
 function renderTarefas(){
   const content = document.getElementById('page-content');
-  const me = getCurrentUser();
 
   if(state.team.length===0){
     content.innerHTML = `<div class="empty-state"><h3>Cadastre a equipe primeiro</h3><p>Vá em "Equipe" e adicione os membros antes de criar tarefas.</p></div>`;
     return;
   }
 
-  if(!me){
-    content.innerHTML = `<div class="empty-state"><h3>Selecione quem é você</h3><p>No menu lateral, em "Você é", escolha seu nome. Assim o sistema mostra só as tarefas que você criou ou que são suas — ninguém mais vê.</p></div>`;
-    return;
-  }
-
-  const visible = state.tasks.filter(t=>taskVisibleTo(t, me));
+  const visible = isColab()
+    ? state.tasks.filter(t=>t.responsavelId===colabUserId || t.criadoPorId===colabUserId)
+    : state.tasks;
 
   let html = '';
-  if(me.cargo==='CEO'){
-    html += `<div class="hint-banner">💡 Como CEO, você vê todas as tarefas da equipe. Os demais membros só veem tarefas que criaram ou das quais são responsáveis.</div>`;
+  if(!isColab()){
+    html += `<div class="hint-banner">💡 Como owner, você vê todas as tarefas da equipe.</div>`;
   } else {
     html += `<div class="hint-banner">💡 Aqui aparecem só as tarefas que você criou ou para as quais você é o responsável.</div>`;
   }
@@ -1781,12 +1941,11 @@ function renderTarefas(){
 }
 
 function openTaskForm(id){
-  const me = getCurrentUser();
-  if(!me) return;
+  const meId = isColab() ? colabUserId : (currentUserId || (state.team[0] ? state.team[0].id : ''));
   const task = id ? state.tasks.find(t=>t.id===id) : {
-    id: uid('task'), titulo:'', descricao:'', responsavelId: me.id, leadId:'',
+    id: uid('task'), titulo:'', descricao:'', responsavelId: meId, leadId:'',
     prazo: todayISO(), prioridade:'media', status:'pendente',
-    criadoPorId: me.id, createdAt: new Date().toISOString()
+    criadoPorId: meId, createdAt: new Date().toISOString()
   };
   const leadOptions = [{value:'', label:'Nenhum (tarefa geral)'}].concat(
     state.leads.map(l=>({value:l.id, label:(l.clinica || l.dentista || 'Lead sem nome')}))
@@ -1982,14 +2141,9 @@ function renderDashboard(){
 
   let html = '';
 
-  const me = getCurrentUser();
-  if(me){
-    const minhasTarefas = state.tasks.filter(t=>t.responsavelId===me.id && t.status!=='concluida');
-    if(minhasTarefas.length>0){
-      html += `<div class="hint-banner">💡 Você tem <strong>${minhasTarefas.length}</strong> tarefa(s) pendente(s) atribuída(s) a você. <a href="#" id="dash-go-tasks" style="color:var(--accent-dark);font-weight:800;">Ver tarefas</a></div>`;
-    }
-  } else {
-    html += `<div class="hint-banner">💡 Selecione "Você é" no menu lateral para ver suas tarefas pessoais e liberar a página de Tarefas.</div>`;
+  const pendentesTotal = state.tasks.filter(t=>t.status!=='concluida').length;
+  if(pendentesTotal>0){
+    html += `<div class="hint-banner">💡 A equipe tem <strong>${pendentesTotal}</strong> tarefa(s) pendente(s). <a href="#" id="dash-go-tasks" style="color:var(--accent-dark);font-weight:800;">Ver tarefas</a></div>`;
   }
 
   html += `<div class="section-title" style="margin-top:0">Comercial</div>`;
@@ -2131,43 +2285,6 @@ document.querySelectorAll('.nav-item').forEach(b=>{
     render();
   });
 });
-document.getElementById('export-btn').addEventListener('click', ()=>{
-  const blob = new Blob([JSON.stringify(state, null, 2)], {type:'application/json'});
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement('a');
-  a.href = url;
-  a.download = 'falcon-crm-backup-' + todayISO() + '.json';
-  document.body.appendChild(a);
-  a.click();
-  document.body.removeChild(a);
-  URL.revokeObjectURL(url);
-});
-
-document.getElementById('import-btn').addEventListener('click', ()=>{
-  document.getElementById('import-file-input').click();
-});
-document.getElementById('import-file-input').addEventListener('change', e=>{
-  const file = e.target.files[0];
-  if(!file) return;
-  const reader = new FileReader();
-  reader.onload = ev=>{
-    try{
-      const parsed = JSON.parse(ev.target.result);
-      state.leads = parsed.leads || [];
-      state.clinics = parsed.clinics || [];
-      state.team = parsed.team || [];
-      state.financeGeral = parsed.financeGeral || [];
-      state.tasks = parsed.tasks || [];
-      state.compromissos = parsed.compromissos || [];
-      saveData();
-      render();
-    }catch(err){
-      setSyncStatus('Arquivo inválido');
-    }
-  };
-  reader.readAsText(file);
-  e.target.value = '';
-});
 
 /* ============================================================
    AUTENTICAÇÃO (somente login do usuário do CRM)
@@ -2175,7 +2292,7 @@ document.getElementById('import-file-input').addEventListener('change', e=>{
 function showOverlay(){ document.querySelector('.app').style.display='none'; document.getElementById('auth-root').style.display='flex'; }
 function hideOverlay(){ document.querySelector('.app').style.display=''; document.getElementById('auth-root').style.display='none'; }
 
-function crmLogout(){ crmAuthed=false; setCurrentUser(''); gateRender(); }
+function crmLogout(){ setCurrentUser(''); render(); }
 
 function renderCrmLoading(){
   document.getElementById('auth-root').innerHTML = `
@@ -2242,23 +2359,15 @@ function renderCrmGate(selectedId, msg){
 }
 
 function gateRender(){
-  if(!crmAuthed){
-    showOverlay();
-    if(!dataLoadedOnce) renderCrmLoading();
-    else renderCrmGate();
-    return;
-  }
+  // Sem login: sempre mostra o CRM.
   hideOverlay();
   render();
 }
 
-const logoutBtn = document.getElementById('logout-btn');
-if(logoutBtn) logoutBtn.addEventListener('click', crmLogout);
-
-// Abre na hora com os dados locais; a nuvem sincroniza em segundo plano.
+// Abre na tela de acesso. Dados locais carregam na hora + sync de nuvem em 2º plano.
 loadData();
 dataLoadedOnce = true;
-gateRender();
+renderAccessGate();
 if(firebaseReady && !syncStarted){ startCloudSync(); syncStarted = true; }
 </script>
 </body>
