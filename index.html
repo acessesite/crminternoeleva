@@ -340,6 +340,26 @@ table.data-table tr:hover td{background:var(--surface-alt);}
 .add-finance-form .field{margin-bottom:0;flex:1;min-width:110px;}
 .add-finance-form .field-small{flex:0 0 90px;}
 
+/* ===== REUNIÃO ===== */
+.reuniao-list-item{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:13px 15px;border:1px solid var(--border);border-radius:10px;margin-bottom:10px;cursor:pointer;transition:.15s;background:var(--surface);}
+.reuniao-list-item:hover{border-color:var(--accent);box-shadow:0 4px 14px rgba(20,30,60,.07);}
+.reuniao-list-item .rli-main{min-width:0;}
+.reuniao-list-item .rli-date{font-family:var(--font-display);font-weight:700;font-size:14px;}
+.reuniao-list-item .rli-snippet{font-size:12.5px;color:var(--text-muted);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:330px;}
+.reuniao-list-item .rli-prog{font-size:11px;font-weight:700;color:var(--accent-dark);background:var(--accent-soft);padding:3px 9px;border-radius:20px;white-space:nowrap;}
+.reuniao-etapa{border:1px solid var(--border);border-left:4px solid var(--accent);border-radius:10px;padding:14px 16px;margin-bottom:14px;background:var(--surface);}
+.reuniao-etapa-title{font-family:var(--font-display);font-weight:700;font-size:14px;display:flex;align-items:center;justify-content:space-between;gap:8px;}
+.reuniao-etapa-tempo{font-size:11px;font-weight:700;color:var(--text-muted);background:var(--surface-alt);padding:3px 9px;border-radius:20px;white-space:nowrap;}
+.reuniao-guia{font-size:12px;color:var(--text-muted);font-style:italic;background:var(--surface-alt);border-radius:8px;padding:9px 11px;margin:8px 0 12px;line-height:1.5;}
+.reuniao-perg{margin-bottom:12px;}
+.reuniao-perg:last-child{margin-bottom:0;}
+.reuniao-perg label{display:block;font-size:13px;font-weight:600;color:var(--text);margin-bottom:5px;text-transform:none;letter-spacing:0;}
+.reuniao-perg textarea{width:100%;padding:9px 11px;border:1px solid var(--border);border-radius:8px;background:var(--surface);color:var(--text);resize:vertical;min-height:52px;font-family:inherit;}
+.reuniao-perg textarea:focus{outline:2px solid var(--accent);border-color:transparent;}
+.reuniao-seis{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+.reuniao-pitch{background:var(--accent-soft);border:1px solid var(--accent);border-radius:10px;padding:13px 15px;font-size:12.5px;color:var(--accent-dark);line-height:1.55;margin-top:6px;}
+.reuniao-pitch strong{display:block;margin-bottom:4px;font-family:var(--font-display);}
+
 @media (max-width:880px){
   .app{flex-direction:column;}
   .sidebar{width:100%;height:auto;flex-direction:row;align-items:center;padding:12px 16px;position:relative;}
@@ -348,6 +368,7 @@ table.data-table tr:hover td{background:var(--surface-alt);}
   .sidebar-footer{display:none;}
   .main{padding:18px;}
   .field-row{grid-template-columns:1fr;}
+  .reuniao-seis{grid-template-columns:1fr;}
 }
 </style>
 </head>
@@ -374,6 +395,10 @@ table.data-table tr:hover td{background:var(--surface-alt);}
       <button class="nav-item" data-page="tarefas">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M8 12l2.5 2.5L16 9"/></svg>
         Tarefas
+      </button>
+      <button class="nav-item" data-page="reuniao">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/><path d="M8 9h8M8 13h5"/></svg>
+        Reunião
       </button>
       <button class="nav-item" data-page="clientes">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2l2.7 5.8 6.3.9-4.6 4.4 1.1 6.2L12 16.2 6.5 19.3l1.1-6.2L3 8.7l6.3-.9z"/></svg>
@@ -517,6 +542,74 @@ function jornadaTotal(lead){
   return {done, total, pct: total ? Math.round(done/total*100) : 0};
 }
 
+/* ============================================================
+   ROTEIRO DE REUNIÃO CONSULTIVA (perguntas + respostas por cliente)
+   ============================================================ */
+const REUNIAO_ETAPAS = [
+  {titulo:'Etapa 1 — Quebra de gelo', tempo:'3 a 5 min',
+   guia:'Não fale da Falcon. Fale dela. Você está construindo conexão e coletando informação.',
+   perguntas:[
+     'Há quanto tempo a clínica existe?',
+     'O que te fez escolher odontologia?',
+     'Hoje quantos dentistas atendem aqui?',
+     'Qual procedimento representa a maior parte do faturamento?'
+   ]},
+  {titulo:'Etapa 2 — Entender o momento atual', tempo:'10 min',
+   guia:'Aqui você começa a identificar os gargalos.',
+   perguntas:[
+     'Como os pacientes chegam hoje?',
+     'Qual canal gera mais pacientes?',
+     'Vocês investem em tráfego?',
+     'Quem responde os leads?',
+     'Existe secretária comercial ou apenas recepção?',
+     'Utilizam CRM?',
+     'Como fazem acompanhamento dos pacientes que não fecham?'
+   ]},
+  {titulo:'Etapa 3 — Encontrar a dor financeira', tempo:'10 min',
+   guia:'Essa é a parte mais importante. A maioria das clínicas não sabe responder — e isso é ótimo: mostra exatamente onde está o problema.',
+   perguntas:[
+     'Qual é o maior desafio da clínica hoje?',
+     'Se eu pudesse resolver apenas uma coisa nos próximos 6 meses, o que seria?',
+     'Vocês perdem mais pacientes na captação ou no fechamento?',
+     'Quantos orçamentos são apresentados por mês?',
+     'Quantos são fechados?',
+     'Existe acompanhamento dos pacientes que não fecharam?'
+   ]},
+  {titulo:'Etapa 4 — Fazer ela enxergar o problema', tempo:'',
+   guia:'Não apresente solução ainda. Use perguntas até ela mesma chegar à conclusão (ex.: "quando o paciente não fecha, existe processo estruturado de recuperação?" → "Então parte do investimento está sendo desperdiçada, correto?").',
+   perguntas:[
+     'Como ela reagiu / a que conclusão ela mesma chegou?'
+   ]},
+  {titulo:'Etapa 5 — Posicionamento da Falcon', tempo:'',
+   guia:'Apresente de forma simples: a Falcon não é marketing — implementa e gerencia a operação comercial da clínica (CRM, processo comercial, recuperação de pacientes, indicadores, treinamento, acompanhamento). Depois pare e deixe ela processar.',
+   perguntas:[
+     'Reação dela ao posicionamento'
+   ]},
+  {titulo:'Etapa 6 — Construir valor', tempo:'',
+   guia:'"A maioria das clínicas tenta crescer apenas trazendo mais pacientes. Nós primeiro olhamos quanto dinheiro está ficando na mesa com os pacientes que já chegam."',
+   perguntas:[
+     'Reação / observações'
+   ]},
+  {titulo:'Etapa 7 — Diagnóstico consultivo', tempo:'',
+   guia:'"Se vocês aumentassem em apenas 20% a conversão dos pacientes que já chegam, qual seria o impacto no faturamento?" Faça ela pensar — você vende resultado, não serviço.',
+   perguntas:[
+     'Resposta dela sobre o impacto de +20% de conversão'
+   ]},
+  {titulo:'Etapa 8 — Fechamento da reunião', tempo:'',
+   guia:'Não apresente plano ainda. Encerre: "vejo oportunidades claras de melhoria; vou organizar o diagnóstico e montar uma proposta alinhada à realidade da clínica; depois marcamos uma segunda conversa para apresentar o plano de ação."',
+   perguntas:[
+     'Próximo passo combinado / data da 2ª conversa'
+   ]}
+];
+const REUNIAO_SEIS = [
+  'Quantos leads entram',
+  'Quem atende',
+  'Como fazem follow-up',
+  'Como apresentam orçamento',
+  'Quantos fecham',
+  'Onde estão perdendo dinheiro'
+];
+
 const TASK_STATUS = [
   {key:'pendente', label:'Pendente'},
   {key:'andamento', label:'Em andamento'},
@@ -539,7 +632,7 @@ let viewMode = 'owner';          // 'owner' | 'colab'
 let colabUserId = '';            // id do colaborador logado no modo colaborador
 let authed = false;              // já passou pela tela de acesso?
 const OWNER_PASSWORD = 'gerevalorparaaspessoaseparaomundo';
-const COLAB_PAGES = ['pipeline','agenda','tarefas','clinicas'];
+const COLAB_PAGES = ['pipeline','agenda','tarefas','reuniao','clinicas'];
 function isColab(){ return viewMode === 'colab'; }
 function leadVisible(l){ return viewMode === 'owner' ? true : (!!l && l.responsavelId === colabUserId); }
 
@@ -562,6 +655,7 @@ function setCurrentUser(id){
 
 let currentModalLead = null;
 let isNewLead = false;
+let currentReuniaoId = null;
 let modalActiveTab = 'geral';
 let modalFinanceUnlocked = false;
 let modalFinanceError = '';
@@ -709,7 +803,7 @@ function render(){
     b.style.display = allowed ? '' : 'none';
     b.classList.toggle('active', b.dataset.page===currentPage);
   });
-  const titles = {dashboard:'Dashboard', pipeline:'Pipeline de Leads', agenda:'Agenda', tarefas:'Tarefas', clientes:'Clientes Fechados', operacoes:'Operações / Implantação', clinicas:'Base de Clínicas', financeiro:'Financeiro', equipe:'Equipe Falcon'};
+  const titles = {dashboard:'Dashboard', pipeline:'Pipeline de Leads', agenda:'Agenda', tarefas:'Tarefas', reuniao:'Reuniões', clientes:'Clientes Fechados', operacoes:'Operações / Implantação', clinicas:'Base de Clínicas', financeiro:'Financeiro', equipe:'Equipe Falcon'};
   document.getElementById('page-title').textContent = titles[currentPage];
   renderUserSwitcher();
   renderModeControls();
@@ -719,6 +813,7 @@ function render(){
     case 'pipeline': renderPipeline(); break;
     case 'agenda': renderAgenda(); break;
     case 'tarefas': renderTarefas(); break;
+    case 'reuniao': renderReunioesPage(); break;
     case 'clientes': renderClientes(); break;
     case 'operacoes': renderOperacoes(); break;
     case 'clinicas': renderClinicas(); break;
@@ -884,6 +979,9 @@ function renderTopbarActions(){
     } else {
       el.innerHTML = '';
     }
+  } else if(currentPage==='reuniao'){
+    el.innerHTML = `<button class="btn btn-primary" id="new-reuniao-btn">+ Nova reunião</button>`;
+    document.getElementById('new-reuniao-btn').addEventListener('click', novaReuniaoLead);
   } else if(currentPage==='equipe'){
     el.innerHTML = `<button class="btn btn-primary" id="new-team-btn">+ Novo Membro</button>`;
     document.getElementById('new-team-btn').addEventListener('click', ()=>openTeamForm(null));
@@ -1182,10 +1280,12 @@ function createNewLead(){
     propostaEnviada:false, cancelado:false, emRisco:false, onboarding:{},
     jornadaFase:'venda', jornada:{},
     responsavelId: isColab() ? colabUserId : '',
+    reunioes:[],
     financeiro:[]
   };
   isNewLead = true;
   modalActiveTab = 'geral';
+  currentReuniaoId = null;
   modalFinanceUnlocked = false;
   modalFinanceError = '';
   modalOriginalStage = currentModalLead.stage;
@@ -1209,8 +1309,10 @@ function openLeadModal(id, tab){
   currentModalLead.jornadaFase = currentModalLead.jornadaFase || 'venda';
   currentModalLead.jornada = currentModalLead.jornada || {};
   currentModalLead.responsavelId = currentModalLead.responsavelId || '';
+  currentModalLead.reunioes = currentModalLead.reunioes || [];
   isNewLead = false;
   modalActiveTab = tab || 'geral';
+  currentReuniaoId = null;
   modalFinanceUnlocked = false;
   modalFinanceError = '';
   modalOriginalStage = currentModalLead.stage;
@@ -1219,6 +1321,7 @@ function openLeadModal(id, tab){
 
 function closeModal(){
   currentModalLead = null;
+  currentReuniaoId = null;
   modalHintMessage = '';
   document.getElementById('modal-root').innerHTML = '';
 }
@@ -1241,6 +1344,7 @@ function renderModal(){
           <button class="tab ${modalActiveTab==='geral'?'active':''}" data-tab="geral">Geral</button>
           <button class="tab ${modalActiveTab==='clinica'?'active':''}" data-tab="clinica">Clínica &amp; Marketing</button>
           <button class="tab ${modalActiveTab==='jornada'?'active':''}" data-tab="jornada">🚀 Jornada</button>
+          <button class="tab ${modalActiveTab==='reuniao'?'active':''}" data-tab="reuniao">📝 Reunião</button>
           ${isColab() ? '' : `<button class="tab ${modalActiveTab==='financeiro'?'active':''}" data-tab="financeiro">🔒 Financeiro</button>`}
         </div>
         <div class="modal-body" id="modal-body">
@@ -1248,6 +1352,7 @@ function renderModal(){
           ${modalActiveTab==='geral' ? renderModalGeral(lead) : ''}
           ${modalActiveTab==='clinica' ? renderModalClinica(lead) : ''}
           ${modalActiveTab==='jornada' ? renderModalJornada(lead) : ''}
+          ${modalActiveTab==='reuniao' ? renderModalReuniao(lead) : ''}
           ${modalActiveTab==='financeiro' ? renderModalFinanceiro(lead) : ''}
         </div>
         <div class="modal-footer">
@@ -1384,6 +1489,157 @@ function renderModalJornada(lead){
   return html;
 }
 
+function reuniaoTotalPerguntas(){ let t=0; REUNIAO_ETAPAS.forEach(et=>t+=et.perguntas.length); return t; }
+function reuniaoRespondidas(r){
+  let n=0;
+  REUNIAO_ETAPAS.forEach((et,ei)=>et.perguntas.forEach((_,qi)=>{
+    const v=(r.respostas||{})['e'+ei+'q'+qi];
+    if(v && String(v).trim()) n++;
+  }));
+  return n;
+}
+function novaReuniaoObj(){ return { id: uid('reu'), data: todayISO(), respostas:{}, seis:{}, observacoes:'' }; }
+
+function renderModalReuniao(lead){
+  lead.reunioes = lead.reunioes || [];
+
+  // ----- editor de uma reunião -----
+  if(currentReuniaoId){
+    const r = lead.reunioes.find(x=>x.id===currentReuniaoId);
+    if(!r){ currentReuniaoId = null; return renderModalReuniao(lead); }
+    let html = `
+      <div style="display:flex;align-items:flex-end;justify-content:space-between;gap:12px;margin-bottom:14px">
+        <button class="btn btn-small btn-secondary" id="reu-back">← Todas as reuniões</button>
+        <div class="field" style="margin:0;flex:0 0 170px"><label>Data da reunião</label><input id="reu-data" type="date" value="${escapeHTML(r.data||todayISO())}"></div>
+      </div>`;
+    REUNIAO_ETAPAS.forEach((et,ei)=>{
+      html += `<div class="reuniao-etapa">
+        <div class="reuniao-etapa-title"><span>${escapeHTML(et.titulo)}</span>${et.tempo?`<span class="reuniao-etapa-tempo">${escapeHTML(et.tempo)}</span>`:''}</div>
+        ${et.guia?`<div class="reuniao-guia">${escapeHTML(et.guia)}</div>`:''}
+        ${et.perguntas.map((p,qi)=>`<div class="reuniao-perg"><label>${escapeHTML(p)}</label><textarea class="reu-resp" data-k="e${ei}q${qi}">${escapeHTML((r.respostas||{})['e'+ei+'q'+qi]||'')}</textarea></div>`).join('')}
+      </div>`;
+    });
+    html += `<div class="section-title" style="margin-top:4px">As 6 informações que você precisa sair sabendo</div>
+      <div class="reuniao-seis">
+      ${REUNIAO_SEIS.map((s,i)=>`<div class="reuniao-perg"><label>${i+1}. ${escapeHTML(s)}</label><textarea class="reu-seis" data-i="${i}">${escapeHTML((r.seis||{})[i]||'')}</textarea></div>`).join('')}
+      </div>`;
+    html += `<div class="reuniao-perg" style="margin-top:14px"><label>Observações gerais / diagnóstico</label><textarea id="reu-obs" style="min-height:84px">${escapeHTML(r.observacoes||'')}</textarea></div>`;
+    html += `<div class="reuniao-pitch"><strong>Pitch de 30s (referência)</strong>A Falcon atua como parceira comercial da clínica: estrutura CRM, processos, recuperação de pacientes, treinamento da equipe e gestão de indicadores, para a clínica aproveitar melhor os pacientes que já chegam e ter crescimento previsível. Em vez de depender só de mais marketing, buscamos aumentar a conversão e a eficiência da operação comercial.</div>`;
+    html += `<div style="display:flex;justify-content:space-between;gap:10px;margin-top:16px">
+      <button class="btn btn-danger btn-small" id="reu-del">${pendingDeleteKey==='reu_'+r.id?'Confirmar exclusão?':'Excluir reunião'}</button>
+      <button class="btn btn-primary" id="reu-save">Salvar reunião</button>
+    </div>`;
+    return html;
+  }
+
+  // ----- lista de reuniões -----
+  let html = `<div style="display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:14px">
+    <div class="field-hint" style="margin:0">Registre cada reunião com este cliente usando o roteiro consultivo. Tudo fica salvo para consultar depois.</div>
+    <button class="btn btn-primary btn-small" id="reu-nova">+ Nova reunião</button></div>`;
+  if(lead.reunioes.length===0){
+    html += `<div class="empty-state" style="padding:34px"><h3>Nenhuma reunião registrada</h3><p>Clique em "+ Nova reunião" para preencher o roteiro com as respostas do cliente.</p></div>`;
+  } else {
+    const totalP = reuniaoTotalPerguntas();
+    html += lead.reunioes.slice().sort((a,b)=>(b.data||'').localeCompare(a.data||'')).map(r=>{
+      const resp = reuniaoRespondidas(r);
+      const snippet = (r.observacoes||'').trim() || ((r.respostas||{})['e2q0']||'').trim() || 'Sem observações ainda';
+      return `<div class="reuniao-list-item" data-rid="${r.id}">
+        <div class="rli-main"><div class="rli-date">${formatDate(r.data)}</div><div class="rli-snippet">${escapeHTML(snippet)}</div></div>
+        <span class="rli-prog">${resp}/${totalP} respostas</span>
+      </div>`;
+    }).join('');
+  }
+  return html;
+}
+
+function captureReuniaoForm(){
+  const lead = currentModalLead;
+  if(!lead || !currentReuniaoId) return;
+  const r = (lead.reunioes||[]).find(x=>x.id===currentReuniaoId);
+  if(!r) return;
+  const d = document.querySelector('#reu-data'); if(d) r.data = d.value;
+  r.respostas = r.respostas || {};
+  document.querySelectorAll('.reu-resp').forEach(t=>{ r.respostas[t.dataset.k] = t.value; });
+  r.seis = r.seis || {};
+  document.querySelectorAll('.reu-seis').forEach(t=>{ r.seis[t.dataset.i] = t.value; });
+  const obs = document.querySelector('#reu-obs'); if(obs) r.observacoes = obs.value;
+}
+
+/* ---- Página geral (menu lateral): todas as reuniões ---- */
+function openReuniaoFromList(leadId, reuId){
+  openLeadModal(leadId, 'reuniao');
+  currentReuniaoId = reuId || null;
+  renderModal();
+}
+function novaReuniaoLead(){
+  // Criar uma reunião = criar um LEAD NOVO (entra na 1ª coluna do Pipeline: Lead Frio)
+  openFormModal({
+    title:'Nova reunião (cria um lead novo)',
+    data:{ dentista:'', clinica:'' },
+    fields:[
+      {key:'dentista', label:'Nome do dentista / contato', type:'text', placeholder:'Ex: Dr. João'},
+      {key:'clinica', label:'Clínica (opcional)', type:'text', placeholder:'Nome da clínica'}
+    ],
+    onSave: d=>{
+      const now = new Date().toISOString();
+      const r = novaReuniaoObj();
+      const lead = {
+        id: uid('lead'), dentista:(d.dentista||'').trim(), telefone:'', email:'', clinica:(d.clinica||'').trim(),
+        cidade:'', instagram:'', origem:'Reunião', stage:'frio', observacoes:'',
+        investimentoMkt:0, canalMkt:'', agenciaAtual:'', numCadeiras:'', dataCriacao:now, dataFechamento:'',
+        plano:'', valorMensalidade:0, reuniaoData:'', reuniaoHora:'', reuniaoObs:'', stageChangedAt:now,
+        propostaEnviada:false, cancelado:false, emRisco:false, onboarding:{},
+        jornadaFase:'venda', jornada:{},
+        responsavelId: isColab() ? colabUserId : '',
+        reunioes:[r],
+        financeiro:[]
+      };
+      state.leads.push(lead);
+      saveData();
+      // abre direto na reunião nova
+      openLeadModal(lead.id, 'reuniao');
+      currentReuniaoId = r.id;
+      renderModal();
+    }
+  });
+}
+function renderReunioesPage(){
+  const content = document.getElementById('page-content');
+  const totalP = reuniaoTotalPerguntas();
+  const rows = [];
+  state.leads.forEach(l=>{
+    if(!leadVisible(l)) return;
+    (l.reunioes||[]).forEach(r=>rows.push({lead:l, r}));
+  });
+  rows.sort((a,b)=>(b.r.data||'').localeCompare(a.r.data||''));
+
+  let html = `<div class="hint-banner">💡 Cada reunião registrada vira um <strong>lead novo</strong> no Pipeline (coluna "Lead Frio"). Clique numa linha para abrir e editar. Use "+ Nova reunião" para criar.</div>`;
+  if(rows.length===0){
+    html += `<div class="empty-state"><h3>Nenhuma reunião registrada</h3><p>Clique em "+ Nova reunião" para criar — um lead novo é gerado automaticamente no Pipeline.</p></div>`;
+    content.innerHTML = html;
+    return;
+  }
+  html += `<div class="table-wrap"><table class="data-table"><thead><tr>
+    <th>Data</th><th>Cliente / clínica</th><th>Respostas</th><th>Observações</th><th></th>
+  </tr></thead><tbody>`;
+  rows.forEach(({lead,r})=>{
+    const resp = reuniaoRespondidas(r);
+    const snippet = (r.observacoes||'').trim() || ((r.respostas||{})['e2q0']||'').trim() || '—';
+    html += `<tr class="reuniao-row" data-lead="${lead.id}" data-rid="${r.id}" style="cursor:pointer">
+      <td><strong>${formatDate(r.data)}</strong></td>
+      <td>${escapeHTML(lead.clinica || lead.dentista || 'Sem nome')}${(lead.clinica && lead.dentista)?`<div style="color:var(--text-muted);font-size:12px">${escapeHTML(lead.dentista)}</div>`:''}</td>
+      <td>${resp}/${totalP}</td>
+      <td style="max-width:320px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${escapeHTML(snippet)}</td>
+      <td><button class="btn btn-small btn-secondary">Abrir</button></td>
+    </tr>`;
+  });
+  html += `</tbody></table></div>`;
+  content.innerHTML = html;
+  document.querySelectorAll('.reuniao-row').forEach(tr=>{
+    tr.addEventListener('click', ()=>openReuniaoFromList(tr.dataset.lead, tr.dataset.rid));
+  });
+}
+
 function renderModalFinanceiro(lead){
   if(!modalFinanceUnlocked){
     return `
@@ -1470,6 +1726,8 @@ function captureModalForm(){
     if(riscoEl) lead.emRisco = riscoEl.checked;
     const canceladoEl = document.querySelector('#f-cancelado');
     if(canceladoEl) lead.cancelado = canceladoEl.checked;
+  } else if(modalActiveTab==='reuniao'){
+    captureReuniaoForm();
   }
 }
 
@@ -1608,6 +1866,46 @@ function attachModalEvents(){
       renderModal();
     });
   });
+
+  // Reunião
+  const reuNova = document.getElementById('reu-nova');
+  if(reuNova){
+    reuNova.addEventListener('click', ()=>{
+      const r = novaReuniaoObj();
+      currentModalLead.reunioes = currentModalLead.reunioes || [];
+      currentModalLead.reunioes.push(r);
+      currentReuniaoId = r.id;
+      persistLead();
+      renderModal();
+    });
+  }
+  document.querySelectorAll('.reuniao-list-item').forEach(it=>{
+    it.addEventListener('click', ()=>{ currentReuniaoId = it.dataset.rid; renderModal(); });
+  });
+  const reuBack = document.getElementById('reu-back');
+  if(reuBack){
+    reuBack.addEventListener('click', ()=>{ captureReuniaoForm(); persistLead(); currentReuniaoId = null; pendingDeleteKey = null; renderModal(); });
+  }
+  const reuSave = document.getElementById('reu-save');
+  if(reuSave){
+    reuSave.addEventListener('click', ()=>{ captureReuniaoForm(); persistLead(); currentReuniaoId = null; pendingDeleteKey = null; renderModal(); });
+  }
+  const reuDel = document.getElementById('reu-del');
+  if(reuDel){
+    reuDel.addEventListener('click', ()=>{
+      const key = 'reu_'+currentReuniaoId;
+      if(pendingDeleteKey===key){
+        currentModalLead.reunioes = (currentModalLead.reunioes||[]).filter(x=>x.id!==currentReuniaoId);
+        pendingDeleteKey = null;
+        currentReuniaoId = null;
+        persistLead();
+        renderModal();
+      } else {
+        pendingDeleteKey = key;
+        renderModal();
+      }
+    });
+  }
 }
 
 /* ============================================================
