@@ -186,15 +186,15 @@ input,select,textarea{font-family:inherit;font-size:14px;}
   display:flex;align-items:flex-start;background:var(--surface);border:1px solid var(--border);
   border-radius:var(--radius-lg);padding:20px 24px;margin-bottom:22px;overflow-x:auto;
 }
-.roteiro-step{flex:1;min-width:150px;padding:0 14px;}
+.roteiro-step{flex:1;min-width:140px;padding:0 12px;}
 .roteiro-dot{width:12px;height:12px;border-radius:50%;margin-bottom:10px;}
-.roteiro-label{font-family:var(--font-display);font-weight:700;font-size:13px;margin-bottom:4px;}
-.roteiro-desc{font-size:11.5px;color:var(--text-muted);line-height:1.5;}
-.roteiro-line{flex:0 0 24px;height:1px;background:var(--border);margin-top:6px;}
+.roteiro-label{font-family:var(--font-display);font-weight:700;font-size:12.5px;margin-bottom:4px;}
+.roteiro-desc{font-size:11px;color:var(--text-muted);line-height:1.5;}
+.roteiro-line{flex:0 0 18px;height:1px;background:var(--border);margin-top:6px;}
 
 /* ===== KANBAN ===== */
 .kanban{display:flex;gap:14px;overflow-x:auto;padding-bottom:12px;align-items:flex-start;}
-.kanban-col{background:var(--surface-alt);border-radius:var(--radius-lg);min-width:270px;max-width:270px;flex-shrink:0;display:flex;flex-direction:column;max-height:calc(100vh - 280px);}
+.kanban-col{background:var(--surface-alt);border-radius:var(--radius-lg);min-width:260px;max-width:260px;flex-shrink:0;display:flex;flex-direction:column;max-height:calc(100vh - 280px);}
 .kanban-col-header{
   display:flex;justify-content:space-between;align-items:center;padding:13px 14px;font-family:var(--font-display);
   font-weight:700;font-size:13px;border-top:4px solid;border-radius:var(--radius-lg) var(--radius-lg) 0 0;
@@ -443,11 +443,6 @@ table.data-table tr:hover td{background:var(--surface-alt);}
 <script>
 /* ============================================================
    ESTADO E ARMAZENAMENTO
-   ============================================================
-   O app abre instantaneamente com os dados salvos no próprio
-   navegador (localStorage) e, em paralelo e sem travar, sincroniza
-   com a nuvem (Firebase) para a equipe ver os mesmos dados.
-   Se a nuvem estiver fora do ar, o CRM continua funcionando offline.
    ============================================================ */
 const firebaseConfig = {
   apiKey: "AIzaSyBBXQX1LLoIFQ1YtkaOIwh93I2lYNlUteU",
@@ -483,10 +478,14 @@ const STAGES = [
   {key:'tratado', label:'Lead Tratado', desc:'Já chamamos o lead pela primeira vez.', color:'#5B9BD5'},
   {key:'agendado', label:'Lead Agendado', desc:'Reunião marcada para fechar em call.', color:'#0EA5FF'},
   {key:'followup', label:'Em Follow Up', desc:'Sumiu após a reunião ou parou de responder mensagens.', color:'#E0A23B'},
+  {key:'esfriou', label:'Conversa Esfriou', desc:'Esfriou / parou de responder, mas ainda não é morto.', color:'#8593A8'},
+  {key:'fazer_followup', label:'Fazer Follow Up', desc:'Precisa retomar o contato com este lead.', color:'#E0773B'},
+  {key:'recuperado', label:'Recuperado', desc:'Voltou a conversar / reativado.', color:'#14B8A6'},
   {key:'morto', label:'Lead Morto', desc:'Não quer absolutamente nada. Não chamar de novo.', color:'#C2554A'},
+  {key:'fechado', label:'Cliente Fechado', desc:'Fechou o contrato com a Falcon.', color:'#2FAE63'},
 ];
-const STAGE_FECHADO = {key:'fechado', label:'Cliente Fechado', color:'#2FAE63'};
-const ALL_STAGES = [...STAGES, STAGE_FECHADO];
+const STAGE_FECHADO = STAGES.find(s=>s.key==='fechado');
+const ALL_STAGES = STAGES;
 
 const FINANCE_PASSWORD = 'elevasecret';
 
@@ -631,7 +630,7 @@ let clientesFaseFilter = '';
 let viewMode = 'owner';          // 'owner' | 'colab'
 let colabUserId = '';            // id do colaborador logado no modo colaborador
 let authed = false;              // já passou pela tela de acesso?
-const OWNER_PASSWORD = 'gerevalorparaaspessoaseparaomundo';
+const OWNER_PASSWORD = 'guimaraes119';
 const COLAB_PAGES = ['pipeline','agenda','tarefas','reuniao','clinicas'];
 function isColab(){ return viewMode === 'colab'; }
 function leadVisible(l){ return viewMode === 'owner' ? true : (!!l && l.responsavelId === colabUserId); }
@@ -735,8 +734,6 @@ function adoptData(d){
 }
 function nowT(){ return new Date().toLocaleTimeString('pt-BR'); }
 
-// Sincronização em segundo plano — NUNCA bloqueia a abertura do app
-// e NUNCA deixa um navegador vazio apagar os dados da nuvem.
 function startCloudSync(){
   if(!firebaseReady){ setSyncStatus('Offline (somente neste navegador)'); return; }
   setSyncStatus('Conectando à nuvem...');
@@ -748,10 +745,8 @@ function startCloudSync(){
       const localN = recordCount(state);
       const cloudN = recordCount(cloud);
       if(cloud && cloudN > 0 && cloudN >= localN){
-        // A nuvem tem mais (ou igual) dados → adota a nuvem.
         adoptData(cloud); cacheLocal();
       } else if(localN > 0){
-        // Tenho dados locais e a nuvem está vazia/menor → envia os meus pra nuvem.
         cacheLocal();
         setSyncStatus('Enviando seus dados para a nuvem...');
         docRef.set(state)
@@ -761,7 +756,6 @@ function startCloudSync(){
         adoptData(cloud); cacheLocal();
       }
     } else if(cloud){
-      // Atualizações seguintes: a nuvem é a fonte da verdade.
       adoptData(cloud); cacheLocal();
     }
     setSyncStatus('Sincronizado às ' + nowT());
@@ -782,7 +776,6 @@ function saveData(){
       .then(()=> setSyncStatus('Sincronizado às ' + t))
       .catch(e=>{ console.error(e); setSyncStatus('Salvo neste navegador (nuvem indisponível)'); });
   } else if(firebaseReady && !cloudSynced){
-    // Ainda não reconciliou com a nuvem — guarda local e sobe assim que conectar.
     setSyncStatus('Salvo neste navegador (sincroniza ao conectar)');
   } else {
     setSyncStatus('Salvo neste navegador às ' + t);
@@ -2152,8 +2145,6 @@ function openTeamForm(id){
 
 /* ============================================================
    PÁGINA: TAREFAS
-   Regra de visibilidade: uma tarefa só aparece para quem a criou
-   e para o responsável por ela (ou para o CEO, que acompanha tudo).
    ============================================================ */
 function taskVisibleTo(task, user){
   if(!user) return false;
@@ -2275,7 +2266,6 @@ function openTaskForm(id){
 
 /* ============================================================
    PÁGINA: OPERAÇÕES / IMPLANTAÇÃO
-   Checklist de onboarding para cada cliente fechado.
    ============================================================ */
 let onboardingModalLead = null;
 
@@ -2498,7 +2488,7 @@ function renderDashboard(){
 }
 
 /* ============================================================
-   MODAL GENÉRICO DE FORMULÁRIO (Clínicas, Equipe, Financeiro Geral)
+   MODAL GENÉRICO DE FORMULÁRIO
    ============================================================ */
 function openFormModal(config){
   formModalConfig = {...config, data: {...config.data}};
@@ -2584,85 +2574,9 @@ document.querySelectorAll('.nav-item').forEach(b=>{
   });
 });
 
-/* ============================================================
-   AUTENTICAÇÃO (somente login do usuário do CRM)
-   ============================================================ */
 function showOverlay(){ document.querySelector('.app').style.display='none'; document.getElementById('auth-root').style.display='flex'; }
 function hideOverlay(){ document.querySelector('.app').style.display=''; document.getElementById('auth-root').style.display='none'; }
 
-function crmLogout(){ setCurrentUser(''); render(); }
-
-function renderCrmLoading(){
-  document.getElementById('auth-root').innerHTML = `
-    <div class="auth-screen"><div class="auth-card">
-      <div class="auth-logo"><div class="logo-mark">F</div><div class="auth-brand">FALCON <span>COMPANY</span></div></div>
-      <div class="auth-title">Carregando...</div>
-      <p style="text-align:center;color:var(--text-muted);font-size:13px">Conectando ao banco de dados.</p>
-    </div></div>`;
-}
-
-function renderGateError(msg){
-  showOverlay();
-  document.getElementById('auth-root').innerHTML = `
-    <div class="auth-screen"><div class="auth-card">
-      <div class="auth-logo"><div class="logo-mark">F</div><div class="auth-brand">FALCON <span>COMPANY</span></div></div>
-      <div class="auth-title">Quase lá</div>
-      <p style="text-align:center;color:var(--text-muted);font-size:13px;margin-bottom:16px">${escapeHTML(msg)}</p>
-      <button class="btn btn-primary" id="gate-reload">Recarregar</button>
-    </div></div>`;
-  document.getElementById('gate-reload').addEventListener('click', ()=>location.reload());
-}
-
-function renderCrmGate(selectedId, msg){
-  const root = document.getElementById('auth-root');
-  if(state.team.length===0){
-    root.innerHTML = `
-      <div class="auth-screen"><div class="auth-card">
-        <div class="auth-logo"><div class="logo-mark">F</div><div class="auth-brand">FALCON <span>COMPANY</span></div></div>
-        <div class="auth-title">Primeiro acesso</div>
-        <p style="text-align:center;color:var(--text-muted);font-size:13px;margin-bottom:16px">Ainda não há usuários cadastrados. Entre para criar a equipe na página "Equipe" e definir a senha de cada usuário.</p>
-        <button class="btn btn-primary" id="crm-enter-empty">Entrar para configurar</button>
-      </div></div>`;
-    document.getElementById('crm-enter-empty').addEventListener('click', ()=>{ crmAuthed=true; setCurrentUser(''); gateRender(); });
-    return;
-  }
-  const sel = selectedId!==undefined ? selectedId : (currentUserId||'');
-  root.innerHTML = `
-    <div class="auth-screen"><div class="auth-card">
-      <div class="auth-logo"><div class="logo-mark">F</div><div class="auth-brand">FALCON <span>COMPANY</span></div></div>
-      <div class="auth-title">Quem é você?</div>
-      <div class="field"><label>Usuário</label>
-        <select id="crm-user-select">
-          <option value="">Selecionar...</option>
-          ${state.team.map(m=>`<option value="${m.id}" ${m.id===sel?'selected':''}>${escapeHTML(m.nome)} (${escapeHTML(m.cargo)})</option>`).join('')}
-        </select>
-      </div>
-      <div class="field"><label>Senha do usuário</label><input id="crm-user-pwd" type="password" placeholder="Senha do seu usuário no CRM"></div>
-      <button class="btn btn-primary" id="crm-enter-btn">Entrar</button>
-      <div class="error-text" style="text-align:center;min-height:18px">${msg?escapeHTML(msg):''}</div>
-    </div></div>`;
-  const enter = ()=>{
-    const id = val('#crm-user-select');
-    const pwd = val('#crm-user-pwd');
-    if(!id){ renderCrmGate(id, 'Selecione seu usuário.'); return; }
-    const m = state.team.find(x=>x.id===id);
-    if(!m){ renderCrmGate('', 'Usuário não encontrado.'); return; }
-    if(m.senha && pwd !== m.senha){ renderCrmGate(id, 'Senha incorreta.'); return; }
-    crmAuthed = true;
-    setCurrentUser(id);
-    gateRender();
-  };
-  document.getElementById('crm-enter-btn').addEventListener('click', enter);
-  document.getElementById('crm-user-pwd').addEventListener('keydown', e=>{ if(e.key==='Enter') enter(); });
-}
-
-function gateRender(){
-  // Sem login: sempre mostra o CRM.
-  hideOverlay();
-  render();
-}
-
-// Abre na tela de acesso. Dados locais carregam na hora + sync de nuvem em 2º plano.
 loadData();
 dataLoadedOnce = true;
 renderAccessGate();
